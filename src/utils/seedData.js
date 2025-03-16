@@ -5,8 +5,20 @@ const Industry = require('../models/Industry');
 // Load env vars
 dotenv.config();
 
-// Connect to DB
-mongoose.connect(process.env.MONGO_URI);
+// Connect to DB with increased timeout
+const connectDB = async () => {
+  try {
+    await mongoose.connect(process.env.MONGO_URI, {
+      serverSelectionTimeoutMS: 30000, // Increased timeout to 30 seconds
+      socketTimeoutMS: 45000,
+    });
+    console.log('MongoDB Connected');
+    return true;
+  } catch (err) {
+    console.error(`MongoDB Connection Error: ${err.message}`);
+    return false;
+  }
+};
 
 // Industry data
 const industries = [
@@ -198,23 +210,40 @@ const industries = [
   }
 ];
 
-// Import data into DB
-const importData = async () => {
+// Export the seed function to be called from API
+exports.seed = async () => {
   try {
+    const connected = await connectDB();
+    if (!connected) {
+      console.error('Failed to connect to MongoDB. Seeding aborted.');
+      return { success: false, error: 'Database connection failed' };
+    }
+
     await Industry.deleteMany();
     await Industry.insertMany(industries);
     
-    console.log('Data Imported...');
-    process.exit();
+    console.log('Data Imported Successfully');
+    return { success: true, message: 'Data imported successfully' };
   } catch (err) {
-    console.error(err);
-    process.exit(1);
+    console.error(`Seed Error: ${err.message}`);
+    return { success: false, error: err.message };
+  } finally {
+    // Only disconnect if this was called directly from CLI
+    if (require.main === module) {
+      mongoose.disconnect();
+    }
   }
 };
 
 // Delete data from DB
 const deleteData = async () => {
   try {
+    const connected = await connectDB();
+    if (!connected) {
+      console.error('Failed to connect to MongoDB. Delete operation aborted.');
+      process.exit(1);
+    }
+
     await Industry.deleteMany();
     
     console.log('Data Destroyed...');
@@ -225,12 +254,21 @@ const deleteData = async () => {
   }
 };
 
-// Check command line args
-if (process.argv[2] === '-i') {
-  importData();
-} else if (process.argv[2] === '-d') {
-  deleteData();
-} else {
-  console.log('Please add proper command: -i (import) or -d (delete)');
-  process.exit();
+// Check if this file is being run directly
+if (require.main === module) {
+  // Check command line args
+  if (process.argv[2] === '-i') {
+    exports.seed().then(result => {
+      if (result.success) {
+        process.exit(0);
+      } else {
+        process.exit(1);
+      }
+    });
+  } else if (process.argv[2] === '-d') {
+    deleteData();
+  } else {
+    console.log('Please add proper command: -i (import) or -d (delete)');
+    process.exit();
+  }
 } 

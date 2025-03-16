@@ -3,6 +3,7 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const connectDB = require('./config/db');
 const path = require('path');
+const { seed } = require('./utils/seedData');
 
 // Load environment variables
 dotenv.config();
@@ -32,6 +33,21 @@ app.use('/api/branding', require('./routes/branding'));
 // Default route
 app.get('/', (req, res) => {
   res.send('OmuMediaKit API is running');
+});
+
+// Seed database endpoint (admin only)
+app.get('/api/seed', async (req, res) => {
+  try {
+    const secretKey = req.query.key;
+    if (secretKey !== process.env.SEED_KEY && secretKey !== 'omu-secret-seed-key') {
+      return res.status(401).json({ success: false, error: 'Unauthorized' });
+    }
+    
+    const result = await seed();
+    return res.status(result.success ? 200 : 500).json(result);
+  } catch (error) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
 });
 
 // Handle 404 for API routes
