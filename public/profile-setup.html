@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Business Profile Setup - OmuMediaKit</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+      <a class="navbar-brand" href="dashboard.html">OmuMediaKit</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="dashboard.html">Dashboard</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" href="profile-setup.html">Business Profile</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" id="logout-link">Logout</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container py-5">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="card shadow">
+          <div class="card-body p-5">
+            <h2 class="text-center mb-4">Business Profile Setup</h2>
+            <div id="alert-container"></div>
+            
+            <form id="profile-form" class="needs-validation" novalidate>
+              <!-- Progress bar -->
+              <div class="progress mb-4">
+                <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">Step 1 of 8</div>
+              </div>
+              
+              <!-- Step 1: Business Name -->
+              <div class="step" id="step-1">
+                <h4 class="mb-3">Business Information</h4>
+                <div class="mb-3">
+                  <label for="business-name" class="form-label">Business Name</label>
+                  <input type="text" class="form-control" id="business-name" required>
+                </div>
+                <div class="d-flex justify-content-end">
+                  <button type="button" class="btn btn-primary next-step">Next</button>
+                </div>
+              </div>
+              
+              <!-- Step 2: Industry Selection -->
+              <div class="step d-none" id="step-2">
+                <h4 class="mb-3">Select Your Industry</h4>
+                <div class="mb-3">
+                  <label for="industry" class="form-label">Industry</label>
+                  <select class="form-select" id="industry" required>
+                    <option value="" selected disabled>Select an industry</option>
+                    <!-- Options will be loaded dynamically -->
+                  </select>
+                </div>
+                <div class="d-flex justify-content-between">
+                  <button type="button" class="btn btn-secondary prev-step">Previous</button>
+                  <button type="button" class="btn btn-primary next-step">Next</button>
+                </div>
+              </div>
+              
+              <!-- Step 3: Niche Selection -->
+              <div class="step d-none" id="step-3">
+                <h4 class="mb-3">Select Your Specific Niche</h4>
+                <div class="mb-3">
+                  <label for="niche" class="form-label">Niche</label>
+                  <select class="form-select" id="niche" required>
+                    <option value="" selected disabled>Select a niche</option>
+                    <!-- Options will be loaded dynamically based on industry selection -->
+                  </select>
+                </div>
+                <div class="d-flex justify-content-between">
+                  <button type="button" class="btn btn-secondary prev-step">Previous</button>
+                  <button type="button" class="btn btn-primary next-step">Next</button>
+                </div>
+              </div>
+              
+              <!-- Step 4: Logo Upload -->
+              <div class="step d-none" id="step-4">
+                <h4 class="mb-3">Upload Your Logo</h4>
+                <div class="mb-3">
+                  <label for="logo" class="form-label">Business Logo</label>
+                  <input type="file" class="form-control" id="logo" accept="image/*">
+                  <div class="form-text">Upload your logo to automatically extract brand colors.</div>
+                </div>
+                <div class="mb-3">
+                  <div id="logo-preview" class="mt-3 text-center d-none">
+                    <img src="" alt="Logo Preview" class="img-fluid" style="max-height: 150px;">
+                  </div>
+                </div>
+                <div class="d-flex justify-content-between">
+                  <button type="button" class="btn btn-secondary prev-step">Previous</button>
+                  <button type="button" class="btn btn-primary next-step">Next</button>
+                </div>
+              </div>
+              
+              <!-- Step 5: Brand Colors -->
+              <div class="step d-none" id="step-5">
+                <h4 class="mb-3">Brand Colors</h4>
+                <div class="row">
+                  <div class="col-md-4 mb-3">
+                    <label for="primary-color" class="form-label">Primary Color</label>
+                    <input type="color" class="form-control form-control-color w-100" id="primary-color" value="#000000">
+                  </div>
+                  <div class="col-md-4 mb-3">
+                    <label for="secondary-color" class="form-label">Secondary Color</label>
+                    <input type="color" class="form-control form-control-color w-100" id="secondary-color" value="#ffffff">
+                  </div>
+                  <div class="col-md-4 mb-3">
+                    <label for="accent-color" class="form-label">Accent Color</label>
+                    <input type="color" class="form-control form-control-color w-100" id="accent-color" value="#cccccc">
+                  </div>
+                </div>
+                <div class="d-flex justify-content-between">
+                  <button type="button" class="btn btn-secondary prev-step">Previous</button>
+                  <button type="button" class="btn btn-primary next-step">Next</button>
+                </div>
+              </div>
+              
+              <!-- Step 6: Business Voice -->
+              <div class="step d-none" id="step-6">
+                <h4 class="mb-3">Business Voice & Style</h4>
+                <p class="text-muted">Select up to 2 tones that define your brand:</p>
+                <div class="mb-3">
+                  <div class="form-check mb-2">
+                    <input class="form-check-input business-voice" type="checkbox" value="Professional & Trustworthy" id="voice-professional">
+                    <label class="form-check-label" for="voice-professional">
+                      Professional & Trustworthy
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input business-voice" type="checkbox" value="Friendly & Approachable" id="voice-friendly">
+                    <label class="form-check-label" for="voice-friendly">
+                      Friendly & Approachable
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input business-voice" type="checkbox" value="Luxury & Elegant" id="voice-luxury">
+                    <label class="form-check-label" for="voice-luxury">
+                      Luxury & Elegant
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input business-voice" type="checkbox" value="Bold & Energetic" id="voice-bold">
+                    <label class="form-check-label" for="voice-bold">
+                      Bold & Energetic
+                    </label>
+                  </div>
+                </div>
+                <div class="d-flex justify-content-between">
+                  <button type="button" class="btn btn-secondary prev-step">Previous</button>
+                  <button type="button" class="btn btn-primary next-step">Next</button>
+                </div>
+              </div>
+              
+              <!-- Step 7: Target Audience -->
+              <div class="step d-none" id="step-7">
+                <h4 class="mb-3">Target Audience</h4>
+                <p class="text-muted">Select or add your target audiences:</p>
+                <div class="mb-3" id="suggested-audiences">
+                  <!-- Suggested audiences will be loaded here -->
+                </div>
+                <div class="mb-3">
+                  <label for="custom-audience" class="form-label">Add Custom Audience</label>
+                  <div class="input-group">
+                    <input type="text" class="form-control" id="custom-audience">
+                    <button class="btn btn-outline-secondary" type="button" id="add-audience-btn">Add</button>
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Selected Audiences:</label>
+                  <div id="selected-audiences" class="border p-2 rounded min-height-100">
+                    <!-- Selected audiences will appear here -->
+                  </div>
+                </div>
+                <div class="d-flex justify-content-between">
+                  <button type="button" class="btn btn-secondary prev-step">Previous</button>
+                  <button type="button" class="btn btn-primary next-step">Next</button>
+                </div>
+              </div>
+              
+              <!-- Step 8: Location & Social Platforms -->
+              <div class="step d-none" id="step-8">
+                <h4 class="mb-3">Location & Social Platforms</h4>
+                <div class="mb-3">
+                  <label class="form-label">Location Type:</label>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input location-type" type="radio" name="locationType" id="local-business" value="Local Business">
+                    <label class="form-check-label" for="local-business">
+                      Local Business (Physical store or service)
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input location-type" type="radio" name="locationType" id="online-business" value="Online Business">
+                    <label class="form-check-label" for="online-business">
+                      Online Business (E-commerce, Digital Services)
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input location-type" type="radio" name="locationType" id="both-business" value="Both">
+                    <label class="form-check-label" for="both-business">
+                      Both
+                    </label>
+                  </div>
+                </div>
+                
+                <div class="mb-3" id="location-details">
+                  <!-- Location details will be shown/hidden based on selection -->
+                </div>
+                
+                <div class="mb-3">
+                  <label class="form-label">Social Media Platforms:</label>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input social-platform" type="checkbox" value="Instagram" id="platform-instagram">
+                    <label class="form-check-label" for="platform-instagram">
+                      Instagram
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input social-platform" type="checkbox" value="Facebook" id="platform-facebook">
+                    <label class="form-check-label" for="platform-facebook">
+                      Facebook
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input social-platform" type="checkbox" value="TikTok" id="platform-tiktok">
+                    <label class="form-check-label" for="platform-tiktok">
+                      TikTok
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input social-platform" type="checkbox" value="LinkedIn" id="platform-linkedin">
+                    <label class="form-check-label" for="platform-linkedin">
+                      LinkedIn
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input social-platform" type="checkbox" value="Twitter/X" id="platform-twitter">
+                    <label class="form-check-label" for="platform-twitter">
+                      Twitter/X
+                    </label>
+                  </div>
+                </div>
+                
+                <div class="d-flex justify-content-between">
+                  <button type="button" class="btn btn-secondary prev-step">Previous</button>
+                  <button type="submit" class="btn btn-success">Complete Setup</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/profile-setup.js"></script>
+</body>
+</html> 
