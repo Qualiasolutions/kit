@@ -31,7 +31,16 @@ document.addEventListener('DOMContentLoaded', function() {
         })
       });
       
-      const data = await response.json();
+      // Check if the response is JSON before parsing
+      const contentType = response.headers.get('content-type');
+      let data;
+      
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+        throw new Error(`Server returned non-JSON response: ${text}`);
+      }
       
       if (response.ok) {
         // Save token to localStorage
