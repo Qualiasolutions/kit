@@ -7,6 +7,32 @@ exports.register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
+    console.log('Register attempt:', { name, email });
+
+    // Validate inputs
+    if (!name || !email || !password) {
+      return res.status(400).json({
+        success: false,
+        error: 'Please provide name, email and password',
+      });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        error: 'Password must be at least 6 characters',
+      });
+    }
+
+    // Email validation regex
+    const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Please provide a valid email',
+      });
+    }
+
     // Check if user already exists
     const userExists = await User.findOne({ email });
 
@@ -24,8 +50,10 @@ exports.register = async (req, res) => {
       password,
     });
 
+    console.log('User created successfully:', user._id);
     sendTokenResponse(user, 201, res);
   } catch (error) {
+    console.error('Registration error:', error);
     res.status(500).json({
       success: false,
       error: error.message,
