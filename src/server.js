@@ -15,7 +15,10 @@ const app = express();
 
 // Middleware
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:5000', 'https://kit-lime.vercel.app'],
+  credentials: true
+}));
 
 // Set static folder
 app.use(express.static(path.join(__dirname, '../public')));
@@ -30,6 +33,25 @@ app.use('/api/branding', require('./routes/branding'));
 app.get('/', (req, res) => {
   res.send('OmuMediaKit API is running');
 });
+
+// Handle 404 for API routes
+app.use('/api/*', (req, res) => {
+  res.status(404).json({
+    success: false,
+    error: 'API endpoint not found'
+  });
+});
+
+// Serve static assets in production
+if (process.env.NODE_ENV === 'production') {
+  // Serve any static files
+  app.use(express.static(path.join(__dirname, '../public')));
+
+  // Handle SPA routing - for any routes not caught by the express routes, serve the index.html
+  app.get('*', (req, res) => {
+    res.sendFile(path.resolve(__dirname, '../public', 'index.html'));
+  });
+}
 
 // Start server
 const PORT = process.env.PORT || 5000;
