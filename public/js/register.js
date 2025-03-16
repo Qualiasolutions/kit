@@ -1,7 +1,12 @@
 document.addEventListener('DOMContentLoaded', function() {
   const registerForm = document.getElementById('register-form');
   const alertContainer = document.getElementById('alert-container');
-
+  
+  // API base URL - change this to your deployed API URL when needed
+  const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+    ? '' // Empty for local development (relative path)
+    : 'https://your-api-domain.com'; // Replace with your actual API URL for production
+  
   registerForm.addEventListener('submit', async function(e) {
     e.preventDefault();
     
@@ -19,7 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     try {
       // Send registration request
-      const response = await fetch('/api/auth/register', {
+      const response = await fetch(`${API_URL}/api/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

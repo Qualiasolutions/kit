@@ -6,6 +6,11 @@ document.addEventListener('DOMContentLoaded', function() {
     return;
   }
 
+  // API base URL - change this to your deployed API URL when needed
+  const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+    ? '' // Empty for local development (relative path)
+    : 'https://your-api-domain.com'; // Replace with your actual API URL for production
+
   // DOM elements
   const profileForm = document.getElementById('profile-form');
   const alertContainer = document.getElementById('alert-container');
@@ -194,7 +199,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Load industries
   async function loadIndustries() {
     try {
-      const response = await fetch('/api/profile/industries', {
+      const response = await fetch(`${API_URL}/api/profile/industries`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -234,7 +239,7 @@ document.addEventListener('DOMContentLoaded', function() {
     nicheSelect.innerHTML = '<option value="" selected disabled>Select a niche</option>';
     
     // Fetch niches for the selected industry
-    fetch('/api/profile/industries', {
+    fetch(`${API_URL}/api/profile/industries`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -254,10 +259,13 @@ document.addEventListener('DOMContentLoaded', function() {
             nicheSelect.appendChild(option);
           });
         }
+      } else {
+        showAlert(data.error || 'Failed to load niches', 'danger');
       }
     })
     .catch(error => {
-      console.error('Error loading niches:', error);
+      showAlert('Server error. Please try again later.', 'danger');
+      console.error(error);
     });
   }
   
@@ -279,7 +287,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const formData = new FormData();
         formData.append('logo', file);
         
-        fetch('/api/branding/extract-colors', {
+        fetch(`${API_URL}/api/branding/extract-colors`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`
@@ -314,39 +322,42 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Load suggested audiences
   function loadSuggestedAudiences() {
-    const industry = industrySelect.value;
-    const niche = nicheSelect.value;
+    const selectedIndustry = industrySelect.value;
+    const selectedNiche = nicheSelect.value;
     
-    if (!industry || !niche) {
+    if (!selectedIndustry || !selectedNiche) {
       return;
     }
     
-    // Clear existing suggested audiences
+    // Clear existing suggestions
     suggestedAudiences.innerHTML = '';
     
     // Fetch suggested audiences
-    fetch(`/api/profile/target-audiences/${encodeURIComponent(industry)}/${encodeURIComponent(niche)}`, {
+    fetch(`${API_URL}/api/profile/target-audiences/${selectedIndustry}/${selectedNiche}`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
     })
     .then(response => response.json())
     .then(data => {
-      if (data.success) {
-        // Add suggested audience checkboxes
-        data.data.forEach((audience, index) => {
+      if (data.success && data.data.length > 0) {
+        // Add audience suggestions
+        data.data.forEach(audience => {
           const div = document.createElement('div');
-          div.className = 'form-check mb-2';
+          div.className = 'mb-2';
           div.innerHTML = `
-            <input class="form-check-input suggested-audience" type="checkbox" value="${audience}" id="audience-${index}">
-            <label class="form-check-label" for="audience-${index}">
-              ${audience}
-            </label>
+            <div class="form-check">
+              <input class="form-check-input suggested-audience" type="checkbox" value="${audience}" id="audience-${audience.replace(/\s+/g, '-').toLowerCase()}">
+              <label class="form-check-label" for="audience-${audience.replace(/\s+/g, '-').toLowerCase()}">
+                ${audience}
+              </label>
+            </div>
           `;
           suggestedAudiences.appendChild(div);
           
           // Add event listener
-          div.querySelector('input').addEventListener('change', function() {
+          const checkbox = div.querySelector('input');
+          checkbox.addEventListener('change', function() {
             if (this.checked) {
               addAudience(this.value);
             } else {
@@ -354,10 +365,13 @@ document.addEventListener('DOMContentLoaded', function() {
             }
           });
         });
+      } else {
+        suggestedAudiences.innerHTML = '<p>No suggested audiences available for this niche. Please add custom audiences below.</p>';
       }
     })
     .catch(error => {
-      console.error('Error loading suggested audiences:', error);
+      showAlert('Server error. Please try again later.', 'danger');
+      console.error(error);
     });
   }
   
@@ -479,7 +493,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Get form data
     const formData = new FormData();
     
-    // Business info
+    // Add fields to form data
     formData.append('businessName', document.getElementById('business-name').value);
     formData.append('industry', industrySelect.value);
     formData.append('niche', nicheSelect.value);
@@ -498,57 +512,64 @@ document.addEventListener('DOMContentLoaded', function() {
     formData.append('brandColors', JSON.stringify(brandColors));
     
     // Business voice
-    const businessVoice = [];
+    const selectedVoice = [];
     businessVoiceCheckboxes.forEach(checkbox => {
       if (checkbox.checked) {
-        businessVoice.push(checkbox.value);
+        selectedVoice.push(checkbox.value);
       }
     });
-    formData.append('businessVoice', JSON.stringify(businessVoice));
+    formData.append('businessVoice', JSON.stringify(selectedVoice));
     
     // Target audience
     formData.append('targetAudience', JSON.stringify(audiences));
     
-    // Location type
+    // Location
     const locationType = document.querySelector('input[name="locationType"]:checked').value;
     formData.append('locationType', locationType);
     
     // Location details
-    if (locationType === 'Local Business' || locationType === 'Both') {
-      const location = {
-        address: document.getElementById('address')?.value || '',
-        city: document.getElementById('city')?.value || '',
-        state: document.getElementById('state')?.value || '',
-        country: document.getElementById('country')?.value || ''
-      };
-      formData.append('location', JSON.stringify(location));
+    const locationDetails = {};
+    
+    if (locationType === 'physical') {
+      locationDetails.address = document.getElementById('address').value;
+      locationDetails.city = document.getElementById('city').value;
+      locationDetails.state = document.getElementById('state').value;
+      locationDetails.zip = document.getElementById('zip').value;
+      locationDetails.country = document.getElementById('country').value;
+    } else if (locationType === 'service-area') {
+      locationDetails.cities = document.getElementById('service-areas').value.split(',').map(city => city.trim());
+    } else {
+      locationDetails.online = true;
     }
     
+    formData.append('location', JSON.stringify(locationDetails));
+    
     // Website
-    const website = document.getElementById('website')?.value || '';
-    if (website) {
-      formData.append('website', website);
-    }
+    formData.append('website', document.getElementById('website').value);
     
     // Contact details
     const contactDetails = {
-      phone: document.getElementById('phone')?.value || '',
-      email: document.getElementById('contact-email')?.value || ''
+      phone: document.getElementById('phone').value,
+      email: document.getElementById('contact-email').value
     };
     formData.append('contactDetails', JSON.stringify(contactDetails));
     
     // Social platforms
-    const socialPlatforms = [];
+    const selectedPlatforms = {};
     socialPlatformCheckboxes.forEach(checkbox => {
       if (checkbox.checked) {
-        socialPlatforms.push(checkbox.value);
+        const platform = checkbox.value;
+        const urlInput = document.getElementById(`${platform}-url`);
+        if (urlInput) {
+          selectedPlatforms[platform] = urlInput.value;
+        }
       }
     });
-    formData.append('socialPlatforms', JSON.stringify(socialPlatforms));
+    formData.append('socialPlatforms', JSON.stringify(selectedPlatforms));
     
     try {
-      // Send profile data
-      const response = await fetch('/api/profile', {
+      // Send request
+      const response = await fetch(`${API_URL}/api/profile`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -560,12 +581,12 @@ document.addEventListener('DOMContentLoaded', function() {
       
       if (response.ok) {
         // Show success message and redirect
-        showAlert('Profile setup successful! Redirecting to dashboard...', 'success');
+        showAlert('Profile saved successfully! Redirecting to dashboard...', 'success');
         setTimeout(() => {
           window.location.href = 'dashboard.html';
         }, 1500);
       } else {
-        showAlert(data.error || 'Profile setup failed', 'danger');
+        showAlert(data.error || 'Failed to save profile', 'danger');
       }
     } catch (error) {
       showAlert('Server error. Please try again later.', 'danger');
