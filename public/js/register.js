@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // API base URL - change this to your deployed API URL when needed
   const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
     ? '' // Empty for local development (relative path)
-    : 'https://your-api-domain.com'; // Replace with your actual API URL for production
+    : 'https://kit-lime.vercel.app'; // Updated with actual deployed URL
   
   registerForm.addEventListener('submit', async function(e) {
     e.preventDefault();

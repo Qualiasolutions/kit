@@ -6,6 +6,11 @@ document.addEventListener('DOMContentLoaded', function() {
     return;
   }
 
+  // API base URL - change this to your deployed API URL when needed
+  const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+    ? '' // Empty for local development (relative path)
+    : 'https://kit-lime.vercel.app'; // Updated with actual deployed URL
+
   // DOM elements
   const userName = document.getElementById('user-name');
   const profileIncomplete = document.getElementById('profile-incomplete');
@@ -42,7 +47,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Load business profile
   async function loadProfile() {
     try {
-      const response = await fetch('/api/profile', {
+      const response = await fetch(`${API_URL}/api/profile`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -80,7 +85,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Logo
     if (profile.logo && profile.logo !== 'no-logo.png') {
-      businessLogo.src = `/uploads/${profile.logo}`;
+      businessLogo.src = `${API_URL}/uploads/${profile.logo}`;
     }
     
     // Brand colors
