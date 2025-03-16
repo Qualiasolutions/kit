@@ -437,7 +437,10 @@ document.addEventListener('DOMContentLoaded', function() {
   function updateLocationFields() {
     const locationType = document.querySelector('input[name="locationType"]:checked').value;
     
-    if (locationType === 'Local Business' || locationType === 'Both') {
+    // Clear previous content
+    locationDetails.innerHTML = '';
+    
+    if (locationType === 'physical') {
       locationDetails.innerHTML = `
         <div class="mb-3">
           <label class="form-label">Business Location:</label>
@@ -445,11 +448,14 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="col-12">
               <input type="text" class="form-control" id="address" placeholder="Address">
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
               <input type="text" class="form-control" id="city" placeholder="City">
             </div>
             <div class="col-md-3">
               <input type="text" class="form-control" id="state" placeholder="State">
+            </div>
+            <div class="col-md-2">
+              <input type="text" class="form-control" id="zip" placeholder="Zip">
             </div>
             <div class="col-md-3">
               <input type="text" class="form-control" id="country" placeholder="Country">
@@ -457,8 +463,14 @@ document.addEventListener('DOMContentLoaded', function() {
           </div>
         </div>
       `;
-    } else {
-      locationDetails.innerHTML = '';
+    } else if (locationType === 'service-area') {
+      locationDetails.innerHTML = `
+        <div class="mb-3">
+          <label for="service-areas" class="form-label">Service Areas (comma separated)</label>
+          <input type="text" class="form-control" id="service-areas" placeholder="New York, New Jersey, Connecticut">
+          <div class="form-text">Enter the areas where you provide services</div>
+        </div>
+      `;
     }
     
     // Add website and contact details fields
@@ -479,6 +491,19 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
       </div>
     `;
+    
+    // Add social platform URL fields for selected platforms
+    socialPlatformCheckboxes.forEach(checkbox => {
+      if (checkbox.checked) {
+        const platform = checkbox.value;
+        locationDetails.innerHTML += `
+          <div class="mb-3">
+            <label for="${platform.toLowerCase()}-url" class="form-label">${platform} URL</label>
+            <input type="url" class="form-control" id="${platform.toLowerCase()}-url" placeholder="https://${platform.toLowerCase()}.com/yourbusiness">
+          </div>
+        `;
+      }
+    });
   }
   
   // Submit profile
@@ -559,7 +584,7 @@ document.addEventListener('DOMContentLoaded', function() {
     socialPlatformCheckboxes.forEach(checkbox => {
       if (checkbox.checked) {
         const platform = checkbox.value;
-        const urlInput = document.getElementById(`${platform}-url`);
+        const urlInput = document.getElementById(`${platform.toLowerCase()}-url`);
         if (urlInput) {
           selectedPlatforms[platform] = urlInput.value;
         }

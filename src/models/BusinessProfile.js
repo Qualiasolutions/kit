@@ -38,12 +38,6 @@ const BusinessProfileSchema = new mongoose.Schema({
   },
   businessVoice: {
     type: [String],
-    enum: [
-      'Professional & Trustworthy',
-      'Friendly & Approachable',
-      'Luxury & Elegant',
-      'Bold & Energetic'
-    ],
     validate: {
       validator: function(v) {
         return v.length <= 2;
@@ -57,14 +51,17 @@ const BusinessProfileSchema = new mongoose.Schema({
   },
   locationType: {
     type: String,
-    enum: ['Local Business', 'Online Business', 'Both'],
+    enum: ['physical', 'online', 'service-area'],
     required: [true, 'Please select a location type']
   },
   location: {
     address: String,
     city: String,
     state: String,
-    country: String
+    zip: String,
+    country: String,
+    cities: [String],
+    online: Boolean
   },
   website: String,
   contactDetails: {
@@ -72,8 +69,7 @@ const BusinessProfileSchema = new mongoose.Schema({
     email: String
   },
   socialPlatforms: {
-    type: [String],
-    enum: ['Instagram', 'Facebook', 'TikTok', 'LinkedIn', 'Twitter/X'],
+    type: Object,
     required: [true, 'Please select at least one social platform']
   },
   createdAt: {
