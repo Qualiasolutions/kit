@@ -27,62 +27,34 @@ document.addEventListener('DOMContentLoaded', function() {
   const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
     ? '' : 'https://kit-lime.vercel.app';
 
-  // Business profile data
-  let businessProfile = mockProfile || null;
-  
-  // Current step in the process
-  let currentStep = 1;
-  
-  // Step elements
-  const stepIndicators = document.querySelectorAll('.step-indicator');
-  const stepContainers = document.querySelectorAll('.step-container');
-  const nextButtons = document.querySelectorAll('.next-step');
-  const prevButtons = document.querySelectorAll('.prev-step');
-  
-  // Business info elements
+  // DOM Elements
   const businessNameDisplay = document.getElementById('business-name-display');
   const businessTypeDisplay = document.getElementById('business-type-display');
   const businessLogo = document.getElementById('business-logo');
   const primaryColor = document.getElementById('primary-color');
   const secondaryColor = document.getElementById('secondary-color');
   const accentColor = document.getElementById('accent-color');
-  
-  // Template selection elements
-  const templateOptions = document.getElementById('template-options');
+  const useOpenAI = document.getElementById('use-openai');
+  const apiKeyContainer = document.getElementById('api-key-container');
+  const openaiKey = document.getElementById('openai-key');
   const aiTemplateBtn = document.getElementById('ai-template-btn');
-  
-  // Image upload elements
-  const postImage = document.getElementById('post-image');
-  const imagePreview = document.getElementById('image-preview');
-  const noImageMessage = document.getElementById('no-image-message');
-  const removeBgBtn = document.getElementById('remove-bg-btn');
-  const enhanceImageBtn = document.getElementById('enhance-image-btn');
-  
-  // Caption elements
-  const ctaSelect = document.getElementById('cta-select');
-  const generateContentBtn = document.getElementById('generate-content-btn');
-  const postContent = document.getElementById('post-content');
-  const postHashtags = document.getElementById('post-hashtags');
-  
-  // Platform elements
-  const platformsContainer = document.getElementById('platforms-container');
-  const autoResize = document.getElementById('auto-resize');
-  const autoCaption = document.getElementById('auto-caption');
-  const previewCaptionText = document.getElementById('preview-caption-text');
-  const previewHashtagsText = document.getElementById('preview-hashtags-text');
-  
-  // Scheduling elements
+  const generateBtn = document.getElementById('generate-btn');
+  const previewContent = document.getElementById('preview-content');
+  const loadingOverlay = document.getElementById('loading-overlay');
+  const loadingMessage = document.getElementById('loading-message');
+  const saveControls = document.getElementById('save-controls');
   const postDate = document.getElementById('post-date');
-  const scheduleOptimalTime = document.getElementById('schedule-optimal-time');
-  const summaryType = document.getElementById('summary-type');
-  const summaryPlatforms = document.getElementById('summary-platforms');
-  const summaryTime = document.getElementById('summary-time');
   const savePostBtn = document.getElementById('save-post-btn');
   
-  // Set default date to tomorrow
+  // Profile and state
+  let profile = mockProfile || null;
+  let selectedTemplate = null;
+  let generatedContent = null;
+
+  // Set default date to tomorrow at 6:00 PM
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
-  tomorrow.setHours(18, 0, 0, 0); // 6:00 PM
+  tomorrow.setHours(18, 0, 0, 0);
   postDate.value = tomorrow.toISOString().slice(0, 16);
   
   // Initialize
@@ -91,126 +63,49 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Setup all event listeners
   function setupEventListeners() {
-    // Step navigation
-    nextButtons.forEach(button => {
-      button.addEventListener('click', () => {
-        if (validateCurrentStep()) {
-          goToStep(currentStep + 1);
-        }
+    // OpenAI toggle
+    useOpenAI.addEventListener('change', function() {
+      apiKeyContainer.classList.toggle('show', this.checked);
+    });
+    
+    // Template card selection
+    document.querySelectorAll('.template-card').forEach(card => {
+      card.addEventListener('click', function() {
+        const radio = this.querySelector('input[type="radio"]');
+        radio.checked = true;
+        selectedTemplate = radio.value;
+        
+        // Highlight selected card
+        document.querySelectorAll('.template-card').forEach(c => {
+          c.classList.remove('selected');
+        });
+        this.classList.add('selected');
       });
     });
     
-    prevButtons.forEach(button => {
-      button.addEventListener('click', () => {
-        goToStep(currentStep - 1);
-      });
-    });
-    
-    // AI template button
+    // AI template selection
     aiTemplateBtn.addEventListener('click', selectAiTemplate);
     
-    // Image upload
-    postImage.addEventListener('change', handleImageUpload);
-    removeBgBtn.addEventListener('click', removeBackground);
-    enhanceImageBtn.addEventListener('click', enhanceImage);
-    
-    // Caption generation
-    ctaSelect.addEventListener('change', updateCTA);
-    generateContentBtn.addEventListener('click', generateContent);
-    
-    // Preview updates
-    postContent.addEventListener('input', updatePreview);
-    postHashtags.addEventListener('input', updatePreview);
+    // Generate content
+    generateBtn.addEventListener('click', generateContent);
     
     // Save post
-    savePostBtn.addEventListener('click', saveAndSchedule);
-  }
-  
-  // Go to a specific step
-  function goToStep(step) {
-    if (step < 1 || step > stepContainers.length) return;
+    savePostBtn.addEventListener('click', savePost);
     
-    currentStep = step;
-    
-    // Hide all steps
-    stepContainers.forEach(container => {
-      container.classList.add('d-none');
+    // Logout
+    document.getElementById('logout-link').addEventListener('click', function(e) {
+      e.preventDefault();
+      localStorage.removeItem('token');
+      window.location.href = 'login.html';
     });
-    
-    // Show current step
-    stepContainers[currentStep - 1].classList.remove('d-none');
-    
-    // Update step indicators
-    stepIndicators.forEach((indicator, index) => {
-      if (index + 1 < currentStep) {
-        indicator.classList.remove('active');
-        indicator.classList.add('completed');
-      } else if (index + 1 === currentStep) {
-        indicator.classList.remove('completed');
-        indicator.classList.add('active');
-      } else {
-        indicator.classList.remove('completed', 'active');
-      }
-    });
-    
-    // Update summary for final step
-    if (currentStep === 6) {
-      updateSummary();
-    }
-    
-    // Scroll to top
-    window.scrollTo(0, 0);
-  }
-  
-  // Validate current step
-  function validateCurrentStep() {
-    switch (currentStep) {
-      case 1: // Account
-        return true; // Always valid, profile is auto-loaded
-        
-      case 2: // Template
-        const selectedTemplate = document.querySelector('input[name="template"]:checked');
-        if (!selectedTemplate) {
-          showAlert('Please select a template or use AI to choose one', 'warning');
-          return false;
-        }
-        return true;
-        
-      case 3: // Image
-        if (!imagePreview.src || imagePreview.style.display === 'none') {
-          showAlert('Please upload an image', 'warning');
-          return false;
-        }
-        return true;
-        
-      case 4: // Captions
-        if (!postContent.value.trim()) {
-          showAlert('Please generate or enter caption text', 'warning');
-          return false;
-        }
-        return true;
-        
-      case 5: // Platforms
-        const selectedPlatforms = document.querySelectorAll('input[name="platform"]:checked');
-        if (selectedPlatforms.length === 0) {
-          showAlert('Please select at least one platform', 'warning');
-          return false;
-        }
-        return true;
-        
-      default:
-        return true;
-    }
   }
   
   // Load business profile
   function loadBusinessProfile() {
     if (devMode && mockProfile) {
       // Use mock profile
-      businessProfile = mockProfile;
-      applyBusinessProfile();
-      loadTemplates();
-      loadPlatforms();
+      profile = mockProfile;
+      displayBusinessProfile();
       return;
     }
     
@@ -221,10 +116,8 @@ document.addEventListener('DOMContentLoaded', function() {
     .then(response => response.json())
     .then(data => {
       if (data.success) {
-        businessProfile = data.data;
-        applyBusinessProfile();
-        loadTemplates();
-        loadPlatforms();
+        profile = data.data;
+        displayBusinessProfile();
       } else {
         showAlert('Failed to load business profile', 'danger');
       }
@@ -232,377 +125,500 @@ document.addEventListener('DOMContentLoaded', function() {
     .catch(error => {
       console.error('Error loading profile:', error);
       if (devMode) {
-        // In dev mode, create a mock profile if none exists
-        businessProfile = {
+        // In dev mode, create a mock profile
+        profile = {
           businessName: 'Your Business',
-          industry: 'Marketing',
-          brandColors: {
-            primary: '#4285f4',
-            secondary: '#34a853',
-            accent: '#ea4335'
-          }
+          businessType: 'Marketing',
+          primaryColor: '#4285f4',
+          secondaryColor: '#34a853',
+          accentColor: '#ea4335'
         };
-        applyBusinessProfile();
-        loadTemplates();
-        loadPlatforms();
+        displayBusinessProfile();
       } else {
         showAlert('Error loading business profile', 'danger');
       }
     });
   }
   
-  // Apply business profile to UI
-  function applyBusinessProfile() {
-    if (!businessProfile) return;
+  // Display business profile in UI
+  function displayBusinessProfile() {
+    if (!profile) return;
     
     // Set business name and type
-    businessNameDisplay.textContent = businessProfile.businessName || 'Your Business';
-    businessTypeDisplay.textContent = devMode ? 
-      businessProfile.industry || 'Business' : 
-      businessProfile.businessType || 'Business';
+    businessNameDisplay.textContent = profile.businessName || 'Your Business';
+    businessTypeDisplay.textContent = profile.businessType || 'Business';
     
     // Set logo
-    if (devMode && businessProfile.logo) {
-      businessLogo.src = businessProfile.logo;
-    } else if (businessProfile.logoUrl) {
-      businessLogo.src = `${API_URL}/uploads/${businessProfile.logoUrl}`;
+    if (profile.logoUrl) {
+      businessLogo.src = `${API_URL}/uploads/${profile.logoUrl}`;
     }
     
     // Set brand colors
-    if (devMode && businessProfile.brandColors) {
-      primaryColor.style.backgroundColor = businessProfile.brandColors.primary;
-      secondaryColor.style.backgroundColor = businessProfile.brandColors.secondary;
-      accentColor.style.backgroundColor = businessProfile.brandColors.accent;
-    } else if (businessProfile.primaryColor) {
-      primaryColor.style.backgroundColor = businessProfile.primaryColor;
-      secondaryColor.style.backgroundColor = businessProfile.secondaryColor;
-      accentColor.style.backgroundColor = businessProfile.accentColor;
-    }
+    primaryColor.style.backgroundColor = profile.primaryColor || '#4285f4';
+    secondaryColor.style.backgroundColor = profile.secondaryColor || '#34a853';
+    accentColor.style.backgroundColor = profile.accentColor || '#ea4335';
   }
   
-  // Load templates
-  function loadTemplates() {
-    // Clear container
-    templateOptions.innerHTML = '';
-    
-    // Business type
-    const businessType = devMode ? 
-      businessProfile?.industry || 'General' : 
-      businessProfile?.businessType || 'General';
-    
-    // Template data - would come from API in production
-    const templates = [
-      {
-        id: 'template-1',
-        name: 'Modern & Clean',
-        image: 'https://via.placeholder.com/300x300?text=Modern',
-        type: 'All'
-      },
-      {
-        id: 'template-2',
-        name: 'Bold & Colorful',
-        image: 'https://via.placeholder.com/300x300?text=Bold',
-        type: 'All'
-      },
-      {
-        id: 'template-3',
-        name: `${businessType} Special`,
-        image: `https://via.placeholder.com/300x300?text=${businessType}`,
-        type: businessType
-      }
-    ];
-    
-    // Add templates to UI
-    templates.forEach(template => {
-      const col = document.createElement('div');
-      col.className = 'col-md-4 mb-4';
-      col.innerHTML = `
-        <div class="card template-card">
-          <img src="${template.image}" class="card-img-top" alt="${template.name}">
-          <div class="card-body">
-            <h5 class="card-title">${template.name}</h5>
-            <div class="form-check mt-2">
-              <input class="form-check-input" type="radio" name="template" value="${template.id}" id="${template.id}">
-              <label class="form-check-label" for="${template.id}">
-                Select Template
-              </label>
-            </div>
-          </div>
-        </div>
-      `;
-      templateOptions.appendChild(col);
-      
-      // Add click handler for the entire card
-      const card = col.querySelector('.template-card');
-      card.addEventListener('click', () => {
-        const radio = col.querySelector('input[type="radio"]');
-        radio.checked = true;
-        
-        // Highlight selected card
-        document.querySelectorAll('.template-card').forEach(c => {
-          c.classList.remove('selected');
-        });
-        card.classList.add('selected');
-      });
-    });
-  }
-  
-  // Load platforms
-  function loadPlatforms() {
-    // Clear container
-    platformsContainer.innerHTML = '';
-    
-    // Default platforms
-    const platforms = ['Instagram', 'Facebook', 'Twitter', 'LinkedIn', 'TikTok'];
-    
-    // Add platforms to UI
-    platforms.forEach(platform => {
-      const div = document.createElement('div');
-      div.className = 'form-check mb-2';
-      div.innerHTML = `
-        <input class="form-check-input" type="checkbox" name="platform" value="${platform}" id="platform-${platform.toLowerCase()}">
-        <label class="form-check-label" for="platform-${platform.toLowerCase()}">
-          <i class="bi bi-${getPlatformIcon(platform)}"></i> ${platform}
-        </label>
-      `;
-      platformsContainer.appendChild(div);
-    });
-    
-    // Check Instagram by default
-    const instagram = document.getElementById('platform-instagram');
-    if (instagram) instagram.checked = true;
-  }
-  
-  // Select AI template
+  // Select AI-recommended template
   function selectAiTemplate() {
     aiTemplateBtn.disabled = true;
     aiTemplateBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Selecting...';
     
     // Simulate AI processing
     setTimeout(() => {
-      // Select a random template (in production, this would be AI-driven)
+      // Select a random template
       const templates = document.querySelectorAll('input[name="template"]');
-      const randomIndex = Math.floor(Math.random() * templates.length);
-      templates[randomIndex].checked = true;
-      
-      // Highlight selected card
-      document.querySelectorAll('.template-card').forEach(card => {
-        card.classList.remove('selected');
-      });
-      templates[randomIndex].closest('.template-card').classList.add('selected');
-      
-      showAlert('AI has selected the best template for your business!', 'success');
-      
-      aiTemplateBtn.disabled = false;
-      aiTemplateBtn.innerHTML = '<i class="bi bi-magic"></i> Let AI Choose the Best Template';
-    }, 1500);
-  }
-  
-  // Handle image upload
-  function handleImageUpload(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    
-    // Validate file is an image
-    if (!file.type.match('image.*')) {
-      showAlert('Please upload a valid image file', 'warning');
-      return;
-    }
-    
-    // Read and display image
-    const reader = new FileReader();
-    reader.onload = function(event) {
-      imagePreview.src = event.target.result;
-      imagePreview.style.display = 'block';
-      if (noImageMessage) noImageMessage.style.display = 'none';
-      
-      // Enable buttons
-      removeBgBtn.disabled = false;
-      enhanceImageBtn.disabled = false;
-      
-      // Update platform preview
-      updatePreview();
-    };
-    reader.readAsDataURL(file);
-  }
-  
-  // Remove background
-  function removeBackground() {
-    if (!imagePreview.src || imagePreview.style.display === 'none') {
-      showAlert('Please upload an image first', 'warning');
-      return;
-    }
-    
-    removeBgBtn.disabled = true;
-    removeBgBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Processing...';
-    
-    // Simulate background removal (would call AI API in production)
-    setTimeout(() => {
-      // Add visual indicator that background has been removed
-      imagePreview.style.background = 'none';
-      imagePreview.style.boxShadow = '0 0 15px rgba(0, 123, 255, 0.5)';
-      
-      showAlert('Background removed successfully!', 'success');
-      removeBgBtn.disabled = false;
-      removeBgBtn.innerHTML = '<i class="bi bi-eraser"></i> Remove Background';
-    }, 1500);
-  }
-  
-  // Enhance image
-  function enhanceImage() {
-    if (!imagePreview.src || imagePreview.style.display === 'none') {
-      showAlert('Please upload an image first', 'warning');
-      return;
-    }
-    
-    enhanceImageBtn.disabled = true;
-    enhanceImageBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Enhancing...';
-    
-    // Simulate image enhancement (would call AI API in production)
-    setTimeout(() => {
-      // Add filter to simulate enhancement
-      imagePreview.style.filter = 'contrast(1.1) brightness(1.05) saturate(1.1)';
-      
-      showAlert('Image enhanced successfully!', 'success');
-      enhanceImageBtn.disabled = false;
-      enhanceImageBtn.innerHTML = '<i class="bi bi-magic"></i> Enhance Image';
-    }, 1500);
-  }
-  
-  // Generate content based on CTA
-  function generateContent() {
-    const businessName = businessProfile?.businessName || 'our business';
-    const businessType = devMode ? 
-      businessProfile?.industry || 'business' : 
-      businessProfile?.businessType || 'business';
-    
-    generateContentBtn.disabled = true;
-    generateContentBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Generating...';
-    
-    // Simulate AI generation delay
-    setTimeout(() => {
-      const cta = ctaSelect.value;
-      let caption = '';
-      
-      // Generate different content based on selected CTA
-      switch (cta) {
-        case 'visit':
-          caption = `Check out our latest offerings at ${businessName}! We specialize in providing top-quality ${businessType} solutions. Visit us today and experience the difference!`;
-          break;
-        case 'call':
-          caption = `Looking for the best ${businessType} services? Look no further! At ${businessName}, we provide exceptional quality and service. Call us now to learn more!`;
-          break;
-        case 'book':
-          caption = `Ready to elevate your experience with ${businessName}? We're experts in ${businessType} and can't wait to work with you. Book an appointment today!`;
-          break;
-        case 'order':
-          caption = `Introducing our amazing products at ${businessName}! As leaders in ${businessType}, we ensure quality with every order. Order yours today while supplies last!`;
-          break;
-        case 'dm':
-          caption = `Have questions about our ${businessType} services? At ${businessName}, we're here to help! DM us for more details and start your journey with us today.`;
-          break;
-        case 'learn':
-          caption = `Discover what makes ${businessName} the top choice for ${businessType}. We combine quality, service, and expertise in everything we do. Learn more by clicking the link in bio!`;
-          break;
-        default:
-          caption = `We're excited to share our latest updates from ${businessName}! As your trusted ${businessType} provider, we're committed to excellence in everything we do.`;
+      if (templates.length > 0) {
+        const randomIndex = Math.floor(Math.random() * templates.length);
+        templates[randomIndex].checked = true;
+        selectedTemplate = templates[randomIndex].value;
+        
+        // Highlight selected card
+        document.querySelectorAll('.template-card').forEach(card => {
+          card.classList.remove('selected');
+        });
+        templates[randomIndex].closest('.template-card').classList.add('selected');
       }
       
-      // Generate hashtags
-      const hashtags = [
-        `#${businessType.replace(/\s+/g, '')}`,
-        '#Quality',
-        '#Service',
-        `#${businessName.replace(/\s+/g, '')}`,
-        '#NewPost',
-        '#FollowUs'
-      ].join(' ');
+      showAlert('AI has selected the optimal template for your business!', 'success');
       
-      // Update UI
-      postContent.value = caption;
-      postHashtags.value = hashtags;
-      
-      // Update preview
-      updatePreview();
-      
-      showAlert('Caption and hashtags generated successfully!', 'success');
-      generateContentBtn.disabled = false;
-      generateContentBtn.innerHTML = '<i class="bi bi-magic"></i> Generate Caption & Hashtags';
-    }, 1500);
+      aiTemplateBtn.disabled = false;
+      aiTemplateBtn.innerHTML = '<i class="bi bi-magic"></i> Let AI Choose';
+    }, 1200);
   }
   
-  // Update CTA in existing caption
-  function updateCTA() {
-    if (postContent.value) {
-      generateContent();
-    }
-  }
-  
-  // Update platform preview
-  function updatePreview() {
-    if (previewCaptionText) {
-      previewCaptionText.textContent = postContent.value || 'Your caption will appear here...';
+  // Generate content
+  function generateContent() {
+    // Validate template selection
+    if (!selectedTemplate) {
+      showAlert('Please select a template first', 'warning');
+      return;
     }
     
-    if (previewHashtagsText) {
-      previewHashtagsText.textContent = postHashtags.value || '#hashtags #will #appear #here';
-    }
+    // Show loading overlay
+    loadingOverlay.classList.remove('d-none');
+    generateBtn.disabled = true;
     
-    // Would update image preview in production
-  }
-  
-  // Update summary for final step
-  function updateSummary() {
-    // Get selected platforms
-    const platforms = [];
-    document.querySelectorAll('input[name="platform"]:checked').forEach(platform => {
-      platforms.push(platform.value);
-    });
+    // Update loading message to show progress
+    updateLoadingMessage('Analyzing your brand profile...');
     
-    // Update summary elements
-    summaryType.textContent = 'Image Post';
-    summaryPlatforms.textContent = platforms.join(', ') || 'None selected';
+    // Prepare business data
+    const businessData = {
+      name: profile.businessName || 'Your Business',
+      type: profile.businessType || 'Business',
+      colors: {
+        primary: profile.primaryColor || '#4285f4',
+        secondary: profile.secondaryColor || '#34a853',
+        accent: profile.accentColor || '#ea4335'
+      },
+      logoUrl: profile.logoUrl,
+      description: profile.description || '',
+      industry: profile.industry || profile.businessType || 'Business'
+    };
     
-    // Set scheduled time
-    if (scheduleOptimalTime.checked) {
-      summaryTime.textContent = 'Optimal time (around 6:00 PM)';
+    // Simulate step progress in UI
+    setTimeout(() => updateLoadingMessage('Generating creative content...'), 800);
+    setTimeout(() => updateLoadingMessage('Applying your brand colors...'), 1600);
+    setTimeout(() => updateLoadingMessage('Optimizing for engagement...'), 2400);
+    
+    // Check if using OpenAI
+    if (useOpenAI.checked) {
+      // Verify API key
+      if (!openaiKey.value.trim()) {
+        showAlert('Please enter your OpenAI API key', 'warning');
+        loadingOverlay.classList.add('d-none');
+        generateBtn.disabled = false;
+        return;
+      }
+      
+      // Generate with OpenAI
+      generateWithOpenAI(businessData);
     } else {
-      const date = new Date(postDate.value);
-      summaryTime.textContent = date.toLocaleString();
+      // Generate with built-in templates
+      generateWithBuiltIn(businessData);
     }
+  }
+  
+  // Generate content with OpenAI
+  function generateWithOpenAI(businessData) {
+    const apiKey = openaiKey.value.trim();
+    
+    updateLoadingMessage('Connecting to OpenAI...');
+    
+    // Define template type based on selection
+    let templateType = 'Standard';
+    switch (selectedTemplate) {
+      case 'template-1':
+        templateType = 'Modern & Clean';
+        break;
+      case 'template-2':
+        templateType = 'Bold & Colorful';
+        break;
+      case 'template-3':
+        templateType = 'Business Special';
+        break;
+    }
+    
+    // Prepare prompt for OpenAI
+    const prompt = `Create a social media post for a business with the following details:
+    
+Business Name: ${businessData.name}
+Business Type: ${businessData.type}
+Industry: ${businessData.industry}
+Brand Colors: Primary: ${businessData.colors.primary}, Secondary: ${businessData.colors.secondary}, Accent: ${businessData.colors.accent}
+Business Description: ${businessData.description || 'A professional business providing quality services.'}
+Template Style: ${templateType}
+
+Please provide:
+1. A compelling headline (5-7 words)
+2. A short, engaging caption (2-3 sentences)
+3. A clear call to action
+4. 4-5 relevant hashtags
+5. A brief description of what image would best complement this post
+
+Format the response as JSON with these fields: headline, caption, callToAction, hashtags, imageDescription`;
+
+    // Make API request to OpenAI
+    fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: "gpt-3.5-turbo",
+        messages: [
+          {
+            role: "system",
+            content: "You are a professional social media marketing expert who creates compelling branded content. Respond in JSON format only."
+          },
+          {
+            role: "user",
+            content: prompt
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 500
+      })
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('OpenAI API error: ' + response.statusText);
+      }
+      return response.json();
+    })
+    .then(data => {
+      try {
+        // Parse the JSON response from ChatGPT
+        const content = JSON.parse(data.choices[0].message.content);
+        
+        // Save the generated content
+        generatedContent = content;
+        
+        // Display the content in the preview
+        displayPreview(businessData, content);
+      } catch (error) {
+        console.error('Error parsing OpenAI response:', error);
+        showAlert('Error with OpenAI response. Using built-in generation instead.', 'warning');
+        generateWithBuiltIn(businessData);
+      }
+    })
+    .catch(error => {
+      console.error('OpenAI API error:', error);
+      showAlert('Error connecting to OpenAI. Using built-in generation instead.', 'warning');
+      generateWithBuiltIn(businessData);
+    });
+  }
+  
+  // Generate content with built-in templates
+  function generateWithBuiltIn(businessData) {
+    // Simulate API delay
+    setTimeout(() => {
+      // Generate content based on business type and template
+      const content = {
+        headline: generateHeadline(businessData),
+        caption: generateCaption(businessData),
+        callToAction: generateCTA(businessData),
+        hashtags: generateHashtags(businessData),
+        imageDescription: generateImageDescription(businessData)
+      };
+      
+      // Save the generated content
+      generatedContent = content;
+      
+      // Display the content in the preview
+      displayPreview(businessData, content);
+    }, 2500);
+  }
+  
+  // Display preview of generated content
+  function displayPreview(businessData, content) {
+    // Generate HTML based on selected template
+    let previewHTML = '';
+    
+    switch (selectedTemplate) {
+      case 'template-1':
+        previewHTML = createModernTemplate(businessData, content);
+        break;
+      case 'template-2':
+        previewHTML = createBoldTemplate(businessData, content);
+        break;
+      case 'template-3':
+        previewHTML = createBusinessTemplate(businessData, content);
+        break;
+      default:
+        previewHTML = createModernTemplate(businessData, content);
+    }
+    
+    // Update preview content
+    previewContent.innerHTML = previewHTML;
+    
+    // Hide loading overlay
+    loadingOverlay.classList.add('d-none');
+    
+    // Enable generate button
+    generateBtn.disabled = false;
+    
+    // Show save controls
+    saveControls.classList.remove('d-none');
+    
+    // Scroll to preview
+    previewContent.scrollIntoView({ behavior: 'smooth' });
+  }
+  
+  // Template generators
+  function createModernTemplate(businessData, content) {
+    return `
+      <div class="social-post" style="max-width: 500px; margin: 0 auto; font-family: 'Arial', sans-serif;">
+        <div class="post-header" style="background-color: ${businessData.colors.primary}; color: white; padding: 20px; border-radius: 8px 8px 0 0;">
+          <div class="d-flex align-items-center">
+            <img src="${businessData.logoUrl ? `${API_URL}/uploads/${businessData.logoUrl}` : 'img/placeholder-logo.png'}" alt="${businessData.name}" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid white;">
+            <div class="ms-3">
+              <h5 class="mb-0">${businessData.name}</h5>
+              <small>${businessData.type}</small>
+            </div>
+          </div>
+        </div>
+        
+        <div class="post-image" style="height: 300px; background-color: #f8f9fa; display: flex; flex-direction: column; align-items: center; justify-content: center; border-left: 1px solid #dee2e6; border-right: 1px solid #dee2e6;">
+          <i class="bi bi-image" style="font-size: 48px; color: #adb5bd;"></i>
+          <p class="text-muted mt-2">${content.imageDescription}</p>
+        </div>
+        
+        <div class="post-content" style="padding: 20px; border: 1px solid #dee2e6; border-radius: 0 0 8px 8px;">
+          <h4 style="color: ${businessData.colors.primary};">${content.headline}</h4>
+          <p>${content.caption}</p>
+          <p class="fw-bold" style="color: ${businessData.colors.secondary};">${content.callToAction}</p>
+          <p class="text-muted">${content.hashtags}</p>
+        </div>
+      </div>
+    `;
+  }
+  
+  function createBoldTemplate(businessData, content) {
+    return `
+      <div class="social-post" style="max-width: 500px; margin: 0 auto; font-family: 'Arial', sans-serif;">
+        <div class="post-header" style="padding: 15px; background-color: ${businessData.colors.primary}; color: white; border-radius: 8px 8px 0 0;">
+          <h3 style="margin: 0; font-weight: 800; text-transform: uppercase; text-align: center;">${content.headline}</h3>
+        </div>
+        
+        <div class="post-image" style="position: relative; height: 300px; background-color: #f8f9fa; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden;">
+          <i class="bi bi-image" style="font-size: 48px; color: #adb5bd;"></i>
+          <p class="text-muted mt-2">${content.imageDescription}</p>
+          
+          <div style="position: absolute; bottom: 0; left: 0; right: 0; padding: 10px 15px; background-color: rgba(0,0,0,0.7); color: white;">
+            <div class="d-flex align-items-center">
+              <img src="${businessData.logoUrl ? `${API_URL}/uploads/${businessData.logoUrl}` : 'img/placeholder-logo.png'}" alt="${businessData.name}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid white;">
+              <div class="ms-2">
+                <h6 class="mb-0">${businessData.name}</h6>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="post-content" style="padding: 20px; background-color: white; border: 3px solid ${businessData.colors.primary}; border-top: none; border-radius: 0 0 8px 8px;">
+          <p style="font-size: 1.1rem;">${content.caption}</p>
+          <p class="fw-bold" style="color: ${businessData.colors.accent}; font-size: 1.2rem; text-transform: uppercase;">${content.callToAction}</p>
+          <p style="color: ${businessData.colors.primary};">${content.hashtags}</p>
+        </div>
+      </div>
+    `;
+  }
+  
+  function createBusinessTemplate(businessData, content) {
+    return `
+      <div class="social-post" style="max-width: 500px; margin: 0 auto; font-family: 'Arial', sans-serif; border: 1px solid #dee2e6; border-radius: 8px; overflow: hidden;">
+        <div class="d-flex">
+          <div style="width: 40%; padding: 20px; background-color: ${businessData.colors.primary}; color: white; display: flex; flex-direction: column; justify-content: center;">
+            <img src="${businessData.logoUrl ? `${API_URL}/uploads/${businessData.logoUrl}` : 'img/placeholder-logo.png'}" alt="${businessData.name}" class="mb-3" style="width: 80px; height: 80px; object-fit: contain; background-color: white; padding: 5px; border-radius: 5px;">
+            <h5>${businessData.name}</h5>
+            <p class="small">${businessData.type}</p>
+            <div class="mt-auto">
+              <p class="mb-0 fw-bold">${content.callToAction}</p>
+            </div>
+          </div>
+          
+          <div style="width: 60%;">
+            <div class="post-image" style="height: 200px; background-color: #f8f9fa; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+              <i class="bi bi-image" style="font-size: 48px; color: #adb5bd;"></i>
+              <p class="text-muted small mt-2">${content.imageDescription}</p>
+            </div>
+            
+            <div style="padding: 15px; background-color: white;">
+              <h5 style="color: ${businessData.colors.secondary};">${content.headline}</h5>
+              <p class="small">${content.caption}</p>
+              <p class="text-muted small">${content.hashtags}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+  
+  // Content generation helper functions
+  function generateHeadline(businessData) {
+    const headlines = [
+      `Discover ${businessData.name}`,
+      `Transform with ${businessData.name}`,
+      `Experience the ${businessData.type} Difference`,
+      `${businessData.type} Excellence Awaits`,
+      `Your Premier ${businessData.type} Partner`,
+      `Elevate Your ${businessData.industry} Experience`
+    ];
+    
+    return headlines[Math.floor(Math.random() * headlines.length)];
+  }
+  
+  function generateCaption(businessData) {
+    const captions = [
+      `At ${businessData.name}, we deliver exceptional ${businessData.type} solutions designed for your unique needs. Our team of experts is ready to help you succeed.`,
+      `Looking for quality ${businessData.type} services? ${businessData.name} combines industry expertise with personalized attention to deliver results that exceed expectations.`,
+      `${businessData.name} is transforming the ${businessData.industry} landscape with innovative approaches and dedicated service. Join our growing family of satisfied clients.`,
+      `We understand the challenges of ${businessData.industry}. That's why ${businessData.name} offers tailored solutions that address your specific needs and goals.`,
+      `Quality, reliability, and excellence define everything we do at ${businessData.name}. Experience the difference that makes us the preferred ${businessData.type} provider.`
+    ];
+    
+    return captions[Math.floor(Math.random() * captions.length)];
+  }
+  
+  function generateCTA(businessData) {
+    const ctas = [
+      `Contact us today for a free consultation!`,
+      `Visit our website to learn more about our services!`,
+      `Call now to schedule your appointment!`,
+      `Follow us for more ${businessData.industry} tips and insights!`,
+      `Subscribe to our newsletter for exclusive offers!`,
+      `Book your session today and experience the difference!`
+    ];
+    
+    return ctas[Math.floor(Math.random() * ctas.length)];
+  }
+  
+  function generateHashtags(businessData) {
+    // Create business-specific hashtags
+    const name = businessData.name.replace(/\s+/g, '');
+    const type = businessData.type.replace(/\s+/g, '');
+    const industry = businessData.industry.replace(/\s+/g, '');
+    
+    // Generic hashtag pool
+    const genericTags = [
+      'Quality', 'Excellence', 'Innovation', 'BestInClass', 
+      'Premium', 'TrustedPartner', 'CustomerFocus', 'Professional'
+    ];
+    
+    // Create final set of hashtags
+    let hashtags = [`#${name}`, `#${type}`, `#${industry}`];
+    
+    // Add some random generic tags
+    const shuffled = [...genericTags].sort(() => 0.5 - Math.random());
+    hashtags = hashtags.concat(shuffled.slice(0, 2).map(tag => `#${tag}`));
+    
+    return hashtags.join(' ');
+  }
+  
+  function generateImageDescription(businessData) {
+    const descriptions = [
+      `Professional image highlighting ${businessData.name}'s expertise in ${businessData.industry}`,
+      `High-quality photo showcasing ${businessData.type} excellence`,
+      `Engaging visual that represents the quality of ${businessData.name}'s services`,
+      `Professional team members demonstrating ${businessData.type} in action`,
+      `Stylish image that aligns with ${businessData.name}'s brand identity`
+    ];
+    
+    return descriptions[Math.floor(Math.random() * descriptions.length)];
+  }
+  
+  // Helper function to update loading message
+  function updateLoadingMessage(message) {
+    loadingMessage.textContent = message;
   }
   
   // Save and schedule post
-  function saveAndSchedule() {
-    if (!validateCurrentStep()) return;
+  function savePost() {
+    if (!generatedContent) {
+      showAlert('Please generate content first', 'warning');
+      return;
+    }
     
     savePostBtn.disabled = true;
-    savePostBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Scheduling...';
+    savePostBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Saving...';
     
-    // Simulate saving to server
-    setTimeout(() => {
-      showAlert('Your post has been scheduled successfully!', 'success');
-      
-      // Redirect to dashboard
+    // Prepare post data
+    const postData = {
+      businessId: profile.id,
+      content: generatedContent.caption,
+      headline: generatedContent.headline,
+      callToAction: generatedContent.callToAction,
+      hashtags: generatedContent.hashtags,
+      scheduledDate: postDate.value,
+      template: selectedTemplate,
+      imageDescription: generatedContent.imageDescription
+    };
+    
+    if (devMode) {
+      // In dev mode, just simulate success
       setTimeout(() => {
-        window.location.href = 'dashboard.html';
+        showAlert('Your post has been scheduled successfully!', 'success');
+        
+        setTimeout(() => {
+          window.location.href = 'dashboard.html';
+        }, 1500);
       }, 1500);
-    }, 1500);
-  }
-  
-  // Helper: Get platform icon
-  function getPlatformIcon(platform) {
-    switch (platform.toLowerCase()) {
-      case 'instagram': return 'instagram';
-      case 'facebook': return 'facebook';
-      case 'twitter': return 'twitter';
-      case 'linkedin': return 'linkedin';
-      case 'tiktok': return 'tiktok';
-      default: return 'globe';
+      return;
     }
+    
+    // In production, send to API
+    fetch(`${API_URL}/api/posts`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(postData)
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        showAlert('Your post has been scheduled successfully!', 'success');
+        
+        setTimeout(() => {
+          window.location.href = 'dashboard.html';
+        }, 1500);
+      } else {
+        showAlert('Error saving post: ' + data.message, 'danger');
+        savePostBtn.disabled = false;
+        savePostBtn.innerHTML = '<i class="bi bi-calendar-check"></i> Schedule Post';
+      }
+    })
+    .catch(error => {
+      console.error('Error saving post:', error);
+      showAlert('Error saving post. Please try again.', 'danger');
+      savePostBtn.disabled = false;
+      savePostBtn.innerHTML = '<i class="bi bi-calendar-check"></i> Schedule Post';
+    });
   }
   
-  // Show alert message
+  // Display alert message
   function showAlert(message, type) {
     const alertContainer = document.getElementById('alert-container');
     
@@ -613,7 +629,7 @@ document.addEventListener('DOMContentLoaded', function() {
       </div>
     `;
     
-    // Auto-dismiss after 5 seconds
+    // Auto dismiss after 5 seconds
     setTimeout(() => {
       const alert = alertContainer.querySelector('.alert');
       if (alert) {
@@ -622,4 +638,4 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }, 5000);
   }
-});
+}); 
