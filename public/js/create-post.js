@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Check if profile is complete
   const profileComplete = mockProfile || localStorage.getItem('profileComplete');
-  if (!profileComplete) {
+  if (!profileComplete && !devMode) {
     showAlert('Please complete your business profile first.', 'warning');
     // Redirect to profile setup after a delay
     setTimeout(() => {
@@ -23,152 +23,232 @@ document.addEventListener('DOMContentLoaded', function() {
     return;
   }
 
-  // API base URL - change this to your deployed API URL when needed
+  // API base URL
   const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-    ? '' // Empty for local development (relative path)
-    : 'https://kit-lime.vercel.app'; // Updated with actual deployed URL
+    ? '' : 'https://kit-lime.vercel.app';
 
-  // DOM elements
-  const postForm = document.getElementById('post-form');
-  const postType = document.getElementById('post-type');
-  const templateSelect = document.getElementById('template');
-  const platformsContainer = document.getElementById('platforms-container');
-  const postContent = document.getElementById('post-content');
-  const postHashtags = document.getElementById('post-hashtags');
-  const generateHashtagsBtn = document.getElementById('generate-hashtags-btn');
-  const postImage = document.getElementById('post-image');
-  const imageEditorControls = document.getElementById('image-editor-controls');
-  const imagePreviewContainer = document.getElementById('image-preview-container');
-  const imagePreview = document.getElementById('image-preview');
-  const resetImageBtn = document.getElementById('reset-image-btn');
-  const removeBackgroundBtn = document.getElementById('remove-bg-btn');
-  const enhanceImageBtn = document.getElementById('enhance-image-btn');
-  const imageBrightness = document.getElementById('image-brightness');
-  const imageContrast = document.getElementById('image-contrast');
-  const postDate = document.getElementById('post-date');
-  const scheduleOptimalTime = document.getElementById('schedule-optimal-time');
-  const contentTopic = document.getElementById('content-topic');
-  const contentTone = document.getElementById('content-tone');
-  const contentGoal = document.getElementById('content-goal');
-  const generateContentBtn = document.getElementById('generate-content-btn');
-  const savePostBtn = document.getElementById('save-post-btn');
-  const autoResize = document.getElementById('auto-resize');
-  const autoCaption = document.getElementById('auto-caption');
-  const platformPreviewButtons = document.querySelectorAll('[data-platform]');
-  
-  // Brand profile elements
-  const businessNameDisplay = document.getElementById('business-name-display');
-  const businessTypeDisplay = document.getElementById('business-type-display');
-  const businessLogoDisplay = document.getElementById('business-logo-display').querySelector('img');
-  const primaryColorDisplay = document.getElementById('primary-color-display');
-  const secondaryColorDisplay = document.getElementById('secondary-color-display');
-  const accentColorDisplay = document.getElementById('accent-color-display');
-  
-  // Preview elements
-  const previewUsername = document.getElementById('preview-username');
-  const previewUsernameCaption = document.getElementById('preview-username-caption');
-  const previewCaption = document.getElementById('preview-caption');
-  const previewHashtags = document.getElementById('preview-hashtags');
-  
   // Business profile data
   let businessProfile = mockProfile || null;
   
-  // Original image data (for reset)
-  let originalImageData = null;
+  // Current step in the process
+  let currentStep = 1;
   
-  // Set default date to tomorrow at current time
+  // Step elements
+  const stepIndicators = document.querySelectorAll('.step-indicator');
+  const stepContainers = document.querySelectorAll('.step-container');
+  const nextButtons = document.querySelectorAll('.next-step');
+  const prevButtons = document.querySelectorAll('.prev-step');
+  
+  // Business info elements
+  const businessNameDisplay = document.getElementById('business-name-display');
+  const businessTypeDisplay = document.getElementById('business-type-display');
+  const businessLogo = document.getElementById('business-logo');
+  const primaryColor = document.getElementById('primary-color');
+  const secondaryColor = document.getElementById('secondary-color');
+  const accentColor = document.getElementById('accent-color');
+  
+  // Template selection elements
+  const templateOptions = document.getElementById('template-options');
+  const aiTemplateBtn = document.getElementById('ai-template-btn');
+  
+  // Image upload elements
+  const postImage = document.getElementById('post-image');
+  const imagePreview = document.getElementById('image-preview');
+  const noImageMessage = document.getElementById('no-image-message');
+  const removeBgBtn = document.getElementById('remove-bg-btn');
+  const enhanceImageBtn = document.getElementById('enhance-image-btn');
+  
+  // Caption elements
+  const ctaSelect = document.getElementById('cta-select');
+  const generateContentBtn = document.getElementById('generate-content-btn');
+  const postContent = document.getElementById('post-content');
+  const postHashtags = document.getElementById('post-hashtags');
+  
+  // Platform elements
+  const platformsContainer = document.getElementById('platforms-container');
+  const autoResize = document.getElementById('auto-resize');
+  const autoCaption = document.getElementById('auto-caption');
+  const previewCaptionText = document.getElementById('preview-caption-text');
+  const previewHashtagsText = document.getElementById('preview-hashtags-text');
+  
+  // Scheduling elements
+  const postDate = document.getElementById('post-date');
+  const scheduleOptimalTime = document.getElementById('schedule-optimal-time');
+  const summaryType = document.getElementById('summary-type');
+  const summaryPlatforms = document.getElementById('summary-platforms');
+  const summaryTime = document.getElementById('summary-time');
+  const savePostBtn = document.getElementById('save-post-btn');
+  
+  // Set default date to tomorrow
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
+  tomorrow.setHours(18, 0, 0, 0); // 6:00 PM
   postDate.value = tomorrow.toISOString().slice(0, 16);
-
+  
   // Initialize
-  if (!devMode) {
-    loadBusinessProfile();
-  } else {
-    // If in dev mode, use the mock profile
-    applyBusinessProfile();
-    loadPlatforms();
-    setContentTone();
-  }
-  
   setupEventListeners();
+  loadBusinessProfile();
   
-  // Setup event listeners
+  // Setup all event listeners
   function setupEventListeners() {
-    // Post type change
-    postType.addEventListener('change', loadTemplates);
+    // Step navigation
+    nextButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        if (validateCurrentStep()) {
+          goToStep(currentStep + 1);
+        }
+      });
+    });
     
-    // Template change
-    templateSelect.addEventListener('change', applyTemplate);
+    prevButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        goToStep(currentStep - 1);
+      });
+    });
     
-    // Generate hashtags
-    generateHashtagsBtn.addEventListener('click', generateHashtags);
+    // AI template button
+    aiTemplateBtn.addEventListener('click', selectAiTemplate);
     
     // Image upload
     postImage.addEventListener('change', handleImageUpload);
-    
-    // Image adjustments
-    resetImageBtn.addEventListener('click', resetImage);
-    removeBackgroundBtn.addEventListener('click', removeBackground);
+    removeBgBtn.addEventListener('click', removeBackground);
     enhanceImageBtn.addEventListener('click', enhanceImage);
-    imageBrightness.addEventListener('input', applyImageAdjustments);
-    imageContrast.addEventListener('input', applyImageAdjustments);
     
-    // Content generation
+    // Caption generation
+    ctaSelect.addEventListener('change', updateCTA);
     generateContentBtn.addEventListener('click', generateContent);
     
-    // Platform preview buttons
-    platformPreviewButtons.forEach(button => {
-      button.addEventListener('click', switchPlatformPreview);
-    });
-    
-    // Post content change (for preview)
+    // Preview updates
     postContent.addEventListener('input', updatePreview);
     postHashtags.addEventListener('input', updatePreview);
     
     // Save post
-    savePostBtn.addEventListener('click', savePost);
+    savePostBtn.addEventListener('click', saveAndSchedule);
   }
-
-  // Load business profile
-  async function loadBusinessProfile() {
-    try {
-      // Skip API call in dev mode
-      if (devMode) {
-        businessProfile = mockProfile;
-        applyBusinessProfile();
-        loadPlatforms();
-        setContentTone();
-        return;
-      }
-      
-      // Regular API call for production mode
-      const response = await fetch(`${API_URL}/api/profile`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      const data = await response.json();
-      
-      if (response.ok) {
-        businessProfile = data.data;
-        
-        // Apply business profile to UI
-        applyBusinessProfile();
-        
-        // Load platforms from profile
-        loadPlatforms();
-        
-        // Set content tone based on business voice
-        setContentTone();
+  
+  // Go to a specific step
+  function goToStep(step) {
+    if (step < 1 || step > stepContainers.length) return;
+    
+    currentStep = step;
+    
+    // Hide all steps
+    stepContainers.forEach(container => {
+      container.classList.add('d-none');
+    });
+    
+    // Show current step
+    stepContainers[currentStep - 1].classList.remove('d-none');
+    
+    // Update step indicators
+    stepIndicators.forEach((indicator, index) => {
+      if (index + 1 < currentStep) {
+        indicator.classList.remove('active');
+        indicator.classList.add('completed');
+      } else if (index + 1 === currentStep) {
+        indicator.classList.remove('completed');
+        indicator.classList.add('active');
       } else {
-        showAlert(data.error || 'Failed to load business profile', 'danger');
+        indicator.classList.remove('completed', 'active');
       }
-    } catch (error) {
-      console.error('Error loading business profile:', error);
-      showAlert('Server error. Please try again later.', 'danger');
+    });
+    
+    // Update summary for final step
+    if (currentStep === 6) {
+      updateSummary();
     }
+    
+    // Scroll to top
+    window.scrollTo(0, 0);
+  }
+  
+  // Validate current step
+  function validateCurrentStep() {
+    switch (currentStep) {
+      case 1: // Account
+        return true; // Always valid, profile is auto-loaded
+        
+      case 2: // Template
+        const selectedTemplate = document.querySelector('input[name="template"]:checked');
+        if (!selectedTemplate) {
+          showAlert('Please select a template or use AI to choose one', 'warning');
+          return false;
+        }
+        return true;
+        
+      case 3: // Image
+        if (!imagePreview.src || imagePreview.style.display === 'none') {
+          showAlert('Please upload an image', 'warning');
+          return false;
+        }
+        return true;
+        
+      case 4: // Captions
+        if (!postContent.value.trim()) {
+          showAlert('Please generate or enter caption text', 'warning');
+          return false;
+        }
+        return true;
+        
+      case 5: // Platforms
+        const selectedPlatforms = document.querySelectorAll('input[name="platform"]:checked');
+        if (selectedPlatforms.length === 0) {
+          showAlert('Please select at least one platform', 'warning');
+          return false;
+        }
+        return true;
+        
+      default:
+        return true;
+    }
+  }
+  
+  // Load business profile
+  function loadBusinessProfile() {
+    if (devMode && mockProfile) {
+      // Use mock profile
+      businessProfile = mockProfile;
+      applyBusinessProfile();
+      loadTemplates();
+      loadPlatforms();
+      return;
+    }
+    
+    // In production, load from API
+    fetch(`${API_URL}/api/profile`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        businessProfile = data.data;
+        applyBusinessProfile();
+        loadTemplates();
+        loadPlatforms();
+      } else {
+        showAlert('Failed to load business profile', 'danger');
+      }
+    })
+    .catch(error => {
+      console.error('Error loading profile:', error);
+      if (devMode) {
+        // In dev mode, create a mock profile if none exists
+        businessProfile = {
+          businessName: 'Your Business',
+          industry: 'Marketing',
+          brandColors: {
+            primary: '#4285f4',
+            secondary: '#34a853',
+            accent: '#ea4335'
+          }
+        };
+        applyBusinessProfile();
+        loadTemplates();
+        loadPlatforms();
+      } else {
+        showAlert('Error loading business profile', 'danger');
+      }
+    });
   }
   
   // Apply business profile to UI
@@ -176,713 +256,370 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!businessProfile) return;
     
     // Set business name and type
-    businessNameDisplay.textContent = businessProfile.businessName;
-    businessTypeDisplay.textContent = devMode ? businessProfile.industry : businessProfile.businessType;
+    businessNameDisplay.textContent = businessProfile.businessName || 'Your Business';
+    businessTypeDisplay.textContent = devMode ? 
+      businessProfile.industry || 'Business' : 
+      businessProfile.businessType || 'Business';
     
-    // Set business logo if available
+    // Set logo
     if (devMode && businessProfile.logo) {
-      businessLogoDisplay.src = businessProfile.logo;
+      businessLogo.src = businessProfile.logo;
     } else if (businessProfile.logoUrl) {
-      businessLogoDisplay.src = businessProfile.logoUrl;
+      businessLogo.src = `${API_URL}/uploads/${businessProfile.logoUrl}`;
     }
     
     // Set brand colors
     if (devMode && businessProfile.brandColors) {
-      primaryColorDisplay.style.backgroundColor = businessProfile.brandColors.primary;
-      secondaryColorDisplay.style.backgroundColor = businessProfile.brandColors.secondary;
-      accentColorDisplay.style.backgroundColor = businessProfile.brandColors.accent;
-    } else {
-      primaryColorDisplay.style.backgroundColor = businessProfile.primaryColor;
-      secondaryColorDisplay.style.backgroundColor = businessProfile.secondaryColor;
-      accentColorDisplay.style.backgroundColor = businessProfile.accentColor;
+      primaryColor.style.backgroundColor = businessProfile.brandColors.primary;
+      secondaryColor.style.backgroundColor = businessProfile.brandColors.secondary;
+      accentColor.style.backgroundColor = businessProfile.brandColors.accent;
+    } else if (businessProfile.primaryColor) {
+      primaryColor.style.backgroundColor = businessProfile.primaryColor;
+      secondaryColor.style.backgroundColor = businessProfile.secondaryColor;
+      accentColor.style.backgroundColor = businessProfile.accentColor;
     }
-    
-    // Set preview username
-    previewUsername.textContent = businessProfile.businessName.toLowerCase().replace(/\s+/g, '');
-    previewUsernameCaption.textContent = previewUsername.textContent;
   }
   
-  // Load platforms from profile
-  function loadPlatforms() {
-    if (!businessProfile || !businessProfile.socialPlatforms) return;
+  // Load templates
+  function loadTemplates() {
+    // Clear container
+    templateOptions.innerHTML = '';
     
-    // Clear platforms container
+    // Business type
+    const businessType = devMode ? 
+      businessProfile?.industry || 'General' : 
+      businessProfile?.businessType || 'General';
+    
+    // Template data - would come from API in production
+    const templates = [
+      {
+        id: 'template-1',
+        name: 'Modern & Clean',
+        image: 'https://via.placeholder.com/300x300?text=Modern',
+        type: 'All'
+      },
+      {
+        id: 'template-2',
+        name: 'Bold & Colorful',
+        image: 'https://via.placeholder.com/300x300?text=Bold',
+        type: 'All'
+      },
+      {
+        id: 'template-3',
+        name: `${businessType} Special`,
+        image: `https://via.placeholder.com/300x300?text=${businessType}`,
+        type: businessType
+      }
+    ];
+    
+    // Add templates to UI
+    templates.forEach(template => {
+      const col = document.createElement('div');
+      col.className = 'col-md-4 mb-4';
+      col.innerHTML = `
+        <div class="card template-card">
+          <img src="${template.image}" class="card-img-top" alt="${template.name}">
+          <div class="card-body">
+            <h5 class="card-title">${template.name}</h5>
+            <div class="form-check mt-2">
+              <input class="form-check-input" type="radio" name="template" value="${template.id}" id="${template.id}">
+              <label class="form-check-label" for="${template.id}">
+                Select Template
+              </label>
+            </div>
+          </div>
+        </div>
+      `;
+      templateOptions.appendChild(col);
+      
+      // Add click handler for the entire card
+      const card = col.querySelector('.template-card');
+      card.addEventListener('click', () => {
+        const radio = col.querySelector('input[type="radio"]');
+        radio.checked = true;
+        
+        // Highlight selected card
+        document.querySelectorAll('.template-card').forEach(c => {
+          c.classList.remove('selected');
+        });
+        card.classList.add('selected');
+      });
+    });
+  }
+  
+  // Load platforms
+  function loadPlatforms() {
+    // Clear container
     platformsContainer.innerHTML = '';
     
-    // Add platform checkboxes
-    businessProfile.socialPlatforms.forEach(platform => {
+    // Default platforms
+    const platforms = ['Instagram', 'Facebook', 'Twitter', 'LinkedIn', 'TikTok'];
+    
+    // Add platforms to UI
+    platforms.forEach(platform => {
       const div = document.createElement('div');
       div.className = 'form-check mb-2';
       div.innerHTML = `
-        <input class="form-check-input platform-checkbox" type="checkbox" value="${platform}" id="platform-${platform.toLowerCase()}">
-        <label class="form-check-label" for="platform-${platform.toLowerCase()}">${platform}</label>
+        <input class="form-check-input" type="checkbox" name="platform" value="${platform}" id="platform-${platform.toLowerCase()}">
+        <label class="form-check-label" for="platform-${platform.toLowerCase()}">
+          <i class="bi bi-${getPlatformIcon(platform)}"></i> ${platform}
+        </label>
       `;
       platformsContainer.appendChild(div);
     });
     
-    // If no platforms, show message
-    if (businessProfile.socialPlatforms.length === 0) {
-      platformsContainer.innerHTML = '<p class="text-muted">No social platforms configured in your business profile.</p>';
-    }
+    // Check Instagram by default
+    const instagram = document.getElementById('platform-instagram');
+    if (instagram) instagram.checked = true;
   }
   
-  // Set content tone based on business voice
-  function setContentTone() {
-    if (!businessProfile || !businessProfile.businessVoice) return;
+  // Select AI template
+  function selectAiTemplate() {
+    aiTemplateBtn.disabled = true;
+    aiTemplateBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Selecting...';
     
-    // Clear content tone options
-    contentTone.innerHTML = '';
-    
-    // Add tones based on business voice
-    const tones = [
-      { value: 'professional', label: 'Professional' },
-      { value: 'casual', label: 'Casual' },
-      { value: 'friendly', label: 'Friendly' },
-      { value: 'humorous', label: 'Humorous' },
-      { value: 'inspirational', label: 'Inspirational' }
-    ];
-    
-    // Add options
-    tones.forEach(tone => {
-      const option = document.createElement('option');
-      option.value = tone.value;
-      option.textContent = tone.label;
-      contentTone.appendChild(option);
-    });
-    
-    // Set default tone based on business voice
-    if (businessProfile.businessVoice.includes('Professional')) {
-      contentTone.value = 'professional';
-    } else if (businessProfile.businessVoice.includes('Trendy')) {
-      contentTone.value = 'casual';
-    } else if (businessProfile.businessVoice.includes('Bold')) {
-      contentTone.value = 'humorous';
-    } else if (businessProfile.businessVoice.includes('Minimalist')) {
-      contentTone.value = 'professional';
-    }
-  }
-  
-  // Load templates based on post type
-  function loadTemplates() {
-    const selectedPostType = postType.value;
-    
-    if (!selectedPostType) return;
-    
-    // Clear template options
-    templateSelect.innerHTML = '<option value="" selected disabled>Select a template</option>';
-    
-    // Get templates for post type and business type
-    const templates = getTemplates(selectedPostType);
-    
-    // Add templates to select
-    templates.forEach(template => {
-      const option = document.createElement('option');
-      option.value = template.id;
-      option.textContent = template.name;
-      templateSelect.appendChild(option);
-    });
-  }
-  
-  // Get templates for post type and business type
-  function getTemplates(postType) {
-    // This would be replaced with an API call in production
-    // For now, return sample templates
-    const templates = {
-      text: [
-        { id: 'text-1', name: 'Simple Text Post' },
-        { id: 'text-2', name: 'Question & Answer' },
-        { id: 'text-3', name: 'Tips & Tricks' }
-      ],
-      image: [
-        { id: 'image-1', name: 'Product Showcase' },
-        { id: 'image-2', name: 'Testimonial with Image' },
-        { id: 'image-3', name: 'Quote on Image' }
-      ],
-      carousel: [
-        { id: 'carousel-1', name: 'Before & After' },
-        { id: 'carousel-2', name: 'Step-by-Step Guide' },
-        { id: 'carousel-3', name: 'Product Features' }
-      ],
-      video: [
-        { id: 'video-1', name: 'Product Demo' },
-        { id: 'video-2', name: 'Customer Testimonial' },
-        { id: 'video-3', name: 'Behind the Scenes' }
-      ]
-    };
-    
-    return templates[postType] || [];
-  }
-  
-  // Apply template
-  function applyTemplate() {
-    const selectedTemplate = templateSelect.value;
-    
-    if (!selectedTemplate) return;
-    
-    // Get template content
-    const templateContent = getTemplateContent(selectedTemplate);
-    
-    // Apply template content to post
-    if (templateContent.text) {
-      postContent.value = templateContent.text;
-    }
-    
-    if (templateContent.hashtags) {
-      postHashtags.value = templateContent.hashtags;
-    }
-    
-    // Update preview
-    updatePreview();
-  }
-  
-  // Get template content
-  function getTemplateContent(templateId) {
-    // This would be replaced with an API call in production
-    // For now, return sample content
-    const businessTypeHashtag = businessProfile && businessProfile.businessType 
-      ? '#' + businessProfile.businessType.replace(/\s+/g, '') 
-      : '#business';
-    
-    const templateContent = {
-      'text-1': {
-        text: "Looking for [product/service]? We've got you covered! Our [business name] offers [key benefit]. Visit us today!",
-        hashtags: businessTypeHashtag + " #local"
-      },
-      'text-2': {
-        text: "Q: [Common question about your product/service]?\n\nA: [Your answer that highlights benefits]",
-        hashtags: "#FAQ " + businessTypeHashtag
-      },
-      'text-3': {
-        text: "📝 Top 3 Tips for [topic related to your business]:\n\n1. [Tip 1]\n2. [Tip 2]\n3. [Tip 3]",
-        hashtags: "#tips " + businessTypeHashtag
-      },
-      'image-1': {
-        text: "Introducing our [product name] - [brief description]. Perfect for [target audience]!",
-        hashtags: "#new " + businessTypeHashtag
-      },
-      'image-2': {
-        text: "\"[Testimonial quote]\" - [Customer name]\n\nWe love hearing from our happy customers!",
-        hashtags: "#testimonial " + businessTypeHashtag
-      },
-      'image-3': {
-        text: "\"[Inspirational quote relevant to your business]\"",
-        hashtags: "#quote #inspiration"
-      }
-    };
-    
-    return templateContent[templateId] || { text: '', hashtags: '' };
-  }
-  
-  // Generate hashtags
-  async function generateHashtags() {
-    if (!businessProfile) {
-      showAlert('Business profile is required to generate hashtags', 'warning');
-      return;
-    }
-    
-    const content = postContent.value.trim();
-    
-    if (!content) {
-      showAlert('Please enter post content before generating hashtags', 'warning');
-      return;
-    }
-    
-    // Show loading state
-    generateHashtagsBtn.disabled = true;
-    generateHashtagsBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Generating...';
-    
-    try {
-      // In a real implementation, this would call an API
-      // For now, simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+    // Simulate AI processing
+    setTimeout(() => {
+      // Select a random template (in production, this would be AI-driven)
+      const templates = document.querySelectorAll('input[name="template"]');
+      const randomIndex = Math.floor(Math.random() * templates.length);
+      templates[randomIndex].checked = true;
       
-      // Generate hashtags based on business profile and content
-      const hashtags = generateHashtagsBasedOnProfile(content);
-      
-      // Set hashtags
-      postHashtags.value = hashtags;
-      
-      // Update preview
-      updatePreview();
-      
-      // Restore button
-      generateHashtagsBtn.disabled = false;
-      generateHashtagsBtn.innerHTML = '<i class="bi bi-magic"></i> Generate Hashtags';
-    } catch (error) {
-      console.error('Error generating hashtags:', error);
-      showAlert('Failed to generate hashtags. Please try again.', 'danger');
-      
-      // Restore button
-      generateHashtagsBtn.disabled = false;
-      generateHashtagsBtn.innerHTML = '<i class="bi bi-magic"></i> Generate Hashtags';
-    }
-  }
-  
-  // Generate hashtags based on business profile and content
-  function generateHashtagsBasedOnProfile(content) {
-    if (!businessProfile) return '';
-    
-    // Create hashtags based on business type, location, and target audience
-    const hashtags = [];
-    
-    // Add business type hashtag
-    if (businessProfile.businessType) {
-      hashtags.push(`#${businessProfile.businessType.replace(/\s+/g, '')}`);
-    }
-    
-    // Add location hashtag if available
-    if (businessProfile.locationType === 'physical' && businessProfile.city) {
-      hashtags.push(`#${businessProfile.city.replace(/\s+/g, '')}`);
-    }
-    
-    // Add audience hashtags
-    if (businessProfile.targetAudiences && businessProfile.targetAudiences.length > 0) {
-      businessProfile.targetAudiences.forEach(audience => {
-        // Convert audience to hashtag format
-        const audienceTag = audience.split(' ')[0].toLowerCase();
-        hashtags.push(`#${audienceTag}`);
+      // Highlight selected card
+      document.querySelectorAll('.template-card').forEach(card => {
+        card.classList.remove('selected');
       });
-    }
-    
-    // Add some generic hashtags based on post content
-    const keywords = ['tips', 'new', 'sale', 'offer', 'best', 'quality', 'service', 'customer'];
-    keywords.forEach(keyword => {
-      if (content.toLowerCase().includes(keyword)) {
-        hashtags.push(`#${keyword}`);
-      }
-    });
-    
-    // Randomize a bit to ensure variety
-    const shuffled = hashtags.sort(() => 0.5 - Math.random());
-    
-    // Take only up to 8 hashtags
-    return shuffled.slice(0, 8).join(' ');
+      templates[randomIndex].closest('.template-card').classList.add('selected');
+      
+      showAlert('AI has selected the best template for your business!', 'success');
+      
+      aiTemplateBtn.disabled = false;
+      aiTemplateBtn.innerHTML = '<i class="bi bi-magic"></i> Let AI Choose the Best Template';
+    }, 1500);
   }
   
   // Handle image upload
   function handleImageUpload(e) {
     const file = e.target.files[0];
+    if (!file) return;
     
-    if (!file) {
-      imageEditorControls.classList.add('d-none');
-      imagePreviewContainer.classList.add('d-none');
-      return;
-    }
-    
+    // Validate file is an image
     if (!file.type.match('image.*')) {
-      showAlert('Please upload a valid image file', 'danger');
+      showAlert('Please upload a valid image file', 'warning');
       return;
     }
-    
-    // Show image editor controls
-    imageEditorControls.classList.remove('d-none');
     
     // Read and display image
     const reader = new FileReader();
-    reader.onload = function(e) {
-      // Store original image for reset
-      originalImageData = e.target.result;
+    reader.onload = function(event) {
+      imagePreview.src = event.target.result;
+      imagePreview.style.display = 'block';
+      if (noImageMessage) noImageMessage.style.display = 'none';
       
-      // Display image
-      imagePreview.src = e.target.result;
-      imagePreviewContainer.classList.remove('d-none');
+      // Enable buttons
+      removeBgBtn.disabled = false;
+      enhanceImageBtn.disabled = false;
       
-      // Reset adjustments
-      imageBrightness.value = 100;
-      imageContrast.value = 100;
-      
-      // Update preview
+      // Update platform preview
       updatePreview();
     };
     reader.readAsDataURL(file);
   }
   
-  // Reset image to original
-  function resetImage() {
-    if (!originalImageData) return;
-    
-    // Reset image to original
-    imagePreview.src = originalImageData;
-    
-    // Reset adjustment sliders
-    imageBrightness.value = 100;
-    imageContrast.value = 100;
-    
-    // Update preview
-    updatePreview();
-  }
-  
-  // Remove background (simulate AI background removal)
+  // Remove background
   function removeBackground() {
-    removeBackgroundBtn.disabled = true;
-    removeBackgroundBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
-    
-    // In a real implementation, this would call an API for background removal
-    // For now, simulate API call
-    setTimeout(() => {
-      // For demo, we can't actually remove the background
-      // but in production this would call an AI service
-      showAlert('Background removal applied (simulated)', 'success');
-      
-      // Restore button
-      removeBackgroundBtn.disabled = false;
-      removeBackgroundBtn.innerHTML = '<i class="bi bi-eraser"></i> Remove Background';
-    }, 1500);
-  }
-  
-  // Enhance image (simulate AI enhancement)
-  function enhanceImage() {
-    enhanceImageBtn.disabled = true;
-    enhanceImageBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
-    
-    // In a real implementation, this would call an API for image enhancement
-    // For now, simulate API call
-    setTimeout(() => {
-      // For demo, we can't actually enhance the image
-      // but in production this would call an AI service
-      showAlert('Image enhancement applied (simulated)', 'success');
-      
-      // Apply some adjustments to simulate enhancement
-      imageBrightness.value = 110;
-      imageContrast.value = 120;
-      applyImageAdjustments();
-      
-      // Restore button
-      enhanceImageBtn.disabled = false;
-      enhanceImageBtn.innerHTML = '<i class="bi bi-brightness-high"></i> Enhance Image';
-    }, 1500);
-  }
-  
-  // Apply image adjustments (brightness, contrast)
-  function applyImageAdjustments() {
-    if (!imagePreview.src) return;
-    
-    const brightness = imageBrightness.value;
-    const contrast = imageContrast.value;
-    
-    // Apply CSS filters
-    imagePreview.style.filter = `brightness(${brightness}%) contrast(${contrast}%)`;
-  }
-  
-  // Generate content
-  async function generateContent() {
-    if (!businessProfile) {
-      showAlert('Business profile is required to generate content', 'warning');
+    if (!imagePreview.src || imagePreview.style.display === 'none') {
+      showAlert('Please upload an image first', 'warning');
       return;
     }
     
-    const topic = contentTopic.value.trim();
-      const tone = contentTone.value;
-    const goal = contentGoal.value;
+    removeBgBtn.disabled = true;
+    removeBgBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Processing...';
+    
+    // Simulate background removal (would call AI API in production)
+    setTimeout(() => {
+      // Add visual indicator that background has been removed
+      imagePreview.style.background = 'none';
+      imagePreview.style.boxShadow = '0 0 15px rgba(0, 123, 255, 0.5)';
       
-    if (!topic) {
-      showAlert('Please enter a topic for your content', 'warning');
-        return;
+      showAlert('Background removed successfully!', 'success');
+      removeBgBtn.disabled = false;
+      removeBgBtn.innerHTML = '<i class="bi bi-eraser"></i> Remove Background';
+    }, 1500);
+  }
+  
+  // Enhance image
+  function enhanceImage() {
+    if (!imagePreview.src || imagePreview.style.display === 'none') {
+      showAlert('Please upload an image first', 'warning');
+      return;
+    }
+    
+    enhanceImageBtn.disabled = true;
+    enhanceImageBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Enhancing...';
+    
+    // Simulate image enhancement (would call AI API in production)
+    setTimeout(() => {
+      // Add filter to simulate enhancement
+      imagePreview.style.filter = 'contrast(1.1) brightness(1.05) saturate(1.1)';
+      
+      showAlert('Image enhanced successfully!', 'success');
+      enhanceImageBtn.disabled = false;
+      enhanceImageBtn.innerHTML = '<i class="bi bi-magic"></i> Enhance Image';
+    }, 1500);
+  }
+  
+  // Generate content based on CTA
+  function generateContent() {
+    const businessName = businessProfile?.businessName || 'our business';
+    const businessType = devMode ? 
+      businessProfile?.industry || 'business' : 
+      businessProfile?.businessType || 'business';
+    
+    generateContentBtn.disabled = true;
+    generateContentBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Generating...';
+    
+    // Simulate AI generation delay
+    setTimeout(() => {
+      const cta = ctaSelect.value;
+      let caption = '';
+      
+      // Generate different content based on selected CTA
+      switch (cta) {
+        case 'visit':
+          caption = `Check out our latest offerings at ${businessName}! We specialize in providing top-quality ${businessType} solutions. Visit us today and experience the difference!`;
+          break;
+        case 'call':
+          caption = `Looking for the best ${businessType} services? Look no further! At ${businessName}, we provide exceptional quality and service. Call us now to learn more!`;
+          break;
+        case 'book':
+          caption = `Ready to elevate your experience with ${businessName}? We're experts in ${businessType} and can't wait to work with you. Book an appointment today!`;
+          break;
+        case 'order':
+          caption = `Introducing our amazing products at ${businessName}! As leaders in ${businessType}, we ensure quality with every order. Order yours today while supplies last!`;
+          break;
+        case 'dm':
+          caption = `Have questions about our ${businessType} services? At ${businessName}, we're here to help! DM us for more details and start your journey with us today.`;
+          break;
+        case 'learn':
+          caption = `Discover what makes ${businessName} the top choice for ${businessType}. We combine quality, service, and expertise in everything we do. Learn more by clicking the link in bio!`;
+          break;
+        default:
+          caption = `We're excited to share our latest updates from ${businessName}! As your trusted ${businessType} provider, we're committed to excellence in everything we do.`;
       }
       
-    // Show loading state
-      generateContentBtn.disabled = true;
-      generateContentBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Generating...';
+      // Generate hashtags
+      const hashtags = [
+        `#${businessType.replace(/\s+/g, '')}`,
+        '#Quality',
+        '#Service',
+        `#${businessName.replace(/\s+/g, '')}`,
+        '#NewPost',
+        '#FollowUs'
+      ].join(' ');
       
-    try {
-      // In a real implementation, this would call an API
-      // For now, simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Generate content based on profile, topic, tone, and goal
-      const content = generateContentBasedOnProfile(topic, tone, goal);
-      
-      // Set content
-      postContent.value = content.text;
-      postHashtags.value = content.hashtags;
+      // Update UI
+      postContent.value = caption;
+      postHashtags.value = hashtags;
       
       // Update preview
       updatePreview();
       
-      // Restore button
-        generateContentBtn.disabled = false;
-        generateContentBtn.innerHTML = '<i class="bi bi-magic"></i> Generate Content';
-    } catch (error) {
-      console.error('Error generating content:', error);
-      showAlert('Failed to generate content. Please try again.', 'danger');
-      
-      // Restore button
+      showAlert('Caption and hashtags generated successfully!', 'success');
       generateContentBtn.disabled = false;
-      generateContentBtn.innerHTML = '<i class="bi bi-magic"></i> Generate Content';
-    }
-  }
-
-  // Generate content based on profile, topic, tone, and goal
-  function generateContentBasedOnProfile(topic, tone, goal) {
-    if (!businessProfile) return { text: '', hashtags: '' };
-    
-    let contentText = '';
-    let contentHashtags = '';
-    
-    // Generate content based on goal
-    switch (goal) {
-      case 'engagement':
-        contentText = `📢 Want to know more about ${topic}?\n\nAt ${businessProfile.businessName}, we specialize in providing ${topic} solutions that meet your needs.\n\nDrop a comment below with your questions!`;
-        break;
-      case 'awareness':
-        contentText = `Did you know? ${capitalizeFirstLetter(topic)} can benefit you in many ways.\n\nAt ${businessProfile.businessName}, we're experts in ${topic} and can help you achieve your goals.`;
-        break;
-      case 'traffic':
-        contentText = `Looking for the best ${topic} solutions? Look no further!\n\nVisit our website to learn how ${businessProfile.businessName} can help you with all your ${topic} needs.`;
-        break;
-      case 'sales':
-        contentText = `🔥 Special offer on our ${topic} services! 🔥\n\nFor a limited time, ${businessProfile.businessName} is offering exclusive deals on ${topic}.\n\nDon't miss out!`;
-        break;
-      case 'education':
-        contentText = `Top 3 things to know about ${topic}:\n\n1. [First important point about ${topic}]\n2. [Second important point]\n3. [Third important point]\n\nAt ${businessProfile.businessName}, we're dedicated to helping you understand ${topic} better.`;
-        break;
-      default:
-        contentText = `Let's talk about ${topic}!\n\nAt ${businessProfile.businessName}, we're passionate about ${topic} and would love to share our expertise with you.`;
-    }
-    
-    // Adjust tone
-    switch (tone) {
-      case 'professional':
-        contentText = contentText.replace('Want to know', 'Interested in learning');
-        contentText = contentText.replace('Drop a comment', 'Please share your thoughts');
-        contentText = contentText.replace('🔥 Special offer', 'Limited Time Offer');
-        contentText = contentText.replace('Don\'t miss out!', 'Contact us today for more information.');
-        break;
-      case 'casual':
-        contentText = contentText.replace('Interested in learning', 'Curious about');
-        contentText = contentText.replace('Please share your thoughts', 'Let us know what you think');
-        break;
-      case 'humorous':
-        contentText = contentText.replace('Interested in learning', 'Ever wondered');
-        contentText = contentText.replace('experts in', 'obsessed with (in a good way!)');
-        contentText = contentText.replace('Don\'t miss out!', 'Seriously, you'd be crazy to miss this!');
-        break;
-      case 'inspirational':
-        contentText = contentText.replace('Looking for', 'Ready to discover');
-        contentText = contentText.replace('can help you', 'can empower you to');
-        contentText = contentText.replace('Don\'t miss out!', 'Take the first step toward your goals today!');
-        break;
-    }
-    
-    // Generate hashtags based on topic, business type, and goal
-    const hashtags = [`#${topic.replace(/\s+/g, '')}`, `#${businessProfile.businessType.replace(/\s+/g, '')}`];
-    
-    // Add goal-specific hashtags
-    switch (goal) {
-      case 'engagement':
-        hashtags.push('#engage', '#community', '#connect');
-        break;
-      case 'awareness':
-        hashtags.push('#didyouknow', '#awareness', '#learn');
-        break;
-      case 'traffic':
-        hashtags.push('#clicklink', '#website', '#learnmore');
-        break;
-      case 'sales':
-        hashtags.push('#offer', '#deal', '#limited', '#sale');
-        break;
-      case 'education':
-        hashtags.push('#tips', '#education', '#knowledge');
-        break;
-    }
-    
-    // Mix in some business-specific hashtags
-    if (businessProfile.targetAudiences && businessProfile.targetAudiences.length > 0) {
-      const audience = businessProfile.targetAudiences[0];
-      hashtags.push(`#${audience.split(' ')[0].toLowerCase()}`);
-    }
-    
-    // Shuffle and limit hashtags
-    const shuffledHashtags = hashtags.sort(() => 0.5 - Math.random()).slice(0, 6);
-    contentHashtags = shuffledHashtags.join(' ');
-    
-    return { text: contentText, hashtags: contentHashtags };
+      generateContentBtn.innerHTML = '<i class="bi bi-magic"></i> Generate Caption & Hashtags';
+    }, 1500);
   }
   
-  // Switch platform preview
-  function switchPlatformPreview(e) {
-    // Get platform
-    const platform = e.target.getAttribute('data-platform');
-    
-    // Update active button
-    platformPreviewButtons.forEach(button => {
-      button.classList.remove('active');
-    });
-    e.target.classList.add('active');
-    
-    // Show selected platform preview
-    // In a real implementation, this would show different previews for different platforms
-    // For now, we'll just update the preview title
-    document.querySelectorAll('.platform-preview').forEach(preview => {
-      preview.classList.add('d-none');
-    });
-    
-    // Show the specific platform preview (currently only Instagram is implemented)
-    const previewElement = document.getElementById(`${platform}-preview`);
-    if (previewElement) {
-      previewElement.classList.remove('d-none');
+  // Update CTA in existing caption
+  function updateCTA() {
+    if (postContent.value) {
+      generateContent();
     }
-    
-    // Update preview content
-    updatePreview();
   }
   
-  // Update preview
+  // Update platform preview
   function updatePreview() {
-    const content = postContent.value;
-    const hashtags = postHashtags.value;
+    if (previewCaptionText) {
+      previewCaptionText.textContent = postContent.value || 'Your caption will appear here...';
+    }
     
-    // Update caption
-    previewCaption.textContent = content;
+    if (previewHashtagsText) {
+      previewHashtagsText.textContent = postHashtags.value || '#hashtags #will #appear #here';
+    }
     
-    // Update hashtags
-    previewHashtags.textContent = hashtags;
-    
-    // For a real implementation, this would update the preview image as well
+    // Would update image preview in production
   }
   
-  // Save post
-  async function savePost() {
-    if (!validateForm()) {
-      return;
-    }
+  // Update summary for final step
+  function updateSummary() {
+    // Get selected platforms
+    const platforms = [];
+    document.querySelectorAll('input[name="platform"]:checked').forEach(platform => {
+      platforms.push(platform.value);
+    });
     
-    try {
-      // Show loading state
-      savePostBtn.disabled = true;
-      savePostBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Saving...';
+    // Update summary elements
+    summaryType.textContent = 'Image Post';
+    summaryPlatforms.textContent = platforms.join(', ') || 'None selected';
+    
+    // Set scheduled time
+    if (scheduleOptimalTime.checked) {
+      summaryTime.textContent = 'Optimal time (around 6:00 PM)';
+    } else {
+      const date = new Date(postDate.value);
+      summaryTime.textContent = date.toLocaleString();
+    }
+  }
+  
+  // Save and schedule post
+  function saveAndSchedule() {
+    if (!validateCurrentStep()) return;
+    
+    savePostBtn.disabled = true;
+    savePostBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Scheduling...';
+    
+    // Simulate saving to server
+    setTimeout(() => {
+      showAlert('Your post has been scheduled successfully!', 'success');
       
-      if (devMode) {
-        // In dev mode, just simulate saving
-        setTimeout(() => {
-          showAlert('Post saved successfully (Dev Mode)!', 'success');
-          savePostBtn.disabled = false;
-          savePostBtn.innerHTML = 'Save Post';
-          
-          // Redirect to dashboard
-          setTimeout(() => {
-            window.location.href = 'dashboard.html';
-          }, 1500);
-        }, 1500);
-        return;
-      }
-      
-      // Normal API saving for production mode
-      // Get form data
-      const formData = new FormData();
-      
-      // Add post data
-      formData.append('postType', postType.value);
-      formData.append('content', postContent.value);
-      formData.append('hashtags', postHashtags.value);
-      formData.append('scheduledDate', postDate.value);
-      
-      // Add template if selected
-      if (templateSelect.value) {
-        formData.append('templateId', templateSelect.value);
-      }
-      
-      // Add platforms
-        const selectedPlatforms = [];
-        document.querySelectorAll('.platform-checkbox:checked').forEach(checkbox => {
-          selectedPlatforms.push(checkbox.value);
-        });
-      formData.append('platforms', JSON.stringify(selectedPlatforms));
-      
-      // Add image if uploaded
-      if (postImage.files.length > 0) {
-        formData.append('image', postImage.files[0]);
-      }
-      
-      // Add platform optimization settings
-      formData.append('autoResize', autoResize.checked);
-      formData.append('autoCaption', autoCaption.checked);
-      
-      // Add Instagram-specific settings
-      if (document.getElementById('instagram-first-comment').checked) {
-        formData.append('instagramFirstComment', true);
-      }
-      
-      // Show loading state
-      savePostBtn.disabled = true;
-      savePostBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Saving...';
-      
-      // In a real implementation, this would call an API
-      // For now, simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Show success message
-      showAlert('Post scheduled successfully!', 'success');
-      
-      // Redirect to dashboard after a delay
+      // Redirect to dashboard
       setTimeout(() => {
-      window.location.href = 'dashboard.html';
+        window.location.href = 'dashboard.html';
       }, 1500);
-    } catch (error) {
-      console.error('Error saving post:', error);
-      showAlert('Server error. Please try again later.', 'danger');
-      
-      savePostBtn.disabled = false;
-      savePostBtn.innerHTML = 'Save Post';
+    }, 1500);
+  }
+  
+  // Helper: Get platform icon
+  function getPlatformIcon(platform) {
+    switch (platform.toLowerCase()) {
+      case 'instagram': return 'instagram';
+      case 'facebook': return 'facebook';
+      case 'twitter': return 'twitter';
+      case 'linkedin': return 'linkedin';
+      case 'tiktok': return 'tiktok';
+      default: return 'globe';
     }
   }
-
-  // Validate form
-  function validateForm() {
-    // Check post type
-    if (!postType.value) {
-      showAlert('Please select a post type', 'danger');
-      postType.focus();
-      return false;
-    }
-    
-    // Check platforms
-    const selectedPlatforms = document.querySelectorAll('.platform-checkbox:checked');
-    if (selectedPlatforms.length === 0) {
-      showAlert('Please select at least one platform', 'danger');
-      return false;
-    }
-    
-    // Check content
-    if (!postContent.value.trim()) {
-      showAlert('Please enter post content', 'danger');
-      postContent.focus();
-      return false;
-    }
-    
-    // Check date
-    if (!postDate.value) {
-      showAlert('Please select a scheduled date', 'danger');
-      postDate.focus();
-      return false;
-    }
-    
-    return true;
-  }
-
-  // Show alert
+  
+  // Show alert message
   function showAlert(message, type) {
-    const alertElement = document.createElement('div');
-    alertElement.className = `alert alert-${type} alert-dismissible fade show`;
-    alertElement.setAttribute('role', 'alert');
-    alertElement.innerHTML = `
-      ${message}
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    const alertContainer = document.getElementById('alert-container');
+    
+    alertContainer.innerHTML = `
+      <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
     `;
     
-    // Insert at the top of the container
-    const container = document.querySelector('.container');
-    container.insertBefore(alertElement, container.firstChild);
-    
-    // Auto dismiss after 5 seconds
+    // Auto-dismiss after 5 seconds
     setTimeout(() => {
-      const alert = bootstrap.Alert.getOrCreateInstance(alertElement);
-      alert.close();
+      const alert = alertContainer.querySelector('.alert');
+      if (alert) {
+        const bsAlert = new bootstrap.Alert(alert);
+        bsAlert.close();
+      }
     }, 5000);
-  }
-  
-  // Helper function to capitalize first letter
-  function capitalizeFirstLetter(string) {
-    return string.charAt(0).toUpperCase() + string.slice(1);
   }
 });

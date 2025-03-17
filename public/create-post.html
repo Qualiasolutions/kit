@@ -7,6 +7,50 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
   <link rel="stylesheet" href="css/style.css">
+  <style>
+    .step-indicator {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: #e9ecef;
+      color: #6c757d;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 10px;
+    }
+    .step-indicator.active {
+      background-color: #0d6efd;
+      color: white;
+    }
+    .step-indicator.completed {
+      background-color: #198754;
+      color: white;
+    }
+    .step-line {
+      flex: 1;
+      height: 2px;
+      background-color: #e9ecef;
+      margin: 0 10px;
+    }
+    .color-box {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+    }
+    .template-card {
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .template-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    .template-card.selected {
+      border-color: #0d6efd;
+      box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25);
+    }
+  </style>
 </head>
 <body>
   <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
@@ -31,294 +75,312 @@
     </div>
   </nav>
 
-  <div class="container py-5">
-    <div class="row mb-4">
-      <div class="col-md-12">
-        <h1>Create New Post</h1>
-        <p class="lead">Create and schedule your social media content</p>
-      </div>
+  <div class="container py-4">
+    <div id="alert-container"></div>
+    
+    <!-- Step Progress Indicators -->
+    <div class="d-flex align-items-center mb-4">
+      <div class="step-indicator active" id="step-1">1</div>
+      <div class="step-line"></div>
+      <div class="step-indicator" id="step-2">2</div>
+      <div class="step-line"></div>
+      <div class="step-indicator" id="step-3">3</div>
+      <div class="step-line"></div>
+      <div class="step-indicator" id="step-4">4</div>
+      <div class="step-line"></div>
+      <div class="step-indicator" id="step-5">5</div>
+      <div class="step-line"></div>
+      <div class="step-indicator" id="step-6">6</div>
     </div>
-
-    <!-- Business Brand Summary -->
-    <div class="row mb-4">
-      <div class="col-lg-12">
-        <div class="card">
-          <div class="card-body">
-            <div class="d-flex align-items-center">
-              <div id="business-logo-display" class="me-3">
-                <img src="img/placeholder-logo.png" alt="Business Logo" style="width: 50px; height: 50px; object-fit: cover;" class="rounded">
-              </div>
-              <div>
-                <h5 class="mb-0" id="business-name-display">Your Business</h5>
-                <p class="text-muted mb-0" id="business-type-display">Business Type</p>
-              </div>
-              <div class="d-flex ms-auto">
-                <div class="color-box me-2" id="primary-color-display"></div>
-                <div class="color-box me-2" id="secondary-color-display"></div>
-                <div class="color-box" id="accent-color-display"></div>
+    
+    <!-- STEP 1: Choose Account (loaded from profile) -->
+    <div class="step-container" id="step-1-container">
+      <div class="card mb-4">
+        <div class="card-header">
+          <h4>Step 1: Choose Account</h4>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6 mb-4">
+              <div class="card h-100">
+                <div class="card-body">
+                  <div class="d-flex align-items-center mb-3">
+                    <img src="img/placeholder-logo.png" id="business-logo" alt="Business Logo" class="me-3" style="width: 64px; height: 64px; object-fit: cover;">
+                    <div>
+                      <h5 id="business-name-display">Your Business</h5>
+                      <p class="text-muted mb-0" id="business-type-display">Business Type</p>
+                    </div>
+                  </div>
+                  <div class="d-flex mb-3">
+                    <div class="color-box me-2" id="primary-color" style="background-color: #4285f4;"></div>
+                    <div class="color-box me-2" id="secondary-color" style="background-color: #34a853;"></div>
+                    <div class="color-box" id="accent-color" style="background-color: #ea4335;"></div>
+                  </div>
+                  <p>Your brand identity is automatically detected from your profile.</p>
+                </div>
+                <div class="card-footer bg-transparent">
+                  <div class="d-flex justify-content-end">
+                    <button class="btn btn-primary next-step">Continue</button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-
-    <div class="row">
-      <div class="col-lg-8">
-        <div class="card mb-4">
-          <div class="card-header">
-            <h5 class="mb-0">Post Content</h5>
+    
+    <!-- STEP 2: Choose Template & Features -->
+    <div class="step-container d-none" id="step-2-container">
+      <div class="card mb-4">
+        <div class="card-header">
+          <h4>Step 2: Choose Template & Features</h4>
+        </div>
+        <div class="card-body">
+          <div class="mb-4">
+            <button class="btn btn-success mb-3" id="ai-template-btn">
+              <i class="bi bi-magic"></i> Let AI Choose the Best Template
+            </button>
+            <p>Or select a template manually below:</p>
           </div>
-          <div class="card-body">
-            <form id="post-form">
+          
+          <div class="row" id="template-options">
+            <!-- Templates will be loaded dynamically -->
+          </div>
+        </div>
+        <div class="card-footer bg-transparent">
+          <div class="d-flex justify-content-between">
+            <button class="btn btn-secondary prev-step">Back</button>
+            <button class="btn btn-primary next-step">Continue</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- STEP 3: Image & Background Adjustments -->
+    <div class="step-container d-none" id="step-3-container">
+      <div class="card mb-4">
+        <div class="card-header">
+          <h4>Step 3: Image & Background Adjustments</h4>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6 mb-4">
               <div class="mb-3">
-                <label for="post-type" class="form-label">Post Type</label>
-                <select class="form-select" id="post-type" required>
-                  <option value="" selected disabled>Select post type</option>
-                  <option value="text">Text Post</option>
-                  <option value="image">Image Post</option>
-                  <option value="carousel">Carousel Post</option>
-                  <option value="video">Video Post</option>
-                </select>
+                <label for="post-image" class="form-label">Upload Image</label>
+                <input type="file" class="form-control" id="post-image">
               </div>
               
-              <!-- Template Selection -->
               <div class="mb-3">
-                <label for="template" class="form-label">Template</label>
-                <select class="form-select" id="template">
-                  <option value="" selected disabled>Select a template</option>
-                  <!-- Templates will be loaded dynamically based on business profile -->
-                </select>
-                <div class="form-text">Templates are based on your business profile and post type</div>
+                <button class="btn btn-outline-primary me-2" id="remove-bg-btn" disabled>
+                  <i class="bi bi-eraser"></i> Remove Background
+                </button>
+                <button class="btn btn-outline-primary" id="enhance-image-btn" disabled>
+                  <i class="bi bi-magic"></i> Enhance Image
+                </button>
               </div>
-              
+            </div>
+            
+            <div class="col-md-6">
               <div class="mb-3">
-                <label for="platforms" class="form-label">Platforms</label>
-                <div id="platforms-container">
-                  <!-- Platform checkboxes will be loaded dynamically from profile -->
+                <label class="form-label">Image Preview</label>
+                <div class="d-flex align-items-center justify-content-center bg-light rounded" style="height: 300px;">
+                  <img id="image-preview" src="" alt="Preview" class="img-fluid" style="max-height: 100%; max-width: 100%; display: none;">
+                  <div id="no-image-message">
+                    <i class="bi bi-image text-muted" style="font-size: 48px;"></i>
+                    <p class="text-muted">Upload an image to see preview</p>
+                  </div>
                 </div>
               </div>
-              
+            </div>
+          </div>
+        </div>
+        <div class="card-footer bg-transparent">
+          <div class="d-flex justify-content-between">
+            <button class="btn btn-secondary prev-step">Back</button>
+            <button class="btn btn-primary next-step">Continue</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- STEP 4: AI-Generated Captions & Hashtags -->
+    <div class="step-container d-none" id="step-4-container">
+      <div class="card mb-4">
+        <div class="card-header">
+          <h4>Step 4: AI-Generated Captions & Hashtags</h4>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6 mb-4">
               <div class="mb-3">
-                <label for="post-content" class="form-label">Post Content</label>
-                <textarea class="form-control" id="post-content" rows="5" placeholder="Enter your post content or click 'Generate Content'" required></textarea>
+                <label for="cta-select" class="form-label">Select Call to Action</label>
+                <select class="form-select" id="cta-select">
+                  <option value="visit">Visit us today</option>
+                  <option value="call">Call now</option>
+                  <option value="book">Book an appointment</option>
+                  <option value="order">Order yours today</option>
+                  <option value="dm">DM us for more details</option>
+                  <option value="learn">Learn more</option>
+                </select>
               </div>
               
-              <!-- Hashtags Section -->
+              <div class="mb-3">
+                <button class="btn btn-success" id="generate-content-btn">
+                  <i class="bi bi-magic"></i> Generate Caption & Hashtags
+                </button>
+              </div>
+            </div>
+            
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="post-content" class="form-label">Caption</label>
+                <textarea class="form-control" id="post-content" rows="5" placeholder="Generated caption will appear here..."></textarea>
+              </div>
+              
               <div class="mb-3">
                 <label for="post-hashtags" class="form-label">Hashtags</label>
-                <textarea class="form-control" id="post-hashtags" rows="2" placeholder="Enter hashtags or click 'Generate Hashtags'"></textarea>
-                <div class="d-flex justify-content-end mt-2">
-                  <button type="button" class="btn btn-sm btn-outline-success" id="generate-hashtags-btn">
-                    <i class="bi bi-magic"></i> Generate Hashtags
-                  </button>
-                </div>
+                <textarea class="form-control" id="post-hashtags" rows="2" placeholder="Generated hashtags will appear here..."></textarea>
               </div>
-              
-              <div class="mb-3">
-                <label for="post-image" class="form-label">Post Image</label>
-                <input class="form-control" type="file" id="post-image">
-              </div>
-              
-              <!-- Image Editor Controls (visible when image is uploaded) -->
-              <div class="mb-3 d-none" id="image-editor-controls">
-                <div class="card">
-                  <div class="card-header">
-                    <h6 class="mb-0">Image Adjustments</h6>
-                  </div>
-                  <div class="card-body">
-                    <div class="mb-2">
-                      <button type="button" class="btn btn-sm btn-outline-primary" id="remove-bg-btn">
-                        <i class="bi bi-eraser"></i> Remove Background
-                      </button>
-                      <button type="button" class="btn btn-sm btn-outline-primary" id="enhance-image-btn">
-                        <i class="bi bi-brightness-high"></i> Enhance Image
-                      </button>
-                    </div>
-                    <div class="mb-2">
-                      <label for="image-brightness" class="form-label small">Brightness</label>
-                      <input type="range" class="form-range" id="image-brightness" min="0" max="200" value="100">
-                    </div>
-                    <div>
-                      <label for="image-contrast" class="form-label small">Contrast</label>
-                      <input type="range" class="form-range" id="image-contrast" min="0" max="200" value="100">
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <!-- Image Preview -->
-              <div class="mb-3 d-none" id="image-preview-container">
-                <label class="form-label">Image Preview</label>
-                <div class="position-relative">
-                  <img src="" alt="Preview" id="image-preview" class="img-fluid rounded">
-                  <div class="position-absolute bottom-0 end-0 p-2">
-                    <button type="button" class="btn btn-sm btn-light" id="reset-image-btn">
-                      <i class="bi bi-arrow-counterclockwise"></i> Reset
-                    </button>
-                  </div>
-                </div>
-              </div>
-              
-              <div class="mb-3">
-                <label for="post-date" class="form-label">Scheduled Date</label>
-                <input type="datetime-local" class="form-control" id="post-date" required>
-              </div>
-              
-              <div class="mb-3">
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="schedule-optimal-time" checked>
-                  <label class="form-check-label" for="schedule-optimal-time">
-                    Use optimal posting times
-                  </label>
-                </div>
-              </div>
-            </form>
-          </div>
-        </div>
-        
-        <!-- Platform Preview Section -->
-        <div class="card mb-4">
-          <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Platform Preview</h5>
-            <div class="btn-group" role="group">
-              <button type="button" class="btn btn-sm btn-outline-primary active" data-platform="instagram">Instagram</button>
-              <button type="button" class="btn btn-sm btn-outline-primary" data-platform="facebook">Facebook</button>
-              <button type="button" class="btn btn-sm btn-outline-primary" data-platform="tiktok">TikTok</button>
-            </div>
-          </div>
-          <div class="card-body text-center py-4">
-            <div id="preview-container">
-              <div id="instagram-preview" class="platform-preview">
-                <!-- Instagram preview will be rendered here -->
-                <div class="mx-auto" style="max-width: 320px; border: 1px solid #ddd; border-radius: 8px;">
-                  <div class="d-flex align-items-center p-2">
-                    <div class="me-2" style="width: 32px; height: 32px; border-radius: 50%; background-color: #eee;"></div>
-                    <div class="small fw-bold" id="preview-username">yourbusiness</div>
-                  </div>
-                  <div style="height: 320px; background-color: #f8f9fa; display: flex; align-items: center; justify-content: center;">
-                    <span class="text-muted">Image Preview</span>
-                  </div>
-                  <div class="p-2 text-start">
-                    <div class="d-flex mb-1">
-                      <i class="bi bi-heart me-3"></i>
-                      <i class="bi bi-chat me-3"></i>
-                      <i class="bi bi-send"></i>
-                    </div>
-                    <div class="small fw-bold" id="preview-likes">0 likes</div>
-                    <div class="small">
-                      <span class="fw-bold" id="preview-username-caption">yourbusiness</span>
-                      <span id="preview-caption">Your caption will appear here...</span>
-                    </div>
-                    <div class="small text-muted" id="preview-hashtags">#hashtags #will #appear #here</div>
-                  </div>
-                </div>
-              </div>
-              <!-- Other platform previews would be similar but styled differently -->
             </div>
           </div>
         </div>
-      </div>
-      
-      <div class="col-lg-4">
-        <div class="card mb-4">
-          <div class="card-header">
-            <h5 class="mb-0">Content Generation</h5>
+        <div class="card-footer bg-transparent">
+          <div class="d-flex justify-content-between">
+            <button class="btn btn-secondary prev-step">Back</button>
+            <button class="btn btn-primary next-step">Continue</button>
           </div>
-          <div class="card-body">
-            <p>Let AI help you create engaging content for your business.</p>
-            
-            <div class="mb-3">
-              <label for="content-topic" class="form-label">Topic/Theme</label>
-              <input type="text" class="form-control" id="content-topic" placeholder="E.g. Product launch, Tips, etc.">
-            </div>
-            
-            <div class="mb-3">
-              <label for="content-tone" class="form-label">Tone</label>
-              <select class="form-select" id="content-tone">
-                <!-- This will default to the business voice from profile, but can be overridden -->
-              </select>
-            </div>
-            
-            <div class="mb-3">
-              <label for="content-goal" class="form-label">Content Goal</label>
-              <select class="form-select" id="content-goal">
-                <option value="engagement">Increase Engagement</option>
-                <option value="awareness">Brand Awareness</option>
-                <option value="traffic">Drive Website Traffic</option>
-                <option value="sales">Promote Sales</option>
-                <option value="education">Educate Audience</option>
-              </select>
-            </div>
-            
-            <button type="button" class="btn btn-success w-100 mb-3" id="generate-content-btn">
-              <i class="bi bi-magic"></i> Generate Content
-            </button>
-            
-            <div class="alert alert-info" role="alert">
-              <small>Content will be generated based on your business profile and selected parameters.</small>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Platform-Specific Adjustments -->
-        <div class="card mb-4">
-          <div class="card-header">
-            <h5 class="mb-0">Platform Optimization</h5>
-          </div>
-          <div class="card-body">
-            <p class="text-muted small">Your content will be automatically optimized for each platform</p>
-            
-            <div class="mb-3">
-              <div class="form-check form-switch">
-                <input class="form-check-input" type="checkbox" id="auto-resize" checked>
-                <label class="form-check-label" for="auto-resize">
-                  Auto-resize for each platform
-                </label>
-              </div>
-            </div>
-            
-            <div class="mb-3">
-              <div class="form-check form-switch">
-                <input class="form-check-input" type="checkbox" id="auto-caption" checked>
-                <label class="form-check-label" for="auto-caption">
-                  Optimize captions for each platform
-                </label>
-              </div>
-            </div>
-            
-            <div class="accordion" id="platformAccordion">
-              <!-- Platform-specific settings will be dynamically generated -->
-              <div class="accordion-item">
-                <h2 class="accordion-header">
-                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#instagramSettings">
-                    Instagram Settings
-                  </button>
-                </h2>
-                <div id="instagramSettings" class="accordion-collapse collapse" data-bs-parent="#platformAccordion">
-                  <div class="accordion-body">
-                    <div class="mb-2">
-                      <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="instagram-first-comment" checked>
-                        <label class="form-check-label" for="instagram-first-comment">
-                          Move hashtags to first comment
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <!-- More platform settings would go here -->
-            </div>
-          </div>
-        </div>
-        
-        <div class="d-grid gap-2">
-          <button type="button" class="btn btn-primary" id="save-post-btn">Save & Schedule Post</button>
-          <a href="dashboard.html" class="btn btn-outline-secondary">Cancel</a>
         </div>
       </div>
     </div>
+    
+    <!-- STEP 5: Resize & Repurpose for Different Platforms -->
+    <div class="step-container d-none" id="step-5-container">
+      <div class="card mb-4">
+        <div class="card-header">
+          <h4>Step 5: Resize & Repurpose for Different Platforms</h4>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6 mb-4">
+              <div class="mb-3">
+                <label class="form-label">Select Platforms</label>
+                <div id="platforms-container">
+                  <!-- Platforms will be loaded dynamically -->
+                </div>
+              </div>
+              
+              <div class="mb-3">
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="auto-resize" checked>
+                  <label class="form-check-label" for="auto-resize">Auto-resize for each platform</label>
+                </div>
+              </div>
+              
+              <div class="mb-3">
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="auto-caption" checked>
+                  <label class="form-check-label" for="auto-caption">Optimize captions for each platform</label>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Platform Preview</label>
+                <div class="nav nav-tabs mb-3">
+                  <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#instagram-tab">Instagram</button>
+                  <button class="nav-link" data-bs-toggle="tab" data-bs-target="#facebook-tab">Facebook</button>
+                  <button class="nav-link" data-bs-toggle="tab" data-bs-target="#twitter-tab">Twitter</button>
+                </div>
+                
+                <div class="tab-content" id="platform-previews">
+                  <div class="tab-pane fade show active" id="instagram-tab">
+                    <div class="instagram-preview border rounded p-2">
+                      <div class="d-flex align-items-center mb-2">
+                        <div class="bg-light rounded-circle me-2" style="width: 32px; height: 32px;"></div>
+                        <div class="small fw-bold">yourbusinessname</div>
+                      </div>
+                      <div class="bg-light rounded mb-2" style="height: 300px;">
+                        <!-- Preview image would be shown here -->
+                      </div>
+                      <div class="small">
+                        <strong>yourbusinessname</strong>
+                        <span id="preview-caption-text">Your caption will appear here...</span>
+                      </div>
+                      <div class="small text-muted" id="preview-hashtags-text">#hashtags #will #appear #here</div>
+                    </div>
+                  </div>
+                  <!-- Other platform previews would be here -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card-footer bg-transparent">
+          <div class="d-flex justify-content-between">
+            <button class="btn btn-secondary prev-step">Back</button>
+            <button class="btn btn-primary next-step">Continue</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- STEP 6: Automation & Scheduling -->
+    <div class="step-container d-none" id="step-6-container">
+      <div class="card mb-4">
+        <div class="card-header">
+          <h4>Step 6: Automation & Scheduling</h4>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6 mb-4">
+              <div class="mb-3">
+                <label for="post-date" class="form-label">Select Date & Time</label>
+                <input type="datetime-local" class="form-control" id="post-date">
+              </div>
+              
+              <div class="mb-3">
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="schedule-optimal-time" checked>
+                  <label class="form-check-label" for="schedule-optimal-time">Use AI to pick optimal posting time</label>
+                </div>
+              </div>
+              
+              <div class="mb-3">
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="schedule-recurring">
+                  <label class="form-check-label" for="schedule-recurring">Make this a recurring post</label>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-6">
+              <div class="alert alert-info">
+                <i class="bi bi-info-circle-fill me-2"></i>
+                <strong>AI Recommendation:</strong> Based on your audience, the best time to post is around 6:00 PM on weekdays.
+              </div>
+              
+              <div class="card bg-light">
+                <div class="card-body">
+                  <h5>Post Summary</h5>
+                  <p class="mb-1"><strong>Type:</strong> <span id="summary-type">Image Post</span></p>
+                  <p class="mb-1"><strong>Platforms:</strong> <span id="summary-platforms">Instagram, Facebook</span></p>
+                  <p class="mb-0"><strong>Scheduled for:</strong> <span id="summary-time">Optimal time (around 6:00 PM)</span></p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card-footer bg-transparent">
+          <div class="d-flex justify-content-between">
+            <button class="btn btn-secondary prev-step">Back</button>
+            <button class="btn btn-success" id="save-post-btn">Schedule Post</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
   </div>
 
   <footer class="py-4 bg-dark">
