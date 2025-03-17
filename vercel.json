@@ -4,10 +4,25 @@
     { "src": "src/server.js", "use": "@vercel/node" },
     { "src": "public/**", "use": "@vercel/static" }
   ],
+  "functions": {
+    "src/server.js": {
+      "maxDuration": 60
+    }
+  },
   "routes": [
     { "src": "/api/(.*)", "dest": "src/server.js" },
     { "src": "/uploads/(.*)", "dest": "src/server.js" },
     { "src": "/(.*)", "dest": "public/$1" },
     { "handle": "filesystem" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET,POST,PUT,DELETE,OPTIONS" },
+        { "key": "Access-Control-Allow-Headers", "value": "X-Requested-With,Content-Type,Authorization" }
+      ]
+    }
   ]
 } 
