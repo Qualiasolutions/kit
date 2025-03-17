@@ -4,6 +4,7 @@ const cors = require('cors');
 const connectDB = require('./config/db');
 const path = require('path');
 const { seed } = require('./utils/seedData');
+const errorHandler = require('./middleware/error');
 
 // Load environment variables
 dotenv.config();
@@ -29,6 +30,9 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/profile', require('./routes/profile'));
 app.use('/api/branding', require('./routes/branding'));
+app.use('/api/posts', require('./routes/posts'));
+app.use('/api/media', require('./routes/media'));
+app.use('/api/ai', require('./routes/ai'));
 
 // Default route
 app.get('/', (req, res) => {
@@ -57,6 +61,9 @@ app.use('/api/*', (req, res) => {
     error: 'API endpoint not found'
   });
 });
+
+// Error handler middleware
+app.use(errorHandler);
 
 // Serve static assets in production
 if (process.env.NODE_ENV === 'production') {

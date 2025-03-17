@@ -266,73 +266,48 @@ document.addEventListener('DOMContentLoaded', function() {
         break;
     }
     
-    // Prepare prompt for OpenAI
-    const prompt = `Create a social media post for a business with the following details:
-    
-Business Name: ${businessData.name}
-Business Type: ${businessData.type}
-Industry: ${businessData.industry}
-Brand Colors: Primary: ${businessData.colors.primary}, Secondary: ${businessData.colors.secondary}, Accent: ${businessData.colors.accent}
-Business Description: ${businessData.description || 'A professional business providing quality services.'}
-Template Style: ${templateType}
-
-Please provide:
-1. A compelling headline (5-7 words)
-2. A short, engaging caption (2-3 sentences)
-3. A clear call to action
-4. 4-5 relevant hashtags
-5. A brief description of what image would best complement this post
-
-Format the response as JSON with these fields: headline, caption, callToAction, hashtags, imageDescription`;
-
-    // Make API request to OpenAI
-    fetch('https://api.openai.com/v1/chat/completions', {
+    // Use our backend API to generate content
+    fetch(`${API_URL}/api/ai/generate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
+        'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify({
-        model: "gpt-3.5-turbo",
-        messages: [
-          {
-            role: "system",
-            content: "You are a professional social media marketing expert who creates compelling branded content. Respond in JSON format only."
-          },
-          {
-            role: "user",
-            content: prompt
-          }
-        ],
-        temperature: 0.7,
-        max_tokens: 500
+        apiKey: apiKey,
+        profileId: profile._id,
+        templateType: templateType
       })
     })
     .then(response => {
       if (!response.ok) {
-        throw new Error('OpenAI API error: ' + response.statusText);
+        throw new Error('API error: ' + response.statusText);
       }
       return response.json();
     })
     .then(data => {
-      try {
-        // Parse the JSON response from ChatGPT
-        const content = JSON.parse(data.choices[0].message.content);
+      if (data.success) {
+        // Transform the response to match our expected format
+        const content = {
+          headline: data.data.headline,
+          caption: data.data.mainText,
+          callToAction: data.data.callToAction,
+          hashtags: data.data.tags.join(' '),
+          imageDescription: data.data.imagePrompt
+        };
         
         // Save the generated content
         generatedContent = content;
         
         // Display the content in the preview
         displayPreview(businessData, content);
-      } catch (error) {
-        console.error('Error parsing OpenAI response:', error);
-        showAlert('Error with OpenAI response. Using built-in generation instead.', 'warning');
-        generateWithBuiltIn(businessData);
+      } else {
+        throw new Error(data.error || 'Failed to generate content');
       }
     })
     .catch(error => {
-      console.error('OpenAI API error:', error);
-      showAlert('Error connecting to OpenAI. Using built-in generation instead.', 'warning');
+      console.error('API error:', error);
+      showAlert('Error generating content with AI. Using built-in generation instead.', 'warning');
       generateWithBuiltIn(businessData);
     });
   }
@@ -592,59 +567,74 @@ Format the response as JSON with these fields: headline, caption, callToAction, 
     savePostBtn.disabled = true;
     savePostBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Saving...';
     
-    // Prepare post data
-    const postData = {
-      businessId: profile.id,
-      content: generatedContent.caption,
-      headline: generatedContent.headline,
-      callToAction: generatedContent.callToAction,
-      hashtags: generatedContent.hashtags,
-      scheduledDate: postDate.value,
-      template: selectedTemplate,
-      imageDescription: generatedContent.imageDescription
-    };
+    // Check if using OpenAI for image generation
+    const generateImage = useOpenAI.checked && openaiKey.value.trim() !== '';
     
-    if (devMode) {
-      // In dev mode, just simulate success
-      setTimeout(() => {
-        showAlert('Your post has been scheduled successfully!', 'success');
-        
+    // Function to save post with image if available
+    const savePostWithImage = (imageUrl = null) => {
+      // Prepare post data
+      const postData = {
+        content: generatedContent.caption,
+        headline: generatedContent.headline,
+        callToAction: generatedContent.callToAction,
+        hashtags: generatedContent.hashtags,
+        scheduledDate: postDate.value,
+        template: selectedTemplate,
+        imageDescription: generatedContent.imageDescription,
+        imageUrl: imageUrl
+      };
+      
+      if (devMode) {
+        // In dev mode, just simulate success
         setTimeout(() => {
-          window.location.href = 'dashboard.html';
+          showAlert('Your post has been scheduled successfully!', 'success');
+          
+          setTimeout(() => {
+            window.location.href = 'dashboard.html';
+          }, 1500);
         }, 1500);
-      }, 1500);
-      return;
-    }
-    
-    // In production, send to API
-    fetch(`${API_URL}/api/posts`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(postData)
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        showAlert('Your post has been scheduled successfully!', 'success');
-        
-        setTimeout(() => {
-          window.location.href = 'dashboard.html';
-        }, 1500);
-      } else {
-        showAlert('Error saving post: ' + data.message, 'danger');
+        return;
+      }
+      
+      // In production, send to API
+      fetch(`${API_URL}/api/posts`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(postData)
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          showAlert('Your post has been scheduled successfully!', 'success');
+          
+          setTimeout(() => {
+            window.location.href = 'dashboard.html';
+          }, 1500);
+        } else {
+          showAlert('Error saving post: ' + (data.error || 'Unknown error'), 'danger');
+          savePostBtn.disabled = false;
+          savePostBtn.innerHTML = '<i class="bi bi-calendar-check me-2"></i> Schedule Post';
+        }
+      })
+      .catch(error => {
+        console.error('Error saving post:', error);
+        showAlert('Error saving post. Please try again.', 'danger');
         savePostBtn.disabled = false;
         savePostBtn.innerHTML = '<i class="bi bi-calendar-check me-2"></i> Schedule Post';
-      }
-    })
-    .catch(error => {
-      console.error('Error saving post:', error);
-      showAlert('Error saving post. Please try again.', 'danger');
-      savePostBtn.disabled = false;
-      savePostBtn.innerHTML = '<i class="bi bi-calendar-check me-2"></i> Schedule Post';
-    });
+      });
+    };
+    
+    if (generateImage) {
+      // Upload a placeholder image and get a generated one later
+      // This is a simplified approach - in a real app, you'd generate the image first
+      savePostWithImage(null);
+    } else {
+      // Save post without image
+      savePostWithImage();
+    }
   }
   
   // Display alert message
