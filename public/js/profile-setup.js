@@ -18,20 +18,25 @@ document.addEventListener('DOMContentLoaded', function() {
   const steps = document.querySelectorAll('.step');
   const nextButtons = document.querySelectorAll('.next-step');
   const prevButtons = document.querySelectorAll('.prev-step');
-  const industrySelect = document.getElementById('industry');
-  const nicheSelect = document.getElementById('niche');
+  const businessTypeSelect = document.getElementById('business-type');
   const logoInput = document.getElementById('logo');
   const logoPreview = document.getElementById('logo-preview');
   const primaryColorInput = document.getElementById('primary-color');
   const secondaryColorInput = document.getElementById('secondary-color');
   const accentColorInput = document.getElementById('accent-color');
-  const businessVoiceCheckboxes = document.querySelectorAll('.business-voice');
-  const suggestedAudiences = document.getElementById('suggested-audiences');
+  const autoColorDetection = document.getElementById('auto-color-detection');
+  const aiDetectionAlert = document.getElementById('ai-detection-alert');
+  const templateSelectionRadios = document.querySelectorAll('input[name="template-selection"]');
+  const templateOptions = document.getElementById('template-options');
+  const targetAudienceCheckboxes = document.querySelectorAll('.target-audience');
+  const audienceCount = document.getElementById('audience-count');
   const addAudienceBtn = document.getElementById('add-audience-btn');
   const customAudienceInput = document.getElementById('custom-audience');
   const selectedAudiences = document.getElementById('selected-audiences');
   const locationTypeRadios = document.querySelectorAll('.location-type');
   const locationDetails = document.getElementById('location-details');
+  const physicalDetails = document.getElementById('physical-details');
+  const onlineDetails = document.getElementById('online-details');
   const socialPlatformCheckboxes = document.querySelectorAll('.social-platform');
   
   // Current step
@@ -40,9 +45,11 @@ document.addEventListener('DOMContentLoaded', function() {
   // Selected audiences array
   let audiences = [];
   
+  // Max number of target audiences
+  const MAX_AUDIENCES = 3;
+  
   // Initialize
   updateProgressBar();
-  loadIndustries();
   setupEventListeners();
   
   // Setup event listeners
@@ -57,15 +64,20 @@ document.addEventListener('DOMContentLoaded', function() {
       button.addEventListener('click', goToPrevStep);
     });
     
-    // Industry change
-    industrySelect.addEventListener('change', loadNiches);
-    
     // Logo upload
     logoInput.addEventListener('change', handleLogoUpload);
     
-    // Business voice checkboxes (limit to 2)
-    businessVoiceCheckboxes.forEach(checkbox => {
-      checkbox.addEventListener('change', limitBusinessVoiceSelection);
+    // Auto color detection toggle
+    autoColorDetection.addEventListener('change', toggleColorInputs);
+    
+    // Template selection radio buttons
+    templateSelectionRadios.forEach(radio => {
+      radio.addEventListener('change', toggleTemplateOptions);
+    });
+    
+    // Target audience checkboxes (limit to 3)
+    targetAudienceCheckboxes.forEach(checkbox => {
+      checkbox.addEventListener('change', handleTargetAudienceSelection);
     });
     
     // Add audience button
@@ -103,16 +115,48 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
     
-    // If we're on step 2 (industry) and moving to step 3 (niche), load niches
+    // Special handling for logo upload step
+    if (currentStep === 2 && logoInput.files.length > 0) {
+      // Show AI detection alert
+      aiDetectionAlert.classList.remove('d-none');
+      
+      // Simulate AI color detection (would be replaced with actual API call)
+      setTimeout(() => {
+        // Hide AI detection alert
+        aiDetectionAlert.classList.add('d-none');
+        
+        // Auto-detect colors from logo (simplified simulation)
+        const randomColor = () => {
+          const letters = '0123456789ABCDEF';
+          let color = '#';
+          for (let i = 0; i < 6; i++) {
+            color += letters[Math.floor(Math.random() * 16)];
+          }
+          return color;
+        };
+        
+        // Set random colors (would be replaced with actual color detection)
+        primaryColorInput.value = randomColor();
+        secondaryColorInput.value = randomColor();
+        accentColorInput.value = randomColor();
+        
+        // Proceed to next step
+        proceedToNextStep();
+      }, 2000); // Simulate 2-second processing
+      
+      return;
+    }
+    
+    // If we're on business type step and moving to template selection, load business-specific templates
     if (currentStep === 1) {
-      loadNiches();
+      loadBusinessTypeTemplates();
     }
     
-    // If we're on step 2 (niche) and moving to step 6 (target audience), load suggested audiences
-    if (currentStep === 2) {
-      loadSuggestedAudiences();
-    }
-    
+    proceedToNextStep();
+  }
+  
+  // Proceed to next step (called directly or after async operations)
+  function proceedToNextStep() {
     // Hide current step
     steps[currentStep].classList.add('d-none');
     
@@ -154,16 +198,28 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         return true;
         
-      case 1: // Industry
-        if (!industrySelect.value) {
-          showAlert('Please select an industry', 'danger');
+      case 1: // Business Type
+        if (!businessTypeSelect.value) {
+          showAlert('Please select a business type', 'danger');
           return false;
         }
         return true;
         
-      case 2: // Niche
-        if (!nicheSelect.value) {
-          showAlert('Please select a niche', 'danger');
+      case 2: // Logo Upload
+        // Logo is optional, but if uploaded, validate file type
+        if (logoInput.files.length > 0) {
+          const file = logoInput.files[0];
+          if (!file.type.match('image.*')) {
+            showAlert('Please upload a valid image file', 'danger');
+            return false;
+          }
+        }
+        return true;
+        
+      case 5: // Business Voice
+        const selectedVoice = document.querySelector('input[name="business-voice"]:checked');
+        if (!selectedVoice) {
+          showAlert('Please select a business voice', 'danger');
           return false;
         }
         return true;
@@ -184,6 +240,24 @@ document.addEventListener('DOMContentLoaded', function() {
           return false;
         }
         
+        // Validate location details based on type
+        if (locationType.value === 'physical' || locationType.value === 'both') {
+          const address = document.getElementById('business-address').value;
+          const city = document.getElementById('business-city').value;
+          if (!address || !city) {
+            showAlert('Please enter your business address', 'danger');
+            return false;
+          }
+        }
+        
+        if (locationType.value === 'online' || locationType.value === 'both') {
+          const website = document.getElementById('business-website').value;
+          if (!website) {
+            showAlert('Please enter your business website', 'danger');
+            return false;
+          }
+        }
+        
         if (socialPlatforms.length === 0) {
           showAlert('Please select at least one social platform', 'danger');
           return false;
@@ -196,314 +270,239 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
   
-  // Load industries
-  async function loadIndustries() {
-    try {
-      const response = await fetch(`${API_URL}/api/profile/industries`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      const data = await response.json();
-      
-      if (response.ok) {
-        // Clear existing options except the default one
-        industrySelect.innerHTML = '<option value="" selected disabled>Select an industry</option>';
-        
-        // Add industry options
-        data.data.forEach(industry => {
-          const option = document.createElement('option');
-          option.value = industry.name;
-          option.textContent = industry.name;
-          industrySelect.appendChild(option);
-        });
-      } else {
-        showAlert(data.error || 'Failed to load industries', 'danger');
-      }
-    } catch (error) {
-      showAlert('Server error. Please try again later.', 'danger');
-      console.error(error);
-    }
-  }
-  
-  // Load niches based on selected industry
-  function loadNiches() {
-    const selectedIndustry = industrySelect.value;
-    
-    if (!selectedIndustry) {
-      return;
-    }
-    
-    // Clear existing options except the default one
-    nicheSelect.innerHTML = '<option value="" selected disabled>Select a niche</option>';
-    
-    // Fetch niches for the selected industry
-    fetch(`${API_URL}/api/profile/industries`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        // Find the selected industry
-        const industry = data.data.find(ind => ind.name === selectedIndustry);
-        
-        if (industry && industry.niches) {
-          // Add niche options
-          industry.niches.forEach(niche => {
-            const option = document.createElement('option');
-            option.value = niche.name;
-            option.textContent = niche.name;
-            nicheSelect.appendChild(option);
-          });
-        }
-      } else {
-        showAlert(data.error || 'Failed to load niches', 'danger');
-      }
-    })
-    .catch(error => {
-      showAlert('Server error. Please try again later.', 'danger');
-      console.error(error);
-    });
-  }
-  
   // Handle logo upload
   function handleLogoUpload(e) {
-    const file = e.target.files[0];
+    const file = logoInput.files[0];
     
     if (file) {
-      // Show preview
+      // Show logo preview
       const reader = new FileReader();
+      
       reader.onload = function(e) {
         logoPreview.querySelector('img').src = e.target.result;
         logoPreview.classList.remove('d-none');
       };
-      reader.readAsDataURL(file);
       
-      // Extract colors from logo
-      if (file.type.startsWith('image/')) {
-        const formData = new FormData();
-        formData.append('logo', file);
-        
-        fetch(`${API_URL}/api/branding/extract-colors`, {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          },
-          body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            // Set color inputs
-            primaryColorInput.value = data.data.primary;
-            secondaryColorInput.value = data.data.secondary;
-            accentColorInput.value = data.data.accent;
-          }
-        })
-        .catch(error => {
-          console.error('Error extracting colors:', error);
-        });
-      }
+      reader.readAsDataURL(file);
+    } else {
+      // Hide logo preview
+      logoPreview.classList.add('d-none');
     }
   }
   
-  // Limit business voice selection to 2
-  function limitBusinessVoiceSelection() {
-    const checked = document.querySelectorAll('.business-voice:checked');
-    
-    if (checked.length > 2) {
-      this.checked = false;
-      showAlert('You can select up to 2 business voice options', 'warning');
-    }
+  // Toggle color inputs based on auto-detection checkbox
+  function toggleColorInputs() {
+    const isDisabled = autoColorDetection.checked;
+    primaryColorInput.disabled = isDisabled;
+    secondaryColorInput.disabled = isDisabled;
+    accentColorInput.disabled = isDisabled;
   }
   
-  // Load suggested audiences
-  function loadSuggestedAudiences() {
-    const selectedIndustry = industrySelect.value;
-    const selectedNiche = nicheSelect.value;
+  // Load templates based on business type
+  function loadBusinessTypeTemplates() {
+    const businessType = businessTypeSelect.value;
     
-    if (!selectedIndustry || !selectedNiche) {
-      return;
-    }
+    if (!businessType) return;
     
-    // Clear existing suggestions
-    suggestedAudiences.innerHTML = '';
+    // Clear template options
+    templateOptions.innerHTML = '';
     
-    // Fetch suggested audiences
-    fetch(`${API_URL}/api/profile/target-audiences/${selectedIndustry}/${selectedNiche}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success && data.data.length > 0) {
-        // Add audience suggestions
-        data.data.forEach(audience => {
-          const div = document.createElement('div');
-          div.className = 'mb-2';
-          div.innerHTML = `
+    // Simulate fetching templates for the selected business type
+    const templates = getTemplatesForBusinessType(businessType);
+    
+    // Add template options
+    templates.forEach((template, index) => {
+      // Create template card
+      const templateCard = document.createElement('div');
+      templateCard.className = 'col-md-4 mb-3';
+      templateCard.innerHTML = `
+        <div class="card h-100">
+          <img src="${template.image}" class="card-img-top" alt="${template.name}">
+          <div class="card-body">
+            <h6 class="card-title">${template.name}</h6>
             <div class="form-check">
-              <input class="form-check-input suggested-audience" type="checkbox" value="${audience}" id="audience-${audience.replace(/\s+/g, '-').toLowerCase()}">
-              <label class="form-check-label" for="audience-${audience.replace(/\s+/g, '-').toLowerCase()}">
-                ${audience}
+              <input class="form-check-input" type="radio" name="template" value="${template.id}" id="template-${template.id}">
+              <label class="form-check-label" for="template-${template.id}">
+                Select
               </label>
             </div>
-          `;
-          suggestedAudiences.appendChild(div);
-          
-          // Add event listener
-          const checkbox = div.querySelector('input');
-          checkbox.addEventListener('change', function() {
-            if (this.checked) {
-              addAudience(this.value);
-            } else {
-              removeAudience(this.value);
-            }
-          });
-        });
-      } else {
-        suggestedAudiences.innerHTML = '<p>No suggested audiences available for this niche. Please add custom audiences below.</p>';
-      }
-    })
-    .catch(error => {
-      showAlert('Server error. Please try again later.', 'danger');
-      console.error(error);
+          </div>
+        </div>
+      `;
+      
+      templateOptions.appendChild(templateCard);
     });
+  }
+  
+  // Get templates for specific business type (simulated)
+  function getTemplatesForBusinessType(businessType) {
+    // This would be replaced with an API call in production
+    const templates = [
+      {
+        id: 'template-1',
+        name: 'Modern & Clean',
+        image: 'img/templates/template-1.jpg'
+      },
+      {
+        id: 'template-2',
+        name: 'Bold & Colorful',
+        image: 'img/templates/template-2.jpg'
+      },
+      {
+        id: 'template-3',
+        name: 'Minimal & Elegant',
+        image: 'img/templates/template-3.jpg'
+      }
+    ];
+    
+    return templates;
+  }
+  
+  // Toggle template options based on selection
+  function toggleTemplateOptions() {
+    const isManual = document.getElementById('manual-select-template').checked;
+    
+    if (isManual) {
+      templateOptions.classList.remove('d-none');
+    } else {
+      templateOptions.classList.add('d-none');
+    }
+  }
+  
+  // Handle target audience selection (limit to MAX_AUDIENCES)
+  function handleTargetAudienceSelection(e) {
+    const checkbox = e.target;
+    const audience = checkbox.value;
+    
+    if (checkbox.checked) {
+      // Check if maximum number reached
+      const selectedCount = document.querySelectorAll('.target-audience:checked').length;
+      
+      if (selectedCount > MAX_AUDIENCES) {
+        checkbox.checked = false;
+        showAlert(`You can select up to ${MAX_AUDIENCES} target audiences`, 'warning');
+        return;
+      }
+      
+      // Add to audiences array if not already there
+      if (!audiences.includes(audience)) {
+        audiences.push(audience);
+      }
+    } else {
+      // Remove from audiences array
+      const index = audiences.indexOf(audience);
+      if (index !== -1) {
+        audiences.splice(index, 1);
+      }
+    }
+    
+    updateSelectedAudiences();
   }
   
   // Add custom audience
   function addCustomAudience() {
     const audience = customAudienceInput.value.trim();
     
-    if (audience) {
-      addAudience(audience);
-      customAudienceInput.value = '';
+    if (!audience) {
+      return;
     }
-  }
-  
-  // Add audience to selected audiences
-  function addAudience(audience) {
+    
+    // Check if maximum number reached
+    if (audiences.length >= MAX_AUDIENCES) {
+      showAlert(`You can select up to ${MAX_AUDIENCES} target audiences`, 'warning');
+      return;
+    }
+    
+    // Add to audiences array if not already there
     if (!audiences.includes(audience)) {
       audiences.push(audience);
       updateSelectedAudiences();
+      customAudienceInput.value = '';
+    } else {
+      showAlert('This audience is already selected', 'warning');
     }
   }
   
-  // Remove audience from selected audiences
+  // Remove audience
   function removeAudience(audience) {
+    // Remove from audiences array
     const index = audiences.indexOf(audience);
     if (index !== -1) {
       audiences.splice(index, 1);
-      updateSelectedAudiences();
-      
-      // Uncheck the corresponding checkbox if it exists
-      const checkbox = document.querySelector(`.suggested-audience[value="${audience}"]`);
-      if (checkbox) {
-        checkbox.checked = false;
-      }
     }
+    
+    // Uncheck corresponding checkbox if it exists
+    const checkbox = document.querySelector(`.target-audience[value="${audience}"]`);
+    if (checkbox) {
+      checkbox.checked = false;
+    }
+    
+    updateSelectedAudiences();
   }
   
   // Update selected audiences display
   function updateSelectedAudiences() {
+    // Update counter
+    audienceCount.textContent = `(${audiences.length}/${MAX_AUDIENCES})`;
+    
+    // Clear selected audiences container
     selectedAudiences.innerHTML = '';
     
-    if (audiences.length === 0) {
-      selectedAudiences.innerHTML = '<p class="text-muted mb-0">No audiences selected</p>';
-      return;
-    }
-    
+    // Add audience tags
     audiences.forEach(audience => {
-      const tag = document.createElement('span');
-      tag.className = 'audience-tag';
-      tag.innerHTML = `
+      const audienceTag = document.createElement('span');
+      audienceTag.className = 'audience-tag';
+      audienceTag.innerHTML = `
         ${audience}
-        <span class="remove-tag">&times;</span>
+        <span class="remove-tag" data-audience="${audience}">
+          <i class="bi bi-x-circle"></i>
+        </span>
       `;
-      selectedAudiences.appendChild(tag);
       
-      // Add event listener to remove button
-      tag.querySelector('.remove-tag').addEventListener('click', function() {
+      selectedAudiences.appendChild(audienceTag);
+    });
+    
+    // Add remove event listeners
+    document.querySelectorAll('.remove-tag').forEach(tag => {
+      tag.addEventListener('click', () => {
+        const audience = tag.getAttribute('data-audience');
         removeAudience(audience);
       });
     });
+    
+    // Show placeholder if no audiences selected
+    if (audiences.length === 0) {
+      selectedAudiences.innerHTML = '<span class="text-muted">No audiences selected</span>';
+    }
   }
   
-  // Update location fields based on location type
+  // Update location fields based on selection
   function updateLocationFields() {
-    const locationType = document.querySelector('input[name="locationType"]:checked').value;
+    const selectedLocationType = document.querySelector('input[name="locationType"]:checked');
     
-    // Clear previous content
-    locationDetails.innerHTML = '';
-    
-    if (locationType === 'physical') {
-      locationDetails.innerHTML = `
-        <div class="mb-3">
-          <label class="form-label">Business Location:</label>
-          <div class="row g-2">
-            <div class="col-12">
-              <input type="text" class="form-control" id="address" placeholder="Address">
-            </div>
-            <div class="col-md-4">
-              <input type="text" class="form-control" id="city" placeholder="City">
-            </div>
-            <div class="col-md-3">
-              <input type="text" class="form-control" id="state" placeholder="State">
-            </div>
-            <div class="col-md-2">
-              <input type="text" class="form-control" id="zip" placeholder="Zip">
-            </div>
-            <div class="col-md-3">
-              <input type="text" class="form-control" id="country" placeholder="Country">
-            </div>
-          </div>
-        </div>
-      `;
-    } else if (locationType === 'service-area') {
-      locationDetails.innerHTML = `
-        <div class="mb-3">
-          <label for="service-areas" class="form-label">Service Areas (comma separated)</label>
-          <input type="text" class="form-control" id="service-areas" placeholder="New York, New Jersey, Connecticut">
-          <div class="form-text">Enter the areas where you provide services</div>
-        </div>
-      `;
+    if (!selectedLocationType) {
+      locationDetails.classList.add('d-none');
+      return;
     }
     
-    // Add website and contact details fields
-    locationDetails.innerHTML += `
-      <div class="mb-3">
-        <label for="website" class="form-label">Website (optional)</label>
-        <input type="url" class="form-control" id="website" placeholder="https://example.com">
-      </div>
-      <div class="mb-3">
-        <label class="form-label">Contact Details (optional):</label>
-        <div class="row g-2">
-          <div class="col-md-6">
-            <input type="tel" class="form-control" id="phone" placeholder="Phone Number">
-          </div>
-          <div class="col-md-6">
-            <input type="email" class="form-control" id="contact-email" placeholder="Contact Email">
-          </div>
-        </div>
-      </div>
-    `;
+    // Show location details
+    locationDetails.classList.remove('d-none');
     
-    // Add social platform URL fields for selected platforms
-    socialPlatformCheckboxes.forEach(checkbox => {
-      if (checkbox.checked) {
-        const platform = checkbox.value;
-        locationDetails.innerHTML += `
-          <div class="mb-3">
-            <label for="${platform.toLowerCase()}-url" class="form-label">${platform} URL</label>
-            <input type="url" class="form-control" id="${platform.toLowerCase()}-url" placeholder="https://${platform.toLowerCase()}.com/yourbusiness">
-          </div>
-        `;
-      }
-    });
+    // Show/hide specific details based on location type
+    switch (selectedLocationType.value) {
+      case 'physical':
+        physicalDetails.classList.remove('d-none');
+        onlineDetails.classList.add('d-none');
+        break;
+      case 'online':
+        physicalDetails.classList.add('d-none');
+        onlineDetails.classList.remove('d-none');
+        break;
+      case 'both':
+        physicalDetails.classList.remove('d-none');
+        onlineDetails.classList.remove('d-none');
+        break;
+    }
   }
   
   // Submit profile
@@ -515,13 +514,12 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
     
-    // Get form data
+    // Gather form data
     const formData = new FormData();
     
-    // Add fields to form data
+    // Business information
     formData.append('businessName', document.getElementById('business-name').value);
-    formData.append('industry', industrySelect.value);
-    formData.append('niche', nicheSelect.value);
+    formData.append('businessType', businessTypeSelect.value);
     
     // Logo
     if (logoInput.files.length > 0) {
@@ -529,71 +527,62 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Brand colors
-    const brandColors = {
-      primary: primaryColorInput.value,
-      secondary: secondaryColorInput.value,
-      accent: accentColorInput.value
-    };
-    formData.append('brandColors', JSON.stringify(brandColors));
+    formData.append('primaryColor', primaryColorInput.value);
+    formData.append('secondaryColor', secondaryColorInput.value);
+    formData.append('accentColor', accentColorInput.value);
+    
+    // Template selection
+    const templateSelection = document.querySelector('input[name="template-selection"]:checked').value;
+    formData.append('templateSelection', templateSelection);
+    
+    if (templateSelection === 'manual-select') {
+      const selectedTemplate = document.querySelector('input[name="template"]:checked');
+      if (selectedTemplate) {
+        formData.append('templateId', selectedTemplate.value);
+      }
+    }
     
     // Business voice
-    const selectedVoice = [];
-    businessVoiceCheckboxes.forEach(checkbox => {
-      if (checkbox.checked) {
-        selectedVoice.push(checkbox.value);
-      }
-    });
-    formData.append('businessVoice', JSON.stringify(selectedVoice));
+    const businessVoice = document.querySelector('input[name="business-voice"]:checked').value;
+    formData.append('businessVoice', businessVoice);
     
-    // Target audience
-    formData.append('targetAudience', JSON.stringify(audiences));
+    // Target audiences
+    formData.append('targetAudiences', JSON.stringify(audiences));
     
-    // Location
+    // Location type
     const locationType = document.querySelector('input[name="locationType"]:checked').value;
     formData.append('locationType', locationType);
     
     // Location details
-    const locationDetails = {};
-    
-    if (locationType === 'physical') {
-      locationDetails.address = document.getElementById('address').value;
-      locationDetails.city = document.getElementById('city').value;
-      locationDetails.state = document.getElementById('state').value;
-      locationDetails.zip = document.getElementById('zip').value;
-      locationDetails.country = document.getElementById('country').value;
-    } else if (locationType === 'service-area') {
-      locationDetails.cities = document.getElementById('service-areas').value.split(',').map(city => city.trim());
-    } else {
-      locationDetails.online = true;
+    if (locationType === 'physical' || locationType === 'both') {
+      formData.append('address', document.getElementById('business-address').value);
+      formData.append('city', document.getElementById('business-city').value);
+      formData.append('state', document.getElementById('business-state').value);
+      formData.append('zip', document.getElementById('business-zip').value);
     }
     
-    formData.append('location', JSON.stringify(locationDetails));
+    if (locationType === 'online' || locationType === 'both') {
+      formData.append('website', document.getElementById('business-website').value);
+    }
     
-    // Website
-    formData.append('website', document.getElementById('website').value);
-    
-    // Contact details
-    const contactDetails = {
-      phone: document.getElementById('phone').value,
-      email: document.getElementById('contact-email').value
-    };
-    formData.append('contactDetails', JSON.stringify(contactDetails));
+    formData.append('phone', document.getElementById('business-phone').value);
+    formData.append('email', document.getElementById('business-email').value);
     
     // Social platforms
-    const selectedPlatforms = {};
-    socialPlatformCheckboxes.forEach(checkbox => {
-      if (checkbox.checked) {
-        const platform = checkbox.value;
-        const urlInput = document.getElementById(`${platform.toLowerCase()}-url`);
-        if (urlInput) {
-          selectedPlatforms[platform] = urlInput.value;
-        }
-      }
+    const socialPlatforms = [];
+    document.querySelectorAll('.social-platform:checked').forEach(platform => {
+      socialPlatforms.push(platform.value);
     });
-    formData.append('socialPlatforms', JSON.stringify(selectedPlatforms));
+    formData.append('socialPlatforms', JSON.stringify(socialPlatforms));
     
     try {
-      // Send request
+      // Show loading state
+      const submitButton = profileForm.querySelector('button[type="submit"]');
+      const originalText = submitButton.innerHTML;
+      submitButton.disabled = true;
+      submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Saving...';
+      
+      // Submit to API
       const response = await fetch(`${API_URL}/api/profile`, {
         method: 'POST',
         headers: {
@@ -605,21 +594,34 @@ document.addEventListener('DOMContentLoaded', function() {
       const data = await response.json();
       
       if (response.ok) {
-        // Show success message and redirect
-        showAlert('Profile saved successfully! Redirecting to dashboard...', 'success');
+        showAlert('Business profile saved successfully!', 'success');
+        
+        // Store profile completion in local storage
+        localStorage.setItem('profileComplete', 'true');
+        
+        // Redirect to dashboard after a delay
         setTimeout(() => {
           window.location.href = 'dashboard.html';
         }, 1500);
       } else {
-        showAlert(data.error || 'Failed to save profile', 'danger');
+        showAlert(data.error || 'Failed to save profile. Please try again.', 'danger');
+        
+        // Restore submit button
+        submitButton.disabled = false;
+        submitButton.innerHTML = originalText;
       }
     } catch (error) {
       showAlert('Server error. Please try again later.', 'danger');
       console.error(error);
+      
+      // Restore submit button
+      const submitButton = profileForm.querySelector('button[type="submit"]');
+      submitButton.disabled = false;
+      submitButton.innerHTML = 'Complete Setup';
     }
   }
   
-  // Function to show alerts
+  // Show alert
   function showAlert(message, type) {
     alertContainer.innerHTML = `
       <div class="alert alert-${type} alert-dismissible fade show" role="alert">
@@ -628,9 +630,12 @@ document.addEventListener('DOMContentLoaded', function() {
       </div>
     `;
     
+    // Scroll to alert
+    alertContainer.scrollIntoView({ behavior: 'smooth' });
+    
     // Auto dismiss after 5 seconds
     setTimeout(() => {
-      const alert = document.querySelector('.alert');
+      const alert = alertContainer.querySelector('.alert');
       if (alert) {
         const bsAlert = new bootstrap.Alert(alert);
         bsAlert.close();

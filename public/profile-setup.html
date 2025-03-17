@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Business Profile Setup - OmuMediaKit</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -46,7 +47,7 @@
               
               <!-- Step 1: Business Name -->
               <div class="step" id="step-1">
-                <h4 class="mb-3">Business Information</h4>
+                <h4 class="mb-3">Choose Account</h4>
                 <div class="mb-3">
                   <label for="business-name" class="form-label">Business Name</label>
                   <input type="text" class="form-control" id="business-name" required>
@@ -56,14 +57,22 @@
                 </div>
               </div>
               
-              <!-- Step 2: Industry Selection -->
+              <!-- Step 2: Business Type Selection -->
               <div class="step d-none" id="step-2">
-                <h4 class="mb-3">Select Your Industry</h4>
+                <h4 class="mb-3">Business Type</h4>
+                <p class="text-muted">Select your business type for niche-specific templates</p>
                 <div class="mb-3">
-                  <label for="industry" class="form-label">Industry</label>
-                  <select class="form-select" id="industry" required>
-                    <option value="" selected disabled>Select an industry</option>
-                    <!-- Options will be loaded dynamically -->
+                  <select class="form-select" id="business-type" required>
+                    <option value="" selected disabled>Select business type</option>
+                    <option value="car-dealership">Car Dealership</option>
+                    <option value="nail-salon">Nail Salon</option>
+                    <option value="restaurant">Restaurant</option>
+                    <option value="fitness-trainer">Fitness Trainer</option>
+                    <option value="real-estate">Real Estate</option>
+                    <option value="retail">Retail Store</option>
+                    <option value="spa-wellness">Spa & Wellness</option>
+                    <option value="consulting">Consulting Business</option>
+                    <option value="other">Other</option>
                   </select>
                 </div>
                 <div class="d-flex justify-content-between">
@@ -72,25 +81,9 @@
                 </div>
               </div>
               
-              <!-- Step 3: Niche Selection -->
+              <!-- Step 3: Brand Name & Logo Upload -->
               <div class="step d-none" id="step-3">
-                <h4 class="mb-3">Select Your Specific Niche</h4>
-                <div class="mb-3">
-                  <label for="niche" class="form-label">Niche</label>
-                  <select class="form-select" id="niche" required>
-                    <option value="" selected disabled>Select a niche</option>
-                    <!-- Options will be loaded dynamically based on industry selection -->
-                  </select>
-                </div>
-                <div class="d-flex justify-content-between">
-                  <button type="button" class="btn btn-secondary prev-step">Previous</button>
-                  <button type="button" class="btn btn-primary next-step">Next</button>
-                </div>
-              </div>
-              
-              <!-- Step 4: Logo Upload -->
-              <div class="step d-none" id="step-4">
-                <h4 class="mb-3">Upload Your Logo</h4>
+                <h4 class="mb-3">Brand & Logo Upload</h4>
                 <div class="mb-3">
                   <label for="logo" class="form-label">Business Logo</label>
                   <input type="file" class="form-control" id="logo" accept="image/*">
@@ -101,15 +94,19 @@
                     <img src="" alt="Logo Preview" class="img-fluid" style="max-height: 150px;">
                   </div>
                 </div>
+                <div class="alert alert-info d-none" id="ai-detection-alert">
+                  <i class="bi bi-magic"></i> AI is analyzing your logo to detect brand colors and style...
+                </div>
                 <div class="d-flex justify-content-between">
                   <button type="button" class="btn btn-secondary prev-step">Previous</button>
                   <button type="button" class="btn btn-primary next-step">Next</button>
                 </div>
               </div>
               
-              <!-- Step 5: Brand Colors -->
-              <div class="step d-none" id="step-5">
+              <!-- Step 4: Brand Colors -->
+              <div class="step d-none" id="step-4">
                 <h4 class="mb-3">Brand Colors</h4>
+                <p class="text-muted">Colors were auto-detected from your logo. You can adjust them if needed.</p>
                 <div class="row">
                   <div class="col-md-4 mb-3">
                     <label for="primary-color" class="form-label">Primary Color</label>
@@ -124,39 +121,75 @@
                     <input type="color" class="form-control form-control-color w-100" id="accent-color" value="#cccccc">
                   </div>
                 </div>
+                <div class="form-check mb-3">
+                  <input class="form-check-input" type="checkbox" id="auto-color-detection" checked>
+                  <label class="form-check-label" for="auto-color-detection">
+                    Use AI-detected colors
+                  </label>
+                </div>
                 <div class="d-flex justify-content-between">
                   <button type="button" class="btn btn-secondary prev-step">Previous</button>
                   <button type="button" class="btn btn-primary next-step">Next</button>
                 </div>
               </div>
               
-              <!-- Step 6: Business Voice -->
+              <!-- Step 5: Template & Style Selection -->
+              <div class="step d-none" id="step-5">
+                <h4 class="mb-3">Choose Template & Features</h4>
+                <p class="text-muted">Select a template style or let AI suggest one based on your business</p>
+                
+                <div class="mb-4">
+                  <div class="form-check mb-2">
+                    <input class="form-check-input" type="radio" name="template-selection" id="ai-suggest-template" value="ai-suggest" checked>
+                    <label class="form-check-label" for="ai-suggest-template">
+                      Let AI suggest the best template for my business
+                    </label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="template-selection" id="manual-select-template" value="manual-select">
+                    <label class="form-check-label" for="manual-select-template">
+                      I want to choose a template manually
+                    </label>
+                  </div>
+                </div>
+                
+                <div id="template-options" class="row d-none">
+                  <!-- Template options will be displayed here when manual selection is chosen -->
+                </div>
+                
+                <div class="d-flex justify-content-between">
+                  <button type="button" class="btn btn-secondary prev-step">Previous</button>
+                  <button type="button" class="btn btn-primary next-step">Next</button>
+                </div>
+              </div>
+              
+              <!-- Step 6: Business Voice & Style -->
               <div class="step d-none" id="step-6">
                 <h4 class="mb-3">Business Voice & Style</h4>
-                <p class="text-muted">Select up to 2 tones that define your brand:</p>
+                <p class="text-muted">Select a voice that defines your brand:</p>
                 <div class="mb-3">
                   <div class="form-check mb-2">
-                    <input class="form-check-input business-voice" type="checkbox" value="Professional & Trustworthy" id="voice-professional">
+                    <input class="form-check-input business-voice" type="radio" name="business-voice" value="Professional & Clean" id="voice-professional">
                     <label class="form-check-label" for="voice-professional">
-                      Professional & Trustworthy
+                      Professional & Clean
                     </label>
                   </div>
                   <div class="form-check mb-2">
-                    <input class="form-check-input business-voice" type="checkbox" value="Friendly & Approachable" id="voice-friendly">
-                    <label class="form-check-label" for="voice-friendly">
-                      Friendly & Approachable
+                    <input class="form-check-input business-voice" type="radio" name="business-voice" value="Trendy & Modern" id="voice-trendy">
+                    <label class="form-check-label" for="voice-trendy">
+                      Trendy & Modern
                     </label>
                   </div>
                   <div class="form-check mb-2">
-                    <input class="form-check-input business-voice" type="checkbox" value="Luxury & Elegant" id="voice-luxury">
-                    <label class="form-check-label" for="voice-luxury">
-                      Luxury & Elegant
-                    </label>
-                  </div>
-                  <div class="form-check mb-2">
-                    <input class="form-check-input business-voice" type="checkbox" value="Bold & Energetic" id="voice-bold">
+                    <input class="form-check-input business-voice" type="radio" name="business-voice" value="Bold & Eye-Catching" id="voice-bold">
                     <label class="form-check-label" for="voice-bold">
-                      Bold & Energetic
+                      Bold & Eye-Catching
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input business-voice" type="radio" name="business-voice" value="Minimalist & Elegant" id="voice-minimalist">
+                    <label class="form-check-label" for="voice-minimalist">
+                      Minimalist & Elegant
                     </label>
                   </div>
                 </div>
@@ -169,9 +202,44 @@
               <!-- Step 7: Target Audience -->
               <div class="step d-none" id="step-7">
                 <h4 class="mb-3">Target Audience</h4>
-                <p class="text-muted">Select or add your target audiences:</p>
-                <div class="mb-3" id="suggested-audiences">
-                  <!-- Suggested audiences will be loaded here -->
+                <p class="text-muted">Select up to 3 target audiences:</p>
+                <div class="mb-3">
+                  <div class="form-check mb-2">
+                    <input class="form-check-input target-audience" type="checkbox" value="Young Professionals (18-35)" id="audience-young-professionals">
+                    <label class="form-check-label" for="audience-young-professionals">
+                      Young Professionals (18-35)
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input target-audience" type="checkbox" value="Families & Parents" id="audience-families">
+                    <label class="form-check-label" for="audience-families">
+                      Families & Parents
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input target-audience" type="checkbox" value="Small Business Owners" id="audience-business-owners">
+                    <label class="form-check-label" for="audience-business-owners">
+                      Small Business Owners
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input target-audience" type="checkbox" value="Luxury Shoppers" id="audience-luxury">
+                    <label class="form-check-label" for="audience-luxury">
+                      Luxury Shoppers
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input target-audience" type="checkbox" value="Budget-Conscious Buyers" id="audience-budget">
+                    <label class="form-check-label" for="audience-budget">
+                      Budget-Conscious Buyers
+                    </label>
+                  </div>
+                  <div class="form-check mb-2">
+                    <input class="form-check-input target-audience" type="checkbox" value="Fitness / Health Enthusiasts" id="audience-fitness">
+                    <label class="form-check-label" for="audience-fitness">
+                      Fitness / Health Enthusiasts
+                    </label>
+                  </div>
                 </div>
                 <div class="mb-3">
                   <label for="custom-audience" class="form-label">Add Custom Audience</label>
@@ -181,7 +249,7 @@
                   </div>
                 </div>
                 <div class="mb-3">
-                  <label class="form-label">Selected Audiences:</label>
+                  <label class="form-label">Selected Audiences: <span id="audience-count">(0/3)</span></label>
                   <div id="selected-audiences" class="border p-2 rounded min-height-100">
                     <!-- Selected audiences will appear here -->
                   </div>
@@ -210,19 +278,48 @@
                     </label>
                   </div>
                   <div class="form-check mb-2">
-                    <input class="form-check-input location-type" type="radio" name="locationType" id="service-area-business" value="service-area">
-                    <label class="form-check-label" for="service-area-business">
-                      Service Area Business
+                    <input class="form-check-input location-type" type="radio" name="locationType" id="both-business" value="both">
+                    <label class="form-check-label" for="both-business">
+                      Both
                     </label>
                   </div>
                 </div>
                 
-                <div class="mb-3" id="location-details">
+                <div class="mb-3 d-none" id="location-details">
                   <!-- Location details will be shown/hidden based on selection -->
+                  <div id="physical-details" class="mb-3 d-none">
+                    <label for="business-address" class="form-label">Business Address</label>
+                    <input type="text" class="form-control mb-2" id="business-address" placeholder="Street address">
+                    <div class="row">
+                      <div class="col-md-6 mb-2">
+                        <input type="text" class="form-control" id="business-city" placeholder="City">
+                      </div>
+                      <div class="col-md-6 mb-2">
+                        <input type="text" class="form-control" id="business-state" placeholder="State/Province">
+                      </div>
+                    </div>
+                    <input type="text" class="form-control" id="business-zip" placeholder="Zip/Postal Code">
+                  </div>
+                  
+                  <div id="online-details" class="mb-3 d-none">
+                    <label for="business-website" class="form-label">Business Website</label>
+                    <input type="url" class="form-control" id="business-website" placeholder="https://example.com">
+                  </div>
+                  
+                  <div class="mb-3">
+                    <label for="business-phone" class="form-label">Business Phone</label>
+                    <input type="tel" class="form-control" id="business-phone" placeholder="Phone number">
+                  </div>
+                  
+                  <div class="mb-3">
+                    <label for="business-email" class="form-label">Business Email</label>
+                    <input type="email" class="form-control" id="business-email" placeholder="contact@yourbusiness.com">
+                  </div>
                 </div>
                 
                 <div class="mb-3">
                   <label class="form-label">Social Media Platforms:</label>
+                  <p class="text-muted">Select the platforms you want to create content for</p>
                   <div class="form-check mb-2">
                     <input class="form-check-input social-platform" type="checkbox" value="Instagram" id="platform-instagram">
                     <label class="form-check-label" for="platform-instagram">
@@ -266,6 +363,12 @@
       </div>
     </div>
   </div>
+
+  <footer class="py-4 bg-dark">
+    <div class="container">
+      <p class="m-0 text-center text-white">Copyright &copy; OmuMediaKit 2025</p>
+    </div>
+  </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
   <script src="js/profile-setup.js"></script>

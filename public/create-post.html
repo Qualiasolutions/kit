@@ -39,6 +39,30 @@
       </div>
     </div>
 
+    <!-- Business Brand Summary -->
+    <div class="row mb-4">
+      <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+            <div class="d-flex align-items-center">
+              <div id="business-logo-display" class="me-3">
+                <img src="img/placeholder-logo.png" alt="Business Logo" style="width: 50px; height: 50px; object-fit: cover;" class="rounded">
+              </div>
+              <div>
+                <h5 class="mb-0" id="business-name-display">Your Business</h5>
+                <p class="text-muted mb-0" id="business-type-display">Business Type</p>
+              </div>
+              <div class="d-flex ms-auto">
+                <div class="color-box me-2" id="primary-color-display"></div>
+                <div class="color-box me-2" id="secondary-color-display"></div>
+                <div class="color-box" id="accent-color-display"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="row">
       <div class="col-lg-8">
         <div class="card mb-4">
@@ -58,22 +82,20 @@
                 </select>
               </div>
               
+              <!-- Template Selection -->
+              <div class="mb-3">
+                <label for="template" class="form-label">Template</label>
+                <select class="form-select" id="template">
+                  <option value="" selected disabled>Select a template</option>
+                  <!-- Templates will be loaded dynamically based on business profile -->
+                </select>
+                <div class="form-text">Templates are based on your business profile and post type</div>
+              </div>
+              
               <div class="mb-3">
                 <label for="platforms" class="form-label">Platforms</label>
                 <div id="platforms-container">
                   <!-- Platform checkboxes will be loaded dynamically from profile -->
-                  <div class="form-check mb-2">
-                    <input class="form-check-input platform-checkbox" type="checkbox" value="Instagram" id="platform-instagram">
-                    <label class="form-check-label" for="platform-instagram">Instagram</label>
-                  </div>
-                  <div class="form-check mb-2">
-                    <input class="form-check-input platform-checkbox" type="checkbox" value="Facebook" id="platform-facebook">
-                    <label class="form-check-label" for="platform-facebook">Facebook</label>
-                  </div>
-                  <div class="form-check mb-2">
-                    <input class="form-check-input platform-checkbox" type="checkbox" value="TikTok" id="platform-tiktok">
-                    <label class="form-check-label" for="platform-tiktok">TikTok</label>
-                  </div>
                 </div>
               </div>
               
@@ -82,9 +104,60 @@
                 <textarea class="form-control" id="post-content" rows="5" placeholder="Enter your post content or click 'Generate Content'" required></textarea>
               </div>
               
+              <!-- Hashtags Section -->
+              <div class="mb-3">
+                <label for="post-hashtags" class="form-label">Hashtags</label>
+                <textarea class="form-control" id="post-hashtags" rows="2" placeholder="Enter hashtags or click 'Generate Hashtags'"></textarea>
+                <div class="d-flex justify-content-end mt-2">
+                  <button type="button" class="btn btn-sm btn-outline-success" id="generate-hashtags-btn">
+                    <i class="bi bi-magic"></i> Generate Hashtags
+                  </button>
+                </div>
+              </div>
+              
               <div class="mb-3">
                 <label for="post-image" class="form-label">Post Image</label>
                 <input class="form-control" type="file" id="post-image">
+              </div>
+              
+              <!-- Image Editor Controls (visible when image is uploaded) -->
+              <div class="mb-3 d-none" id="image-editor-controls">
+                <div class="card">
+                  <div class="card-header">
+                    <h6 class="mb-0">Image Adjustments</h6>
+                  </div>
+                  <div class="card-body">
+                    <div class="mb-2">
+                      <button type="button" class="btn btn-sm btn-outline-primary" id="remove-bg-btn">
+                        <i class="bi bi-eraser"></i> Remove Background
+                      </button>
+                      <button type="button" class="btn btn-sm btn-outline-primary" id="enhance-image-btn">
+                        <i class="bi bi-brightness-high"></i> Enhance Image
+                      </button>
+                    </div>
+                    <div class="mb-2">
+                      <label for="image-brightness" class="form-label small">Brightness</label>
+                      <input type="range" class="form-range" id="image-brightness" min="0" max="200" value="100">
+                    </div>
+                    <div>
+                      <label for="image-contrast" class="form-label small">Contrast</label>
+                      <input type="range" class="form-range" id="image-contrast" min="0" max="200" value="100">
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Image Preview -->
+              <div class="mb-3 d-none" id="image-preview-container">
+                <label class="form-label">Image Preview</label>
+                <div class="position-relative">
+                  <img src="" alt="Preview" id="image-preview" class="img-fluid rounded">
+                  <div class="position-absolute bottom-0 end-0 p-2">
+                    <button type="button" class="btn btn-sm btn-light" id="reset-image-btn">
+                      <i class="bi bi-arrow-counterclockwise"></i> Reset
+                    </button>
+                  </div>
+                </div>
               </div>
               
               <div class="mb-3">
@@ -101,6 +174,48 @@
                 </div>
               </div>
             </form>
+          </div>
+        </div>
+        
+        <!-- Platform Preview Section -->
+        <div class="card mb-4">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Platform Preview</h5>
+            <div class="btn-group" role="group">
+              <button type="button" class="btn btn-sm btn-outline-primary active" data-platform="instagram">Instagram</button>
+              <button type="button" class="btn btn-sm btn-outline-primary" data-platform="facebook">Facebook</button>
+              <button type="button" class="btn btn-sm btn-outline-primary" data-platform="tiktok">TikTok</button>
+            </div>
+          </div>
+          <div class="card-body text-center py-4">
+            <div id="preview-container">
+              <div id="instagram-preview" class="platform-preview">
+                <!-- Instagram preview will be rendered here -->
+                <div class="mx-auto" style="max-width: 320px; border: 1px solid #ddd; border-radius: 8px;">
+                  <div class="d-flex align-items-center p-2">
+                    <div class="me-2" style="width: 32px; height: 32px; border-radius: 50%; background-color: #eee;"></div>
+                    <div class="small fw-bold" id="preview-username">yourbusiness</div>
+                  </div>
+                  <div style="height: 320px; background-color: #f8f9fa; display: flex; align-items: center; justify-content: center;">
+                    <span class="text-muted">Image Preview</span>
+                  </div>
+                  <div class="p-2 text-start">
+                    <div class="d-flex mb-1">
+                      <i class="bi bi-heart me-3"></i>
+                      <i class="bi bi-chat me-3"></i>
+                      <i class="bi bi-send"></i>
+                    </div>
+                    <div class="small fw-bold" id="preview-likes">0 likes</div>
+                    <div class="small">
+                      <span class="fw-bold" id="preview-username-caption">yourbusiness</span>
+                      <span id="preview-caption">Your caption will appear here...</span>
+                    </div>
+                    <div class="small text-muted" id="preview-hashtags">#hashtags #will #appear #here</div>
+                  </div>
+                </div>
+              </div>
+              <!-- Other platform previews would be similar but styled differently -->
+            </div>
           </div>
         </div>
       </div>
@@ -121,11 +236,18 @@
             <div class="mb-3">
               <label for="content-tone" class="form-label">Tone</label>
               <select class="form-select" id="content-tone">
-                <option value="professional">Professional</option>
-                <option value="casual">Casual</option>
-                <option value="friendly">Friendly</option>
-                <option value="humorous">Humorous</option>
-                <option value="inspirational">Inspirational</option>
+                <!-- This will default to the business voice from profile, but can be overridden -->
+              </select>
+            </div>
+            
+            <div class="mb-3">
+              <label for="content-goal" class="form-label">Content Goal</label>
+              <select class="form-select" id="content-goal">
+                <option value="engagement">Increase Engagement</option>
+                <option value="awareness">Brand Awareness</option>
+                <option value="traffic">Drive Website Traffic</option>
+                <option value="sales">Promote Sales</option>
+                <option value="education">Educate Audience</option>
               </select>
             </div>
             
@@ -135,6 +257,58 @@
             
             <div class="alert alert-info" role="alert">
               <small>Content will be generated based on your business profile and selected parameters.</small>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Platform-Specific Adjustments -->
+        <div class="card mb-4">
+          <div class="card-header">
+            <h5 class="mb-0">Platform Optimization</h5>
+          </div>
+          <div class="card-body">
+            <p class="text-muted small">Your content will be automatically optimized for each platform</p>
+            
+            <div class="mb-3">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="auto-resize" checked>
+                <label class="form-check-label" for="auto-resize">
+                  Auto-resize for each platform
+                </label>
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="auto-caption" checked>
+                <label class="form-check-label" for="auto-caption">
+                  Optimize captions for each platform
+                </label>
+              </div>
+            </div>
+            
+            <div class="accordion" id="platformAccordion">
+              <!-- Platform-specific settings will be dynamically generated -->
+              <div class="accordion-item">
+                <h2 class="accordion-header">
+                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#instagramSettings">
+                    Instagram Settings
+                  </button>
+                </h2>
+                <div id="instagramSettings" class="accordion-collapse collapse" data-bs-parent="#platformAccordion">
+                  <div class="accordion-body">
+                    <div class="mb-2">
+                      <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="instagram-first-comment" checked>
+                        <label class="form-check-label" for="instagram-first-comment">
+                          Move hashtags to first comment
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- More platform settings would go here -->
             </div>
           </div>
         </div>
