@@ -8,384 +8,382 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
   <link rel="stylesheet" href="css/style.css">
   <style>
-    .step-indicator {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background-color: #e9ecef;
-      color: #6c757d;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-right: 10px;
+    :root {
+      --primary: #00897b;
+      --primary-light: #4ebaaa;
+      --primary-dark: #005b4f;
+      --secondary: #26a69a;
+      --accent: #4db6ac;
+      --light-bg: #f5f9f8;
+      --dark-text: #263238;
+      --card-shadow: 0 8px 16px rgba(0, 139, 123, 0.1);
     }
-    .step-indicator.active {
-      background-color: #0d6efd;
-      color: white;
+    
+    body {
+      background-color: var(--light-bg);
+      color: var(--dark-text);
+      font-family: 'Segoe UI', 'Arial', sans-serif;
     }
-    .step-indicator.completed {
-      background-color: #198754;
-      color: white;
+    
+    .navbar {
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     }
-    .step-line {
-      flex: 1;
-      height: 2px;
-      background-color: #e9ecef;
-      margin: 0 10px;
+    
+    .card {
+      border: none;
+      border-radius: 12px;
+      box-shadow: var(--card-shadow);
+      transition: all 0.3s ease;
+      overflow: hidden;
     }
-    .color-box {
-      width: 20px;
-      height: 20px;
-      border-radius: 4px;
+    
+    .card-header {
+      background-color: white;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      padding: 1.2rem 1.5rem;
     }
+    
+    .btn-primary {
+      background-color: var(--primary);
+      border-color: var(--primary);
+    }
+    
+    .btn-primary:hover {
+      background-color: var(--primary-dark);
+      border-color: var(--primary-dark);
+    }
+    
+    .btn-success {
+      background-color: var(--secondary);
+      border-color: var(--secondary);
+    }
+    
+    .btn-success:hover {
+      background-color: var(--accent);
+      border-color: var(--accent);
+    }
+    
     .template-card {
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.3s;
+      border: 2px solid transparent;
+      border-radius: 12px;
+      overflow: hidden;
     }
+    
     .template-card:hover {
       transform: translateY(-5px);
-      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+      box-shadow: 0 12px 24px rgba(0, 139, 123, 0.15);
     }
+    
     .template-card.selected {
-      border-color: #0d6efd;
-      box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25);
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(0, 139, 123, 0.2);
+    }
+    
+    .color-box {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+    }
+    
+    .preview-container {
+      position: relative;
+      min-height: 400px;
+      background-color: white;
+      border-radius: 8px;
+    }
+    
+    .loading-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(255, 255, 255, 0.9);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      border-radius: 8px;
+    }
+    
+    .api-key-input {
+      opacity: 0;
+      height: 0;
+      transition: all 0.3s;
+    }
+    
+    .api-key-input.show {
+      opacity: 1;
+      height: auto;
+      margin-top: 1rem;
+    }
+    
+    .form-check-input:checked {
+      background-color: var(--primary);
+      border-color: var(--primary);
+    }
+    
+    .card-img-top {
+      height: 180px;
+      object-fit: cover;
+    }
+    
+    .form-control:focus {
+      border-color: var(--primary-light);
+      box-shadow: 0 0 0 0.25rem rgba(0, 139, 123, 0.25);
+    }
+    
+    .spinner-border {
+      color: var(--primary);
+    }
+    
+    .bg-primary {
+      background-color: var(--primary) !important;
+    }
+    
+    .bg-dark {
+      background-color: var(--primary-dark) !important;
+    }
+    
+    h1, h2, h3, h4, h5, h6 {
+      font-weight: 600;
     }
   </style>
 </head>
 <body>
-  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <!-- Navigation Bar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
     <div class="container">
-      <a class="navbar-brand" href="dashboard.html">OmuMediaKit</a>
+      <a class="navbar-brand d-flex align-items-center" href="dashboard.html">
+        <i class="bi bi-layers-half me-2"></i>
+        <span>OmuMediaKit</span>
+      </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto">
           <li class="nav-item">
-            <a class="nav-link" href="dashboard.html">Dashboard</a>
+            <a class="nav-link" href="dashboard.html">
+              <i class="bi bi-speedometer2 me-1"></i> Dashboard
+            </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="profile-setup.html">Business Profile</a>
+            <a class="nav-link" href="profile-setup.html">
+              <i class="bi bi-building me-1"></i> Business Profile
+            </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="#" id="logout-link">Logout</a>
+            <a class="nav-link" href="#" id="logout-link">
+              <i class="bi bi-box-arrow-right me-1"></i> Logout
+            </a>
           </li>
         </ul>
       </div>
     </div>
   </nav>
 
-  <div class="container py-4">
+  <div class="container py-3">
+    <!-- Alert Container -->
     <div id="alert-container"></div>
     
-    <!-- Step Progress Indicators -->
-    <div class="d-flex align-items-center mb-4">
-      <div class="step-indicator active" id="step-1">1</div>
-      <div class="step-line"></div>
-      <div class="step-indicator" id="step-2">2</div>
-      <div class="step-line"></div>
-      <div class="step-indicator" id="step-3">3</div>
-      <div class="step-line"></div>
-      <div class="step-indicator" id="step-4">4</div>
-      <div class="step-line"></div>
-      <div class="step-indicator" id="step-5">5</div>
-      <div class="step-line"></div>
-      <div class="step-indicator" id="step-6">6</div>
+    <div class="row mb-4">
+      <div class="col-12 text-center">
+        <h1 class="mb-2 display-5">AI Content Creator</h1>
+        <p class="lead text-muted">Generate professional content with a single click</p>
+      </div>
     </div>
     
-    <!-- STEP 1: Choose Account (loaded from profile) -->
-    <div class="step-container" id="step-1-container">
-      <div class="card mb-4">
-        <div class="card-header">
-          <h4>Step 1: Choose Account</h4>
-        </div>
-        <div class="card-body">
-          <div class="row">
-            <div class="col-md-6 mb-4">
-              <div class="card h-100">
-                <div class="card-body">
-                  <div class="d-flex align-items-center mb-3">
-                    <img src="img/placeholder-logo.png" id="business-logo" alt="Business Logo" class="me-3" style="width: 64px; height: 64px; object-fit: cover;">
-                    <div>
-                      <h5 id="business-name-display">Your Business</h5>
-                      <p class="text-muted mb-0" id="business-type-display">Business Type</p>
-                    </div>
-                  </div>
-                  <div class="d-flex mb-3">
-                    <div class="color-box me-2" id="primary-color" style="background-color: #4285f4;"></div>
-                    <div class="color-box me-2" id="secondary-color" style="background-color: #34a853;"></div>
-                    <div class="color-box" id="accent-color" style="background-color: #ea4335;"></div>
-                  </div>
-                  <p>Your brand identity is automatically detected from your profile.</p>
+    <!-- Main Content -->
+    <div class="row">
+      <!-- Business Profile Card -->
+      <div class="col-md-4 mb-4">
+        <div class="card h-100">
+          <div class="card-header d-flex align-items-center">
+            <i class="bi bi-building me-2 text-primary"></i>
+            <h4 class="mb-0">Your Business</h4>
+          </div>
+          <div class="card-body">
+            <div class="d-flex align-items-center mb-4">
+              <div class="position-relative me-3">
+                <img src="img/placeholder-logo.png" id="business-logo" alt="Business Logo" style="width: 72px; height: 72px; object-fit: cover; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+              </div>
+              <div>
+                <h5 id="business-name-display" class="fw-bold mb-1">Your Business</h5>
+                <p class="text-muted mb-0" id="business-type-display">Business Type</p>
+              </div>
+            </div>
+            <h6 class="mb-3 d-flex align-items-center">
+              <i class="bi bi-palette me-2 text-primary"></i>
+              Brand Colors
+            </h6>
+            <div class="d-flex mb-4">
+              <div class="color-box me-2 shadow-sm" id="primary-color" style="background-color: #00897b;"></div>
+              <div class="color-box me-2 shadow-sm" id="secondary-color" style="background-color: #26a69a;"></div>
+              <div class="color-box shadow-sm" id="accent-color" style="background-color: #4db6ac;"></div>
+            </div>
+            <div class="form-check form-switch mt-4 ps-0">
+              <div class="d-flex align-items-center">
+                <div class="form-check form-switch">
+                  <input class="form-check-input" type="checkbox" id="use-openai" style="width: 3rem;">
+                  <label class="form-check-label ms-2" for="use-openai">
+                    <span class="fw-medium">Use OpenAI</span> for enhanced generation
+                  </label>
                 </div>
-                <div class="card-footer bg-transparent">
-                  <div class="d-flex justify-content-end">
-                    <button class="btn btn-primary next-step">Continue</button>
-                  </div>
-                </div>
+              </div>
+            </div>
+            <div class="api-key-input mt-3 p-3 rounded" id="api-key-container" style="background-color: #f0f9f8;">
+              <label for="openai-key" class="form-label fw-medium">OpenAI API Key</label>
+              <div class="input-group">
+                <span class="input-group-text bg-white">
+                  <i class="bi bi-key text-primary"></i>
+                </span>
+                <input type="password" class="form-control" id="openai-key" placeholder="Enter your OpenAI API key">
+              </div>
+              <div class="form-text mt-2">
+                <i class="bi bi-shield-lock me-1"></i>
+                Your API key is not stored on our servers.
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-    
-    <!-- STEP 2: Choose Template & Features -->
-    <div class="step-container d-none" id="step-2-container">
-      <div class="card mb-4">
-        <div class="card-header">
-          <h4>Step 2: Choose Template & Features</h4>
-        </div>
-        <div class="card-body">
-          <div class="mb-4">
-            <button class="btn btn-success mb-3" id="ai-template-btn">
-              <i class="bi bi-magic"></i> Let AI Choose the Best Template
+      
+      <!-- Template Selection -->
+      <div class="col-md-8 mb-4">
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+              <i class="bi bi-grid-3x3-gap me-2 text-primary"></i>
+              <h4 class="mb-0">Choose Template</h4>
+            </div>
+            <button class="btn btn-success" id="ai-template-btn">
+              <i class="bi bi-magic me-1"></i> Let AI Choose
             </button>
-            <p>Or select a template manually below:</p>
           </div>
-          
-          <div class="row" id="template-options">
-            <!-- Templates will be loaded dynamically -->
-          </div>
-        </div>
-        <div class="card-footer bg-transparent">
-          <div class="d-flex justify-content-between">
-            <button class="btn btn-secondary prev-step">Back</button>
-            <button class="btn btn-primary next-step">Continue</button>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <!-- STEP 3: Image & Background Adjustments -->
-    <div class="step-container d-none" id="step-3-container">
-      <div class="card mb-4">
-        <div class="card-header">
-          <h4>Step 3: Image & Background Adjustments</h4>
-        </div>
-        <div class="card-body">
-          <div class="row">
-            <div class="col-md-6 mb-4">
-              <div class="mb-3">
-                <label for="post-image" class="form-label">Upload Image</label>
-                <input type="file" class="form-control" id="post-image">
-              </div>
-              
-              <div class="mb-3">
-                <button class="btn btn-outline-primary me-2" id="remove-bg-btn" disabled>
-                  <i class="bi bi-eraser"></i> Remove Background
-                </button>
-                <button class="btn btn-outline-primary" id="enhance-image-btn" disabled>
-                  <i class="bi bi-magic"></i> Enhance Image
-                </button>
-              </div>
-            </div>
-            
-            <div class="col-md-6">
-              <div class="mb-3">
-                <label class="form-label">Image Preview</label>
-                <div class="d-flex align-items-center justify-content-center bg-light rounded" style="height: 300px;">
-                  <img id="image-preview" src="" alt="Preview" class="img-fluid" style="max-height: 100%; max-width: 100%; display: none;">
-                  <div id="no-image-message">
-                    <i class="bi bi-image text-muted" style="font-size: 48px;"></i>
-                    <p class="text-muted">Upload an image to see preview</p>
+          <div class="card-body">
+            <div class="row" id="template-options">
+              <!-- Templates will be loaded dynamically -->
+              <div class="col-md-4 mb-4">
+                <div class="template-card card">
+                  <div class="position-relative">
+                    <img src="https://via.placeholder.com/400x300/e0f2f1/00695c?text=Modern" class="card-img-top" alt="Modern Template">
                   </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="card-footer bg-transparent">
-          <div class="d-flex justify-content-between">
-            <button class="btn btn-secondary prev-step">Back</button>
-            <button class="btn btn-primary next-step">Continue</button>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <!-- STEP 4: AI-Generated Captions & Hashtags -->
-    <div class="step-container d-none" id="step-4-container">
-      <div class="card mb-4">
-        <div class="card-header">
-          <h4>Step 4: AI-Generated Captions & Hashtags</h4>
-        </div>
-        <div class="card-body">
-          <div class="row">
-            <div class="col-md-6 mb-4">
-              <div class="mb-3">
-                <label for="cta-select" class="form-label">Select Call to Action</label>
-                <select class="form-select" id="cta-select">
-                  <option value="visit">Visit us today</option>
-                  <option value="call">Call now</option>
-                  <option value="book">Book an appointment</option>
-                  <option value="order">Order yours today</option>
-                  <option value="dm">DM us for more details</option>
-                  <option value="learn">Learn more</option>
-                </select>
-              </div>
-              
-              <div class="mb-3">
-                <button class="btn btn-success" id="generate-content-btn">
-                  <i class="bi bi-magic"></i> Generate Caption & Hashtags
-                </button>
-              </div>
-            </div>
-            
-            <div class="col-md-6">
-              <div class="mb-3">
-                <label for="post-content" class="form-label">Caption</label>
-                <textarea class="form-control" id="post-content" rows="5" placeholder="Generated caption will appear here..."></textarea>
-              </div>
-              
-              <div class="mb-3">
-                <label for="post-hashtags" class="form-label">Hashtags</label>
-                <textarea class="form-control" id="post-hashtags" rows="2" placeholder="Generated hashtags will appear here..."></textarea>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="card-footer bg-transparent">
-          <div class="d-flex justify-content-between">
-            <button class="btn btn-secondary prev-step">Back</button>
-            <button class="btn btn-primary next-step">Continue</button>
-          </div>
-        </div>
-      </div>
-    </div>
-    
-    <!-- STEP 5: Resize & Repurpose for Different Platforms -->
-    <div class="step-container d-none" id="step-5-container">
-      <div class="card mb-4">
-        <div class="card-header">
-          <h4>Step 5: Resize & Repurpose for Different Platforms</h4>
-        </div>
-        <div class="card-body">
-          <div class="row">
-            <div class="col-md-6 mb-4">
-              <div class="mb-3">
-                <label class="form-label">Select Platforms</label>
-                <div id="platforms-container">
-                  <!-- Platforms will be loaded dynamically -->
-                </div>
-              </div>
-              
-              <div class="mb-3">
-                <div class="form-check form-switch">
-                  <input class="form-check-input" type="checkbox" id="auto-resize" checked>
-                  <label class="form-check-label" for="auto-resize">Auto-resize for each platform</label>
-                </div>
-              </div>
-              
-              <div class="mb-3">
-                <div class="form-check form-switch">
-                  <input class="form-check-input" type="checkbox" id="auto-caption" checked>
-                  <label class="form-check-label" for="auto-caption">Optimize captions for each platform</label>
-                </div>
-              </div>
-            </div>
-            
-            <div class="col-md-6">
-              <div class="mb-3">
-                <label class="form-label">Platform Preview</label>
-                <div class="nav nav-tabs mb-3">
-                  <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#instagram-tab">Instagram</button>
-                  <button class="nav-link" data-bs-toggle="tab" data-bs-target="#facebook-tab">Facebook</button>
-                  <button class="nav-link" data-bs-toggle="tab" data-bs-target="#twitter-tab">Twitter</button>
-                </div>
-                
-                <div class="tab-content" id="platform-previews">
-                  <div class="tab-pane fade show active" id="instagram-tab">
-                    <div class="instagram-preview border rounded p-2">
-                      <div class="d-flex align-items-center mb-2">
-                        <div class="bg-light rounded-circle me-2" style="width: 32px; height: 32px;"></div>
-                        <div class="small fw-bold">yourbusinessname</div>
-                      </div>
-                      <div class="bg-light rounded mb-2" style="height: 300px;">
-                        <!-- Preview image would be shown here -->
-                      </div>
-                      <div class="small">
-                        <strong>yourbusinessname</strong>
-                        <span id="preview-caption-text">Your caption will appear here...</span>
-                      </div>
-                      <div class="small text-muted" id="preview-hashtags-text">#hashtags #will #appear #here</div>
+                  <div class="card-body">
+                    <h5 class="card-title">Modern & Clean</h5>
+                    <div class="form-check mt-2">
+                      <input class="form-check-input" type="radio" name="template" value="template-1" id="template-1">
+                      <label class="form-check-label" for="template-1">Select Template</label>
                     </div>
                   </div>
-                  <!-- Other platform previews would be here -->
+                </div>
+              </div>
+              <div class="col-md-4 mb-4">
+                <div class="template-card card">
+                  <div class="position-relative">
+                    <img src="https://via.placeholder.com/400x300/e0f2f1/00695c?text=Bold" class="card-img-top" alt="Bold Template">
+                  </div>
+                  <div class="card-body">
+                    <h5 class="card-title">Bold & Colorful</h5>
+                    <div class="form-check mt-2">
+                      <input class="form-check-input" type="radio" name="template" value="template-2" id="template-2">
+                      <label class="form-check-label" for="template-2">Select Template</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4 mb-4">
+                <div class="template-card card">
+                  <div class="position-relative">
+                    <img src="https://via.placeholder.com/400x300/e0f2f1/00695c?text=Business" class="card-img-top" alt="Business Template">
+                  </div>
+                  <div class="card-body">
+                    <h5 class="card-title">Business Special</h5>
+                    <div class="form-check mt-2">
+                      <input class="form-check-input" type="radio" name="template" value="template-3" id="template-3">
+                      <label class="form-check-label" for="template-3">Select Template</label>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-        <div class="card-footer bg-transparent">
-          <div class="d-flex justify-content-between">
-            <button class="btn btn-secondary prev-step">Back</button>
-            <button class="btn btn-primary next-step">Continue</button>
+          <div class="card-footer bg-transparent py-3">
+            <button id="generate-btn" class="btn btn-primary btn-lg w-100 d-flex align-items-center justify-content-center">
+              <i class="bi bi-wand-magic-sparkles me-2"></i> Generate Content
+            </button>
           </div>
         </div>
       </div>
     </div>
     
-    <!-- STEP 6: Automation & Scheduling -->
-    <div class="step-container d-none" id="step-6-container">
-      <div class="card mb-4">
-        <div class="card-header">
-          <h4>Step 6: Automation & Scheduling</h4>
-        </div>
-        <div class="card-body">
-          <div class="row">
-            <div class="col-md-6 mb-4">
-              <div class="mb-3">
-                <label for="post-date" class="form-label">Select Date & Time</label>
-                <input type="datetime-local" class="form-control" id="post-date">
+    <!-- Preview Section -->
+    <div class="row mt-2">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header d-flex align-items-center">
+            <i class="bi bi-eye me-2 text-primary"></i>
+            <h4 class="mb-0">Generated Content</h4>
+          </div>
+          <div class="card-body preview-container">
+            <!-- Loading Overlay -->
+            <div class="loading-overlay d-none" id="loading-overlay">
+              <div class="spinner-border mb-3" role="status" style="width: 3rem; height: 3rem;">
+                <span class="visually-hidden">Loading...</span>
               </div>
-              
-              <div class="mb-3">
-                <div class="form-check form-switch">
-                  <input class="form-check-input" type="checkbox" id="schedule-optimal-time" checked>
-                  <label class="form-check-label" for="schedule-optimal-time">Use AI to pick optimal posting time</label>
-                </div>
-              </div>
-              
-              <div class="mb-3">
-                <div class="form-check form-switch">
-                  <input class="form-check-input" type="checkbox" id="schedule-recurring">
-                  <label class="form-check-label" for="schedule-recurring">Make this a recurring post</label>
-                </div>
-              </div>
+              <h5 class="mb-2">AI Magic in Progress</h5>
+              <p class="text-muted" id="loading-message">Generating content based on your business profile...</p>
             </div>
             
-            <div class="col-md-6">
-              <div class="alert alert-info">
-                <i class="bi bi-info-circle-fill me-2"></i>
-                <strong>AI Recommendation:</strong> Based on your audience, the best time to post is around 6:00 PM on weekdays.
+            <!-- Content Preview -->
+            <div id="preview-content" class="text-center py-5">
+              <div class="mb-4">
+                <i class="bi bi-image" style="font-size: 64px; color: #b2dfdb;"></i>
+                <p class="text-muted mt-3">Select a template and click "Generate Content" to see your branded content here</p>
               </div>
-              
-              <div class="card bg-light">
-                <div class="card-body">
-                  <h5>Post Summary</h5>
-                  <p class="mb-1"><strong>Type:</strong> <span id="summary-type">Image Post</span></p>
-                  <p class="mb-1"><strong>Platforms:</strong> <span id="summary-platforms">Instagram, Facebook</span></p>
-                  <p class="mb-0"><strong>Scheduled for:</strong> <span id="summary-time">Optimal time (around 6:00 PM)</span></p>
+            </div>
+          </div>
+          <div class="card-footer bg-transparent d-none" id="save-controls">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3 mb-md-0">
+                  <label for="post-date" class="form-label fw-medium">
+                    <i class="bi bi-calendar-event me-1 text-primary"></i>
+                    Schedule Post
+                  </label>
+                  <div class="input-group">
+                    <span class="input-group-text bg-white">
+                      <i class="bi bi-calendar text-primary"></i>
+                    </span>
+                    <input type="datetime-local" class="form-control" id="post-date">
+                  </div>
                 </div>
+              </div>
+              <div class="col-md-6 d-flex align-items-end">
+                <button id="save-post-btn" class="btn btn-success btn-lg w-100 d-flex align-items-center justify-content-center">
+                  <i class="bi bi-calendar-check me-2"></i> Schedule Post
+                </button>
               </div>
             </div>
           </div>
         </div>
-        <div class="card-footer bg-transparent">
-          <div class="d-flex justify-content-between">
-            <button class="btn btn-secondary prev-step">Back</button>
-            <button class="btn btn-success" id="save-post-btn">Schedule Post</button>
-          </div>
-        </div>
       </div>
     </div>
-    
   </div>
 
-  <footer class="py-4 bg-dark">
+  <footer class="py-4 bg-dark mt-5 text-white">
     <div class="container">
-      <p class="m-0 text-center text-white">Copyright &copy; OmuMediaKit 2025</p>
+      <div class="row">
+        <div class="col-12 text-center">
+          <p class="m-0">
+            <i class="bi bi-layers-half me-2"></i>
+            Copyright &copy; OmuMediaKit 2025
+          </p>
+        </div>
+      </div>
     </div>
   </footer>
 

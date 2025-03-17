@@ -27,6 +27,13 @@ document.addEventListener('DOMContentLoaded', function() {
   const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
     ? '' : 'https://kit-lime.vercel.app';
 
+  // Default brand colors
+  const DEFAULT_COLORS = {
+    primary: '#00897b',
+    secondary: '#26a69a',
+    accent: '#4db6ac'
+  };
+
   // DOM Elements
   const businessNameDisplay = document.getElementById('business-name-display');
   const businessTypeDisplay = document.getElementById('business-type-display');
@@ -129,9 +136,9 @@ document.addEventListener('DOMContentLoaded', function() {
         profile = {
           businessName: 'Your Business',
           businessType: 'Marketing',
-          primaryColor: '#4285f4',
-          secondaryColor: '#34a853',
-          accentColor: '#ea4335'
+          primaryColor: DEFAULT_COLORS.primary,
+          secondaryColor: DEFAULT_COLORS.secondary,
+          accentColor: DEFAULT_COLORS.accent
         };
         displayBusinessProfile();
       } else {
@@ -153,10 +160,10 @@ document.addEventListener('DOMContentLoaded', function() {
       businessLogo.src = `${API_URL}/uploads/${profile.logoUrl}`;
     }
     
-    // Set brand colors
-    primaryColor.style.backgroundColor = profile.primaryColor || '#4285f4';
-    secondaryColor.style.backgroundColor = profile.secondaryColor || '#34a853';
-    accentColor.style.backgroundColor = profile.accentColor || '#ea4335';
+    // Set brand colors - using teal color scheme if no colors are defined
+    primaryColor.style.backgroundColor = profile.primaryColor || DEFAULT_COLORS.primary;
+    secondaryColor.style.backgroundColor = profile.secondaryColor || DEFAULT_COLORS.secondary;
+    accentColor.style.backgroundColor = profile.accentColor || DEFAULT_COLORS.accent;
   }
   
   // Select AI-recommended template
@@ -183,7 +190,7 @@ document.addEventListener('DOMContentLoaded', function() {
       showAlert('AI has selected the optimal template for your business!', 'success');
       
       aiTemplateBtn.disabled = false;
-      aiTemplateBtn.innerHTML = '<i class="bi bi-magic"></i> Let AI Choose';
+      aiTemplateBtn.innerHTML = '<i class="bi bi-magic me-1"></i> Let AI Choose';
     }, 1200);
   }
   
@@ -207,9 +214,9 @@ document.addEventListener('DOMContentLoaded', function() {
       name: profile.businessName || 'Your Business',
       type: profile.businessType || 'Business',
       colors: {
-        primary: profile.primaryColor || '#4285f4',
-        secondary: profile.secondaryColor || '#34a853',
-        accent: profile.accentColor || '#ea4335'
+        primary: profile.primaryColor || DEFAULT_COLORS.primary,
+        secondary: profile.secondaryColor || DEFAULT_COLORS.secondary,
+        accent: profile.accentColor || DEFAULT_COLORS.accent
       },
       logoUrl: profile.logoUrl,
       description: profile.description || '',
@@ -389,27 +396,36 @@ Format the response as JSON with these fields: headline, caption, callToAction, 
   // Template generators
   function createModernTemplate(businessData, content) {
     return `
-      <div class="social-post" style="max-width: 500px; margin: 0 auto; font-family: 'Arial', sans-serif;">
-        <div class="post-header" style="background-color: ${businessData.colors.primary}; color: white; padding: 20px; border-radius: 8px 8px 0 0;">
+      <div class="social-post" style="max-width: 500px; margin: 0 auto; font-family: 'Segoe UI', 'Arial', sans-serif; box-shadow: 0 12px 24px rgba(0,0,0,0.1); border-radius: 16px; overflow: hidden;">
+        <div class="post-header" style="background-color: ${businessData.colors.primary}; color: white; padding: 24px; position: relative;">
           <div class="d-flex align-items-center">
-            <img src="${businessData.logoUrl ? `${API_URL}/uploads/${businessData.logoUrl}` : 'img/placeholder-logo.png'}" alt="${businessData.name}" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid white;">
-            <div class="ms-3">
-              <h5 class="mb-0">${businessData.name}</h5>
-              <small>${businessData.type}</small>
+            <div style="background-color: white; padding: 8px; border-radius: 12px; margin-right: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+              <img src="${businessData.logoUrl ? `${API_URL}/uploads/${businessData.logoUrl}` : 'img/placeholder-logo.png'}" alt="${businessData.name}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 6px;">
+            </div>
+            <div>
+              <h5 class="mb-0 fw-bold">${businessData.name}</h5>
+              <div class="d-flex align-items-center mt-1">
+                <i class="bi bi-geo-alt me-1" style="font-size: 12px;"></i>
+                <small>${businessData.type}</small>
+              </div>
             </div>
           </div>
         </div>
         
-        <div class="post-image" style="height: 300px; background-color: #f8f9fa; display: flex; flex-direction: column; align-items: center; justify-content: center; border-left: 1px solid #dee2e6; border-right: 1px solid #dee2e6;">
-          <i class="bi bi-image" style="font-size: 48px; color: #adb5bd;"></i>
-          <p class="text-muted mt-2">${content.imageDescription}</p>
+        <div class="post-image" style="height: 280px; background-color: #f0f7f6; display: flex; flex-direction: column; align-items: center; justify-content: center; border-bottom: 1px solid rgba(0,0,0,0.05);">
+          <div style="width: 80px; height: 80px; border-radius: 50%; background-color: rgba(0, 137, 123, 0.1); display: flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+            <i class="bi bi-image" style="font-size: 42px; color: ${businessData.colors.primary};"></i>
+          </div>
+          <p class="text-muted px-4 text-center" style="max-width: 280px; font-size: 14px;">${content.imageDescription}</p>
         </div>
         
-        <div class="post-content" style="padding: 20px; border: 1px solid #dee2e6; border-radius: 0 0 8px 8px;">
-          <h4 style="color: ${businessData.colors.primary};">${content.headline}</h4>
-          <p>${content.caption}</p>
-          <p class="fw-bold" style="color: ${businessData.colors.secondary};">${content.callToAction}</p>
-          <p class="text-muted">${content.hashtags}</p>
+        <div class="post-content" style="padding: 28px; background-color: white;">
+          <h4 style="color: ${businessData.colors.primary}; font-weight: 700; margin-bottom: 16px;">${content.headline}</h4>
+          <p style="color: #455a64; line-height: 1.6; margin-bottom: 20px;">${content.caption}</p>
+          <div style="background-color: ${businessData.colors.secondary}; padding: 14px; border-radius: 8px; color: white; text-align: center; margin-bottom: 20px; font-weight: 600;">
+            ${content.callToAction}
+          </div>
+          <p style="color: ${businessData.colors.primary}; font-size: 14px;">${content.hashtags}</p>
         </div>
       </div>
     `;
@@ -417,29 +433,38 @@ Format the response as JSON with these fields: headline, caption, callToAction, 
   
   function createBoldTemplate(businessData, content) {
     return `
-      <div class="social-post" style="max-width: 500px; margin: 0 auto; font-family: 'Arial', sans-serif;">
-        <div class="post-header" style="padding: 15px; background-color: ${businessData.colors.primary}; color: white; border-radius: 8px 8px 0 0;">
-          <h3 style="margin: 0; font-weight: 800; text-transform: uppercase; text-align: center;">${content.headline}</h3>
+      <div class="social-post" style="max-width: 500px; margin: 0 auto; font-family: 'Segoe UI', 'Arial', sans-serif; box-shadow: 0 12px 24px rgba(0,0,0,0.1); border-radius: 16px; overflow: hidden;">
+        <div class="post-header" style="padding: 20px; background: linear-gradient(135deg, ${businessData.colors.primary} 0%, ${businessData.colors.secondary} 100%); color: white; text-align: center;">
+          <h3 style="margin: 0; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">${content.headline}</h3>
         </div>
         
-        <div class="post-image" style="position: relative; height: 300px; background-color: #f8f9fa; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden;">
-          <i class="bi bi-image" style="font-size: 48px; color: #adb5bd;"></i>
-          <p class="text-muted mt-2">${content.imageDescription}</p>
+        <div class="post-image" style="position: relative; height: 300px; background-color: #f0f7f6; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden;">
+          <div style="width: 80px; height: 80px; border-radius: 50%; background-color: rgba(0, 137, 123, 0.1); display: flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+            <i class="bi bi-image" style="font-size: 42px; color: ${businessData.colors.primary};"></i>
+          </div>
+          <p class="text-muted px-4 text-center" style="max-width: 280px; font-size: 14px;">${content.imageDescription}</p>
           
-          <div style="position: absolute; bottom: 0; left: 0; right: 0; padding: 10px 15px; background-color: rgba(0,0,0,0.7); color: white;">
+          <div style="position: absolute; bottom: 0; left: 0; right: 0; padding: 12px 15px; background-color: rgba(0,0,0,0.7); color: white;">
             <div class="d-flex align-items-center">
-              <img src="${businessData.logoUrl ? `${API_URL}/uploads/${businessData.logoUrl}` : 'img/placeholder-logo.png'}" alt="${businessData.name}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid white;">
-              <div class="ms-2">
-                <h6 class="mb-0">${businessData.name}</h6>
+              <div style="background-color: white; padding: 3px; border-radius: 50%; margin-right: 10px;">
+                <img src="${businessData.logoUrl ? `${API_URL}/uploads/${businessData.logoUrl}` : 'img/placeholder-logo.png'}" alt="${businessData.name}" style="width: 38px; height: 38px; object-fit: cover; border-radius: 50%;">
+              </div>
+              <div>
+                <h6 class="mb-0 fw-bold">${businessData.name}</h6>
+                <small style="opacity: 0.8;">${businessData.type}</small>
               </div>
             </div>
           </div>
         </div>
         
-        <div class="post-content" style="padding: 20px; background-color: white; border: 3px solid ${businessData.colors.primary}; border-top: none; border-radius: 0 0 8px 8px;">
-          <p style="font-size: 1.1rem;">${content.caption}</p>
-          <p class="fw-bold" style="color: ${businessData.colors.accent}; font-size: 1.2rem; text-transform: uppercase;">${content.callToAction}</p>
-          <p style="color: ${businessData.colors.primary};">${content.hashtags}</p>
+        <div class="post-content" style="padding: 28px; background-color: white;">
+          <p style="font-size: 1.1rem; color: #455a64; line-height: 1.6; margin-bottom: 24px;">${content.caption}</p>
+          <div style="position: relative; margin-bottom: 24px;">
+            <div style="background: linear-gradient(135deg, ${businessData.colors.secondary} 0%, ${businessData.colors.accent} 100%); color: white; padding: 16px; border-radius: 8px; text-align: center; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; font-size: 1.1rem; box-shadow: 0 4px 12px rgba(0, 137, 123, 0.25);">
+              ${content.callToAction}
+            </div>
+          </div>
+          <p style="color: ${businessData.colors.primary}; font-size: 14px; text-align: center;">${content.hashtags}</p>
         </div>
       </div>
     `;
@@ -447,27 +472,31 @@ Format the response as JSON with these fields: headline, caption, callToAction, 
   
   function createBusinessTemplate(businessData, content) {
     return `
-      <div class="social-post" style="max-width: 500px; margin: 0 auto; font-family: 'Arial', sans-serif; border: 1px solid #dee2e6; border-radius: 8px; overflow: hidden;">
-        <div class="d-flex">
-          <div style="width: 40%; padding: 20px; background-color: ${businessData.colors.primary}; color: white; display: flex; flex-direction: column; justify-content: center;">
-            <img src="${businessData.logoUrl ? `${API_URL}/uploads/${businessData.logoUrl}` : 'img/placeholder-logo.png'}" alt="${businessData.name}" class="mb-3" style="width: 80px; height: 80px; object-fit: contain; background-color: white; padding: 5px; border-radius: 5px;">
-            <h5>${businessData.name}</h5>
-            <p class="small">${businessData.type}</p>
+      <div class="social-post" style="max-width: 500px; margin: 0 auto; font-family: 'Segoe UI', 'Arial', sans-serif; box-shadow: 0 12px 24px rgba(0,0,0,0.1); border-radius: 16px; overflow: hidden;">
+        <div class="d-flex" style="background-color: white;">
+          <div style="width: 40%; background: linear-gradient(to bottom, ${businessData.colors.primary} 0%, ${businessData.colors.secondary} 100%); color: white; display: flex; flex-direction: column; padding: 24px;">
+            <div style="background-color: white; width: 90px; height: 90px; border-radius: 12px; padding: 6px; margin-bottom: 16px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
+              <img src="${businessData.logoUrl ? `${API_URL}/uploads/${businessData.logoUrl}` : 'img/placeholder-logo.png'}" alt="${businessData.name}" style="width: 100%; height: 100%; object-fit: contain; border-radius: 8px;">
+            </div>
+            <h5 class="fw-bold mb-1">${businessData.name}</h5>
+            <p class="small mb-4" style="opacity: 0.9;">${businessData.type}</p>
             <div class="mt-auto">
-              <p class="mb-0 fw-bold">${content.callToAction}</p>
+              <p class="mb-0 fw-bold" style="background-color: rgba(255,255,255,0.15); padding: 10px; border-radius: 8px; text-align: center;">${content.callToAction}</p>
             </div>
           </div>
           
           <div style="width: 60%;">
-            <div class="post-image" style="height: 200px; background-color: #f8f9fa; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-              <i class="bi bi-image" style="font-size: 48px; color: #adb5bd;"></i>
-              <p class="text-muted small mt-2">${content.imageDescription}</p>
+            <div style="height: 200px; background-color: #f0f7f6; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;">
+              <div style="width: 60px; height: 60px; border-radius: 50%; background-color: rgba(0, 137, 123, 0.1); display: flex; align-items: center; justify-content: center; margin-bottom: 12px;">
+                <i class="bi bi-image" style="font-size: 32px; color: ${businessData.colors.primary};"></i>
+              </div>
+              <p class="text-muted small text-center px-3" style="line-height: 1.4;">${content.imageDescription}</p>
             </div>
             
-            <div style="padding: 15px; background-color: white;">
-              <h5 style="color: ${businessData.colors.secondary};">${content.headline}</h5>
-              <p class="small">${content.caption}</p>
-              <p class="text-muted small">${content.hashtags}</p>
+            <div style="padding: 24px;">
+              <h5 style="color: ${businessData.colors.primary}; font-weight: 700; margin-bottom: 12px;">${content.headline}</h5>
+              <p class="small" style="color: #455a64; line-height: 1.6; margin-bottom: 18px;">${content.caption}</p>
+              <p class="text-muted small" style="color: ${businessData.colors.secondary} !important;">${content.hashtags}</p>
             </div>
           </div>
         </div>
@@ -561,7 +590,7 @@ Format the response as JSON with these fields: headline, caption, callToAction, 
     }
     
     savePostBtn.disabled = true;
-    savePostBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Saving...';
+    savePostBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Saving...';
     
     // Prepare post data
     const postData = {
@@ -607,14 +636,14 @@ Format the response as JSON with these fields: headline, caption, callToAction, 
       } else {
         showAlert('Error saving post: ' + data.message, 'danger');
         savePostBtn.disabled = false;
-        savePostBtn.innerHTML = '<i class="bi bi-calendar-check"></i> Schedule Post';
+        savePostBtn.innerHTML = '<i class="bi bi-calendar-check me-2"></i> Schedule Post';
       }
     })
     .catch(error => {
       console.error('Error saving post:', error);
       showAlert('Error saving post. Please try again.', 'danger');
       savePostBtn.disabled = false;
-      savePostBtn.innerHTML = '<i class="bi bi-calendar-check"></i> Schedule Post';
+      savePostBtn.innerHTML = '<i class="bi bi-calendar-check me-2"></i> Schedule Post';
     });
   }
   
@@ -624,7 +653,10 @@ Format the response as JSON with these fields: headline, caption, callToAction, 
     
     alertContainer.innerHTML = `
       <div class="alert alert-${type} alert-dismissible fade show" role="alert">
-        ${message}
+        <div class="d-flex align-items-center">
+          <i class="bi ${type === 'success' ? 'bi-check-circle' : type === 'danger' ? 'bi-exclamation-triangle' : 'bi-info-circle'} me-2"></i>
+          <span>${message}</span>
+        </div>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
       </div>
     `;
