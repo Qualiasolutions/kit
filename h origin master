@@ -1,0 +1,5 @@
+[33mcommit e8c0a0888df19cf129845c2d3babaa5591edd18d[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m)[m
+Author: Qualia Solutions <info@qualiasolutions.com>
+Date:   Mon Mar 17 20:56:28 2025 +0200
+
+    Fix Vercel deployment: Move to api directory structure and update routing
