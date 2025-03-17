@@ -8,11 +8,35 @@ const path = require('path');
 // Load environment variables
 dotenv.config();
 
-// Connect to database
-connectDB();
-
 // Initialize express
 const app = express();
+
+// Connect to database with retry logic
+const initDatabase = async () => {
+  let retries = 5;
+  let connected = false;
+  
+  while (retries > 0 && !connected) {
+    try {
+      console.log(`MongoDB connection attempt: ${6 - retries}/5`);
+      await connectDB();
+      connected = true;
+      console.log('MongoDB connection successful');
+    } catch (error) {
+      console.error(`MongoDB connection failed (${retries} attempts left): ${error.message}`);
+      retries--;
+      // Wait 2 seconds before retrying
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    }
+  }
+  
+  if (!connected) {
+    console.error('All MongoDB connection attempts failed');
+  }
+};
+
+// Initialize database connection
+initDatabase().catch(err => console.error('Database initialization error:', err));
 
 // Middleware
 app.use(express.json());
