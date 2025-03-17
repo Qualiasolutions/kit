@@ -15,6 +15,35 @@ document.addEventListener('DOMContentLoaded', function() {
     const password = document.getElementById('password').value;
     
     try {
+      // LOCAL STORAGE MODE - Bypass server login
+      // Check if demo mode enabled
+      const devMode = true; // Set to true to enable demo mode, false to use actual API
+
+      if (devMode) {
+        // Create mock user data
+        const mockUser = {
+          id: 'local-' + Date.now(),
+          name: email.split('@')[0], // Use part of email as name
+          email: email
+        };
+        
+        // Create mock token
+        const mockToken = 'dev-token-' + Math.random().toString(36).substring(2);
+        
+        // Save user and token to localStorage
+        localStorage.setItem('token', mockToken);
+        localStorage.setItem('user', JSON.stringify(mockUser));
+        localStorage.setItem('devMode', 'true');
+        
+        // Show success message and redirect
+        showAlert('Login successful (Dev Mode)! Redirecting...', 'success');
+        setTimeout(() => {
+          window.location.href = 'dashboard.html';
+        }, 1500);
+        return;
+      }
+      
+      // PRODUCTION MODE - Only runs if devMode is false
       // Send login request
       const response = await fetch(`${API_URL}/api/auth/login`, {
         method: 'POST',

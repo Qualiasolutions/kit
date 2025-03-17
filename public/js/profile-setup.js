@@ -6,6 +6,9 @@ document.addEventListener('DOMContentLoaded', function() {
     return;
   }
 
+  // Check if we're in dev mode
+  const devMode = localStorage.getItem('devMode') === 'true';
+
   // API base URL - change this to your deployed API URL when needed
   const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
     ? '' // Empty for local development (relative path)
@@ -509,80 +512,69 @@ document.addEventListener('DOMContentLoaded', function() {
   async function submitProfile(e) {
     e.preventDefault();
     
-    // Validate final step
+    // Validate final step (if not already validated)
     if (!validateStep(currentStep)) {
       return;
     }
     
-    // Gather form data
-    const formData = new FormData();
+    // Get form data
+    const formData = new FormData(profileForm);
     
-    // Business information
-    formData.append('businessName', document.getElementById('business-name').value);
-    formData.append('businessType', businessTypeSelect.value);
-    
-    // Logo
-    if (logoInput.files.length > 0) {
-      formData.append('logo', logoInput.files[0]);
+    // Get selected template
+    const selectedTemplate = document.querySelector('input[name="template-selection"]:checked');
+    if (selectedTemplate) {
+      formData.append('template', selectedTemplate.value);
     }
     
-    // Brand colors
-    formData.append('primaryColor', primaryColorInput.value);
-    formData.append('secondaryColor', secondaryColorInput.value);
-    formData.append('accentColor', accentColorInput.value);
-    
-    // Template selection
-    const templateSelection = document.querySelector('input[name="template-selection"]:checked').value;
-    formData.append('templateSelection', templateSelection);
-    
-    if (templateSelection === 'manual-select') {
-      const selectedTemplate = document.querySelector('input[name="template"]:checked');
-      if (selectedTemplate) {
-        formData.append('templateId', selectedTemplate.value);
-      }
-    }
-    
-    // Business voice
-    const businessVoice = document.querySelector('input[name="business-voice"]:checked').value;
-    formData.append('businessVoice', businessVoice);
-    
-    // Target audiences
-    formData.append('targetAudiences', JSON.stringify(audiences));
-    
-    // Location type
-    const locationType = document.querySelector('input[name="locationType"]:checked').value;
-    formData.append('locationType', locationType);
-    
-    // Location details
-    if (locationType === 'physical' || locationType === 'both') {
-      formData.append('address', document.getElementById('business-address').value);
-      formData.append('city', document.getElementById('business-city').value);
-      formData.append('state', document.getElementById('business-state').value);
-      formData.append('zip', document.getElementById('business-zip').value);
-    }
-    
-    if (locationType === 'online' || locationType === 'both') {
-      formData.append('website', document.getElementById('business-website').value);
-    }
-    
-    formData.append('phone', document.getElementById('business-phone').value);
-    formData.append('email', document.getElementById('business-email').value);
-    
-    // Social platforms
-    const socialPlatforms = [];
-    document.querySelectorAll('.social-platform:checked').forEach(platform => {
-      socialPlatforms.push(platform.value);
-    });
-    formData.append('socialPlatforms', JSON.stringify(socialPlatforms));
+    // Add target audiences
+    formData.append('audiences', JSON.stringify(audiences));
     
     try {
       // Show loading state
-      const submitButton = profileForm.querySelector('button[type="submit"]');
-      const originalText = submitButton.innerHTML;
-      submitButton.disabled = true;
-      submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Saving...';
+      showAlert('Setting up your business profile...', 'info');
       
-      // Submit to API
+      // DEV MODE - Use localStorage instead of API
+      if (devMode) {
+        // Create a mock profile object
+        const mockProfile = {
+          businessName: formData.get('businessName'),
+          industry: formData.get('businessType'),
+          niche: formData.get('businessNiche') || 'General',
+          description: formData.get('businessDescription'),
+          brandColors: {
+            primary: formData.get('primaryColor'),
+            secondary: formData.get('secondaryColor'),
+            accent: formData.get('accentColor')
+          },
+          voice: formData.get('businessVoice'),
+          audiences: audiences,
+          locationType: formData.get('locationType'),
+          logoUploaded: logoInput.files.length > 0
+        };
+        
+        // If logo was uploaded, use the preview as data URL
+        if (logoInput.files.length > 0 && logoPreview.src) {
+          mockProfile.logo = logoPreview.src;
+        } else {
+          mockProfile.logo = 'no-logo.png';
+        }
+        
+        // Save to localStorage
+        localStorage.setItem('mockProfile', JSON.stringify(mockProfile));
+        
+        // Success message
+        showAlert('Business profile created successfully (Dev Mode)!', 'success');
+        
+        // Redirect to dashboard
+        setTimeout(() => {
+          window.location.href = 'dashboard.html';
+        }, 1500);
+        
+        return;
+      }
+      
+      // PRODUCTION MODE - Only runs if devMode is false
+      // Send data to API
       const response = await fetch(`${API_URL}/api/profile`, {
         method: 'POST',
         headers: {
@@ -594,30 +586,19 @@ document.addEventListener('DOMContentLoaded', function() {
       const data = await response.json();
       
       if (response.ok) {
-        showAlert('Business profile saved successfully!', 'success');
+        // Show success message
+        showAlert('Business profile created successfully!', 'success');
         
-        // Store profile completion in local storage
-        localStorage.setItem('profileComplete', 'true');
-        
-        // Redirect to dashboard after a delay
+        // Redirect to dashboard
         setTimeout(() => {
           window.location.href = 'dashboard.html';
         }, 1500);
       } else {
-        showAlert(data.error || 'Failed to save profile. Please try again.', 'danger');
-        
-        // Restore submit button
-        submitButton.disabled = false;
-        submitButton.innerHTML = originalText;
+        showAlert(data.error || 'Error setting up profile', 'danger');
       }
     } catch (error) {
       showAlert('Server error. Please try again later.', 'danger');
       console.error(error);
-      
-      // Restore submit button
-      const submitButton = profileForm.querySelector('button[type="submit"]');
-      submitButton.disabled = false;
-      submitButton.innerHTML = 'Complete Setup';
     }
   }
   

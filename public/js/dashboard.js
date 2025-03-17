@@ -29,6 +29,9 @@ document.addEventListener('DOMContentLoaded', function() {
     userName.textContent = user.name;
   }
 
+  // Check if we're in dev mode
+  const devMode = localStorage.getItem('devMode') === 'true';
+
   // Load business profile
   loadProfile();
 
@@ -39,6 +42,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Clear localStorage
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    localStorage.removeItem('devMode');
+    localStorage.removeItem('mockProfile');
     
     // Redirect to login page
     window.location.href = 'login.html';
@@ -47,6 +52,28 @@ document.addEventListener('DOMContentLoaded', function() {
   // Load business profile
   async function loadProfile() {
     try {
+      // Check if we're in development mode
+      if (devMode) {
+        // Check if we have a profile in localStorage
+        const mockProfile = JSON.parse(localStorage.getItem('mockProfile'));
+        
+        if (!mockProfile) {
+          // No profile found, show incomplete section
+          profileIncomplete.style.display = 'block';
+          profileComplete.style.display = 'none';
+          return;
+        }
+        
+        // Show profile section
+        profileIncomplete.style.display = 'none';
+        profileComplete.style.display = 'flex';
+        
+        // Update profile display
+        updateProfileDisplay(mockProfile);
+        return;
+      }
+      
+      // If not in dev mode, fetch from server
       const response = await fetch(`${API_URL}/api/profile`, {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -85,7 +112,12 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Logo
     if (profile.logo && profile.logo !== 'no-logo.png') {
-      businessLogo.src = `${API_URL}/uploads/${profile.logo}`;
+      if (devMode) {
+        // For dev mode, we might have a data URL
+        businessLogo.src = profile.logo;
+      } else {
+        businessLogo.src = `${API_URL}/uploads/${profile.logo}`;
+      }
     }
     
     // Brand colors

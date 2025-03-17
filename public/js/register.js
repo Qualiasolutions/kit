@@ -23,6 +23,35 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     try {
+      // LOCAL STORAGE MODE - Bypass server registration
+      // Check if demo mode enabled
+      const devMode = true; // Set to true to enable demo mode, false to use actual API
+
+      if (devMode) {
+        // Create mock user data
+        const mockUser = {
+          id: 'local-' + Date.now(),
+          name: name,
+          email: email
+        };
+        
+        // Create mock token
+        const mockToken = 'dev-token-' + Math.random().toString(36).substring(2);
+        
+        // Save user and token to localStorage
+        localStorage.setItem('token', mockToken);
+        localStorage.setItem('user', JSON.stringify(mockUser));
+        localStorage.setItem('devMode', 'true');
+        
+        // Show success message and redirect
+        showAlert('Registration successful (Dev Mode)! Redirecting...', 'success');
+        setTimeout(() => {
+          window.location.href = 'profile-setup.html';
+        }, 1500);
+        return;
+      }
+      
+      // PRODUCTION MODE - Only runs if devMode is false
       // Send registration request
       const response = await fetch(`${API_URL}/api/auth/register`, {
         method: 'POST',

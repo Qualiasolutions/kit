@@ -6,8 +6,14 @@ document.addEventListener('DOMContentLoaded', function() {
     return;
   }
 
+  // Check if we're in dev mode
+  const devMode = localStorage.getItem('devMode') === 'true';
+
+  // Get mock profile in dev mode
+  const mockProfile = devMode ? JSON.parse(localStorage.getItem('mockProfile')) : null;
+
   // Check if profile is complete
-  const profileComplete = localStorage.getItem('profileComplete');
+  const profileComplete = mockProfile || localStorage.getItem('profileComplete');
   if (!profileComplete) {
     showAlert('Please complete your business profile first.', 'warning');
     // Redirect to profile setup after a delay
@@ -65,7 +71,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const previewHashtags = document.getElementById('preview-hashtags');
   
   // Business profile data
-  let businessProfile = null;
+  let businessProfile = mockProfile || null;
   
   // Original image data (for reset)
   let originalImageData = null;
@@ -76,7 +82,15 @@ document.addEventListener('DOMContentLoaded', function() {
   postDate.value = tomorrow.toISOString().slice(0, 16);
 
   // Initialize
-  loadBusinessProfile();
+  if (!devMode) {
+    loadBusinessProfile();
+  } else {
+    // If in dev mode, use the mock profile
+    applyBusinessProfile();
+    loadPlatforms();
+    setContentTone();
+  }
+  
   setupEventListeners();
   
   // Setup event listeners
@@ -119,6 +133,16 @@ document.addEventListener('DOMContentLoaded', function() {
   // Load business profile
   async function loadBusinessProfile() {
     try {
+      // Skip API call in dev mode
+      if (devMode) {
+        businessProfile = mockProfile;
+        applyBusinessProfile();
+        loadPlatforms();
+        setContentTone();
+        return;
+      }
+      
+      // Regular API call for production mode
       const response = await fetch(`${API_URL}/api/profile`, {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -153,17 +177,25 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Set business name and type
     businessNameDisplay.textContent = businessProfile.businessName;
-    businessTypeDisplay.textContent = businessProfile.businessType;
+    businessTypeDisplay.textContent = devMode ? businessProfile.industry : businessProfile.businessType;
     
     // Set business logo if available
-    if (businessProfile.logoUrl) {
+    if (devMode && businessProfile.logo) {
+      businessLogoDisplay.src = businessProfile.logo;
+    } else if (businessProfile.logoUrl) {
       businessLogoDisplay.src = businessProfile.logoUrl;
     }
     
     // Set brand colors
-    primaryColorDisplay.style.backgroundColor = businessProfile.primaryColor;
-    secondaryColorDisplay.style.backgroundColor = businessProfile.secondaryColor;
-    accentColorDisplay.style.backgroundColor = businessProfile.accentColor;
+    if (devMode && businessProfile.brandColors) {
+      primaryColorDisplay.style.backgroundColor = businessProfile.brandColors.primary;
+      secondaryColorDisplay.style.backgroundColor = businessProfile.brandColors.secondary;
+      accentColorDisplay.style.backgroundColor = businessProfile.brandColors.accent;
+    } else {
+      primaryColorDisplay.style.backgroundColor = businessProfile.primaryColor;
+      secondaryColorDisplay.style.backgroundColor = businessProfile.secondaryColor;
+      accentColorDisplay.style.backgroundColor = businessProfile.accentColor;
+    }
     
     // Set preview username
     previewUsername.textContent = businessProfile.businessName.toLowerCase().replace(/\s+/g, '');
@@ -711,51 +743,70 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Save post
   async function savePost() {
-      // Validate form
-      if (!validateForm()) {
+    if (!validateForm()) {
+      return;
+    }
+    
+    try {
+      // Show loading state
+      savePostBtn.disabled = true;
+      savePostBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Saving...';
+      
+      if (devMode) {
+        // In dev mode, just simulate saving
+        setTimeout(() => {
+          showAlert('Post saved successfully (Dev Mode)!', 'success');
+          savePostBtn.disabled = false;
+          savePostBtn.innerHTML = 'Save Post';
+          
+          // Redirect to dashboard
+          setTimeout(() => {
+            window.location.href = 'dashboard.html';
+          }, 1500);
+        }, 1500);
         return;
       }
       
-    // Get form data
-    const formData = new FormData();
-    
-    // Add post data
-    formData.append('postType', postType.value);
-    formData.append('content', postContent.value);
-    formData.append('hashtags', postHashtags.value);
-    formData.append('scheduledDate', postDate.value);
-    
-    // Add template if selected
-    if (templateSelect.value) {
-      formData.append('templateId', templateSelect.value);
-    }
-    
-    // Add platforms
-      const selectedPlatforms = [];
-      document.querySelectorAll('.platform-checkbox:checked').forEach(checkbox => {
-        selectedPlatforms.push(checkbox.value);
-      });
-    formData.append('platforms', JSON.stringify(selectedPlatforms));
-    
-    // Add image if uploaded
-    if (postImage.files.length > 0) {
-      formData.append('image', postImage.files[0]);
-    }
-    
-    // Add platform optimization settings
-    formData.append('autoResize', autoResize.checked);
-    formData.append('autoCaption', autoCaption.checked);
-    
-    // Add Instagram-specific settings
-    if (document.getElementById('instagram-first-comment').checked) {
-      formData.append('instagramFirstComment', true);
-    }
-    
-    // Show loading state
-    savePostBtn.disabled = true;
-    savePostBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Saving...';
-    
-    try {
+      // Normal API saving for production mode
+      // Get form data
+      const formData = new FormData();
+      
+      // Add post data
+      formData.append('postType', postType.value);
+      formData.append('content', postContent.value);
+      formData.append('hashtags', postHashtags.value);
+      formData.append('scheduledDate', postDate.value);
+      
+      // Add template if selected
+      if (templateSelect.value) {
+        formData.append('templateId', templateSelect.value);
+      }
+      
+      // Add platforms
+        const selectedPlatforms = [];
+        document.querySelectorAll('.platform-checkbox:checked').forEach(checkbox => {
+          selectedPlatforms.push(checkbox.value);
+        });
+      formData.append('platforms', JSON.stringify(selectedPlatforms));
+      
+      // Add image if uploaded
+      if (postImage.files.length > 0) {
+        formData.append('image', postImage.files[0]);
+      }
+      
+      // Add platform optimization settings
+      formData.append('autoResize', autoResize.checked);
+      formData.append('autoCaption', autoCaption.checked);
+      
+      // Add Instagram-specific settings
+      if (document.getElementById('instagram-first-comment').checked) {
+        formData.append('instagramFirstComment', true);
+      }
+      
+      // Show loading state
+      savePostBtn.disabled = true;
+      savePostBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Saving...';
+      
       // In a real implementation, this would call an API
       // For now, simulate API call
       await new Promise(resolve => setTimeout(resolve, 2000));
@@ -769,11 +820,10 @@ document.addEventListener('DOMContentLoaded', function() {
       }, 1500);
     } catch (error) {
       console.error('Error saving post:', error);
-      showAlert('Failed to save post. Please try again.', 'danger');
+      showAlert('Server error. Please try again later.', 'danger');
       
-      // Restore button
       savePostBtn.disabled = false;
-      savePostBtn.innerHTML = 'Save & Schedule Post';
+      savePostBtn.innerHTML = 'Save Post';
     }
   }
 
