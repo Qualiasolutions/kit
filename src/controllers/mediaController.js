@@ -1,4 +1,4 @@
-const { cloudinary } = require('../config/cloudinary');
+  const { cloudinary } = require('../config/cloudinary');
 const ErrorResponse = require('../utils/errorResponse');
 const asyncHandler = require('../middleware/async');
 
