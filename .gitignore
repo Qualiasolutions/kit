@@ -30,4 +30,8 @@ coverage
 
 # OS files
 .DS_Store
-Thumbs.db 
+Thumbs.db
+
+# Firebase
+firebase-service-account.json
+*serviceAccountKey.json 

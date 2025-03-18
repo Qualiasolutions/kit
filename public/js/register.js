@@ -1,11 +1,75 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
   const registerForm = document.getElementById('register-form');
   const alertContainer = document.getElementById('alert-container');
+  
+  // Import Firebase modules
+  let auth, firebase, GoogleAuthProvider, signInWithPopup;
+  try {
+    const module = await import('../config/firebase.js');
+    auth = module.auth;
+    firebase = module.firebase;
+    GoogleAuthProvider = module.GoogleAuthProvider;
+    signInWithPopup = module.signInWithPopup;
+  } catch (error) {
+    console.error('Error loading Firebase modules:', error);
+  }
+  
+  // Add Google signup button if it exists
+  const googleBtn = document.getElementById('google-signup-btn');
+  if (googleBtn) {
+    googleBtn.addEventListener('click', handleGoogleSignUp);
+  }
   
   // API base URL - change this to your deployed API URL when needed
   const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
     ? '' // Empty for local development (relative path)
     : 'https://kit-lime.vercel.app'; // Updated with actual deployed URL
+  
+  // Function to handle Google Sign Up
+  async function handleGoogleSignUp() {
+    try {
+      // Create Google auth provider
+      const provider = new GoogleAuthProvider();
+      
+      // Trigger Google sign-in popup
+      const result = await signInWithPopup(auth, provider);
+      
+      // Get user from result
+      const user = result.user;
+      
+      // Get ID token for server auth
+      const token = await user.getIdToken();
+      
+      // Send token to backend to verify and create a session
+      const response = await fetch(`${API_URL}/api/auth/google`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ idToken: token })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        
+        // Store user info and token in localStorage
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        
+        // Show success message and redirect to profile setup
+        showAlert('Registration with Google successful! Redirecting...', 'success');
+        setTimeout(() => {
+          window.location.href = 'profile-setup.html';
+        }, 1500);
+      } else {
+        const error = await response.json();
+        throw new Error(error.error || 'Google authentication failed');
+      }
+    } catch (error) {
+      console.error('Google sign-up error:', error);
+      showAlert('Google sign-up failed. Please try again.', 'danger');
+    }
+  }
   
   registerForm.addEventListener('submit', async function(e) {
     e.preventDefault();

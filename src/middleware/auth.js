@@ -1,7 +1,9 @@
 const { auth, db } = require('../config/firebase');
+const ErrorResponse = require('../utils/errorResponse');
+const asyncHandler = require('./async');
 
 // Protect routes
-exports.protect = async (req, res, next) => {
+exports.protect = asyncHandler(async (req, res, next) => {
   let token;
 
   if (
@@ -14,10 +16,7 @@ exports.protect = async (req, res, next) => {
 
   // Make sure token exists
   if (!token) {
-    return res.status(401).json({ 
-      success: false, 
-      error: 'Not authorized to access this route' 
-    });
+    return next(new ErrorResponse('Not authorized to access this route', 401));
   }
 
   try {
@@ -41,15 +40,9 @@ exports.protect = async (req, res, next) => {
     
     // Handle token expired error
     if (err.code === 'auth/id-token-expired') {
-      return res.status(401).json({
-        success: false,
-        error: 'Your session has expired. Please login again'
-      });
+      return next(new ErrorResponse('Your session has expired. Please login again', 401));
     }
     
-    return res.status(401).json({ 
-      success: false, 
-      error: 'Not authorized to access this route' 
-    });
+    return next(new ErrorResponse('Not authorized to access this route', 401));
   }
-}; 
+}); 
