@@ -56,22 +56,17 @@ document.addEventListener('DOMContentLoaded', function() {
       // Check if we're in development mode
       if (devMode) {
         // Check if we have a profile in localStorage
-        const mockProfile = JSON.parse(localStorage.getItem('mockProfile'));
+        const mockProfile = JSON.parse(localStorage.getItem('businessProfile')) || JSON.parse(localStorage.getItem('mockProfile'));
         
-        if (!mockProfile) {
-          // No profile found, show incomplete section
-          profileIncomplete.style.display = 'block';
-          profileComplete.style.display = 'none';
+        if (mockProfile) {
+          // Show profile section for dev mode
+          document.getElementById('profile-incomplete').style.display = 'none';
+          document.getElementById('profile-complete').style.display = 'block';
+          
+          // Update profile display
+          updateProfileDisplay(mockProfile);
           return;
         }
-        
-        // Show profile section
-        profileIncomplete.style.display = 'none';
-        profileComplete.style.display = 'flex';
-        
-        // Update profile display
-        updateProfileDisplay(mockProfile);
-        return;
       }
       
       // If not in dev mode, fetch from server
@@ -108,8 +103,12 @@ document.addEventListener('DOMContentLoaded', function() {
   // Update profile display
   function updateProfileDisplay(profile) {
     // Business name and industry
-    businessNameDisplay.textContent = profile.businessName;
-    businessIndustryDisplay.textContent = `${profile.industry} / ${profile.niche}`;
+    businessNameDisplay.textContent = profile.businessName || 'Your Business';
+    
+    // Format industry/niche to avoid showing 'null'
+    const industry = profile.industry || 'Business';
+    const niche = profile.niche || 'General';
+    businessIndustryDisplay.textContent = `${industry} / ${niche}`;
     
     // Logo
     if (profile.logo && profile.logo !== 'no-logo.png') {
@@ -123,9 +122,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Brand colors
     if (profile.brandColors) {
-      primaryColorBox.style.backgroundColor = profile.brandColors.primary;
-      secondaryColorBox.style.backgroundColor = profile.brandColors.secondary;
-      accentColorBox.style.backgroundColor = profile.brandColors.accent;
+      primaryColorBox.style.backgroundColor = profile.brandColors.primary || '#007bff';
+      secondaryColorBox.style.backgroundColor = profile.brandColors.secondary || '#6c757d';
+      accentColorBox.style.backgroundColor = profile.brandColors.accent || '#28a745';
     }
   }
 
@@ -168,7 +167,7 @@ async function fetchUserData(token, API_URL) {
       
       if (devMode) {
         // Check if we have a profile in localStorage
-        const mockProfile = JSON.parse(localStorage.getItem('mockProfile'));
+        const mockProfile = JSON.parse(localStorage.getItem('businessProfile')) || JSON.parse(localStorage.getItem('mockProfile'));
         
         if (mockProfile) {
           // Show profile section for dev mode
@@ -190,7 +189,7 @@ async function fetchUserData(token, API_URL) {
     // Show a fallback message in case of error
     const devMode = localStorage.getItem('devMode') === 'true';
     if (devMode) {
-      const mockProfile = JSON.parse(localStorage.getItem('mockProfile'));
+      const mockProfile = JSON.parse(localStorage.getItem('businessProfile')) || JSON.parse(localStorage.getItem('mockProfile'));
       if (mockProfile) {
         document.getElementById('profile-incomplete').style.display = 'none';
         document.getElementById('profile-complete').style.display = 'block';
@@ -207,13 +206,16 @@ function displayBusinessProfile(profile) {
   }
   
   // Display business industry
-  if (profile.industry) {
-    document.getElementById('business-industry-display').textContent = profile.industry;
-  }
+  const industry = profile.industry || 'Business';
+  const niche = profile.niche || 'General';
+  document.getElementById('business-industry-display').textContent = `${industry} / ${niche}`;
   
   // Display business logo
   if (profile.logoUrl) {
     document.getElementById('business-logo').src = profile.logoUrl;
+  } else if (profile.logo && profile.logo !== 'no-logo.png') {
+    // Check if we have a logo from a different property
+    document.getElementById('business-logo').src = profile.logo;
   }
   
   // Display brand colors
@@ -231,11 +233,11 @@ function displayBusinessProfile(profile) {
     }
 
     // Apply brand colors to CSS variables
-    document.documentElement.style.setProperty('--primary', profile.brandColors.primary);
-    document.documentElement.style.setProperty('--primary-dark', adjustColor(profile.brandColors.primary, -20));
-    document.documentElement.style.setProperty('--primary-light', adjustColor(profile.brandColors.primary, 20));
-    document.documentElement.style.setProperty('--secondary', profile.brandColors.secondary);
-    document.documentElement.style.setProperty('--accent', profile.brandColors.accent);
+    document.documentElement.style.setProperty('--primary', profile.brandColors.primary || '#007bff');
+    document.documentElement.style.setProperty('--primary-dark', adjustColor(profile.brandColors.primary || '#007bff', -20));
+    document.documentElement.style.setProperty('--primary-light', adjustColor(profile.brandColors.primary || '#007bff', 20));
+    document.documentElement.style.setProperty('--secondary', profile.brandColors.secondary || '#6c757d');
+    document.documentElement.style.setProperty('--accent', profile.brandColors.accent || '#28a745');
   }
 }
 
