@@ -1,12 +1,31 @@
 {
   "version": 2,
   "functions": {
-    "api/server.js": {
+    "src/server.js": {
       "maxDuration": 60
     }
   },
+  "builds": [
+    {
+      "src": "src/server.js",
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": ["public/**"]
+      }
+    }
+  ],
   "routes": [
-    { "src": "/api/(.*)", "dest": "/api/server.js" },
-    { "src": "/(.*)", "dest": "/api/server.js" }
-  ]
+    {
+      "src": "/api/(.*)",
+      "dest": "src/server.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "src/server.js"
+    }
+  ],
+  "env": {
+    "CLOUDINARY_CLOUD_NAME": "ddfjuxhxh",
+    "CLOUDINARY_API_KEY": "122669963755112"
+  }
 } 
