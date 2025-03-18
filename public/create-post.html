@@ -381,122 +381,107 @@
           </div>
         </div>
 
-        <!-- Tab Content -->
-        <div class="tab-content">
-          <!-- Template Selection Tab -->
-          <div class="tab-pane fade show active" id="step1Content">
-            <div class="card mb-4 template-selection-card">
-              <div class="card-header">
-                <h5 class="mb-0">Select a Template</h5>
-              </div>
-              <div class="card-body">
-                <div class="alert-container mb-3"></div>
-                <p>Choose a content template that fits your brand's style and objectives.</p>
+        <!-- Template Selection Tab -->
+        <div class="card mb-4 template-selection-card">
+          <div class="card-header">
+            <h5 class="mb-0">Select a Template</h5>
+          </div>
+          <div class="card-body">
+            <div class="alert-container mb-3"></div>
+            <p>Choose a content template that fits your brand's style and objectives.</p>
 
-                <!-- Loading Indicator -->
-                <div class="text-center my-5 loading-templates">
-                  <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                  </div>
-                  <p class="mt-3">Loading available templates...</p>
-                </div>
+            <!-- Loading Indicator -->
+            <div class="text-center my-5 loading-templates">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <p class="mt-3">Loading available templates...</p>
+            </div>
 
-                <!-- Template container will be populated by JavaScript -->
-                <div class="template-container row mt-4"></div>
+            <!-- Template container will be populated by JavaScript -->
+            <div class="template-container row mt-4"></div>
+          </div>
+        </div>
+        
+        <!-- Step 2: Content Generation -->
+        <div class="tab-pane fade" id="step2Content">
+          <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <div>
+                <i class="bi bi-magic me-2 text-primary"></i>
+                <span>Generate Content</span>
               </div>
             </div>
-          </div>
-          
-          <!-- Step 2: Content Generation -->
-          <div class="tab-pane fade" id="step2Content">
-            <div class="card mb-4">
-              <div class="card-header d-flex justify-content-between align-items-center">
-                <div>
-                  <i class="bi bi-magic me-2 text-primary"></i>
-                  <span>Generate Content</span>
+            <div class="card-body">
+              <div class="mb-4">
+                <p>Our AI will generate content based on your business profile and selected template.</p>
+                
+                <div class="form-check form-switch mb-3">
+                  <input class="form-check-input" type="checkbox" id="use-ai" checked>
+                  <label class="form-check-label" for="use-ai">Use AI to generate content</label>
                 </div>
-              </div>
-              <div class="card-body">
-                <div class="mb-4">
-                  <p>Our AI will generate content based on your business profile and selected template.</p>
-                  
-                  <div class="form-check form-switch mb-3">
-                    <input class="form-check-input" type="checkbox" id="use-ai" checked>
-                    <label class="form-check-label" for="use-ai">Use AI to generate content</label>
+                
+                <div id="ai-options">
+                  <div class="alert alert-info">
+                    <i class="bi bi-lightbulb me-2"></i>
+                    Content will be generated using our AI service based on your business profile and selected template.
                   </div>
                   
-                  <div id="ai-options">
-                    <div class="alert alert-info">
-                      <i class="bi bi-lightbulb me-2"></i>
-                      Content will be generated using our AI service based on your business profile and selected template.
+                  <button id="generate-btn" class="btn btn-primary">
+                    <i class="bi bi-robot me-2"></i> Generate Content
+                  </button>
+                  
+                  <div id="generating-indicator" style="display: none;" class="text-center py-3">
+                    <div class="spinner-border text-primary" role="status">
+                      <span class="visually-hidden">Generating content...</span>
                     </div>
-                    
-                    <button id="generate-btn" class="btn btn-primary">
-                      <i class="bi bi-robot me-2"></i> Generate Content
-                    </button>
-                    
-                    <div id="generating-indicator" style="display: none;" class="text-center py-3">
-                      <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Generating content...</span>
-                      </div>
-                      <p class="mt-3 text-muted">Generating your content with AI, please wait...</p>
-                    </div>
-                  </div>
-                  
-                  <div id="manual-content" style="display: none;">
-                    <p class="text-muted">Enter your content manually below.</p>
-                  </div>
-                  
-                  <div class="mb-3 mt-4">
-                    <label for="generatedContent" class="form-label">Post Content</label>
-                    <textarea id="generatedContent" class="form-control" rows="6" placeholder="Your content will appear here..."></textarea>
+                    <p class="mt-3 text-muted">Generating your content with AI, please wait...</p>
                   </div>
                 </div>
-              </div>
-            </div>
-          </div>
-          
-          <!-- Step 3: Customize Content -->
-          <div class="tab-pane fade" id="step3Content">
-            <div class="card mb-4">
-              <div class="card-header d-flex justify-content-between align-items-center">
-                <div>
-                  <i class="bi bi-pencil-square me-2 text-primary"></i>
-                  <span>Customize Content</span>
+                
+                <div id="manual-content" style="display: none;">
+                  <p class="text-muted">Enter your content manually below.</p>
                 </div>
-              </div>
-              <div class="card-body">
-                <!-- Customization options will go here -->
-                <p>Customize your content before publishing</p>
-              </div>
-            </div>
-          </div>
-          
-          <!-- Step 4: Schedule Post -->
-          <div class="tab-pane fade" id="step4Content">
-            <div class="card mb-4">
-              <div class="card-header d-flex justify-content-between align-items-center">
-                <div>
-                  <i class="bi bi-calendar-event me-2 text-primary"></i>
-                  <span>Schedule Post</span>
+                
+                <div class="mb-3 mt-4">
+                  <label for="generatedContent" class="form-label">Post Content</label>
+                  <textarea id="generatedContent" class="form-control" rows="6" placeholder="Your content will appear here..."></textarea>
                 </div>
-              </div>
-              <div class="card-body">
-                <!-- Scheduling options will go here -->
-                <p>Choose when to publish your post</p>
               </div>
             </div>
           </div>
         </div>
         
-        <!-- Navigation Buttons -->
-        <div class="d-flex justify-content-between mt-4">
-          <button type="button" class="btn btn-outline-secondary" id="prevStepBtn">
-            <i class="bi bi-arrow-left me-2"></i> Previous
-          </button>
-          <button type="button" class="btn btn-primary" id="nextStepBtn" disabled>
-            Next <i class="bi bi-arrow-right ms-2"></i>
-          </button>
+        <!-- Step 3: Customize Content -->
+        <div class="tab-pane fade" id="step3Content">
+          <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <div>
+                <i class="bi bi-pencil-square me-2 text-primary"></i>
+                <span>Customize Content</span>
+              </div>
+            </div>
+            <div class="card-body">
+              <!-- Customization options will go here -->
+              <p>Customize your content before publishing</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 4: Schedule Post -->
+        <div class="tab-pane fade" id="step4Content">
+          <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <div>
+                <i class="bi bi-calendar-event me-2 text-primary"></i>
+                <span>Schedule Post</span>
+              </div>
+            </div>
+            <div class="card-body">
+              <!-- Scheduling options will go here -->
+              <p>Choose when to publish your post</p>
+            </div>
+          </div>
         </div>
       </div>
       

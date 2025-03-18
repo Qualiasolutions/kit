@@ -1,9 +1,117 @@
 document.addEventListener('DOMContentLoaded', function() {
+  console.log('Create Post page loaded');
+  
   // Check if user is logged in
   const token = localStorage.getItem('token');
-  if (!token) {
+  const isDevelopment = true; // Set to true for development mode
+
+  if (!token && !isDevelopment) {
     window.location.href = 'login.html';
     return;
+  }
+
+  // Initialize the templates as soon as page loads
+  setupTemplateSelection();
+
+  // Next button event listener
+  const nextButton = document.querySelector('#nextStepBtn');
+  if (nextButton) {
+    nextButton.addEventListener('click', function() {
+      console.log('Next button clicked');
+      // For now, just redirect to dashboard
+      window.location.href = 'dashboard.html';
+    });
+  }
+
+  // Setup template selection functionality
+  function setupTemplateSelection() {
+    console.log('Setting up template selection');
+    
+    // Hide loading indicator
+    const loadingEl = document.querySelector('.loading-templates');
+    if (loadingEl) {
+      loadingEl.style.display = 'none';
+      console.log('Loading indicator hidden');
+    }
+    
+    // Clear the template container
+    const templateContainer = document.querySelector('.template-container');
+    if (templateContainer) {
+      console.log('Template container found');
+      templateContainer.innerHTML = '';
+      
+      // Predefined templates
+      const templates = [
+        { id: 1, name: 'Standard Post', description: 'Clean, professional layout for general content', image: 'img/placeholder-template.jpg' },
+        { id: 2, name: 'Promotional', description: 'Eye-catching design for sales and promotions', image: 'img/placeholder-template.jpg' },
+        { id: 3, name: 'News Update', description: 'Formal layout for announcements and news', image: 'img/placeholder-template.jpg' },
+        { id: 4, name: 'Event Promotion', description: 'Showcase upcoming events with style', image: 'img/placeholder-template.jpg' }
+      ];
+      
+      // Create template cards
+      templates.forEach(template => {
+        const templateCard = document.createElement('div');
+        templateCard.className = 'col-md-3 mb-3';
+        templateCard.innerHTML = `
+          <div class="template-card" data-template-id="${template.id}">
+            <img src="${template.image}" alt="${template.name}" class="template-img mb-2">
+            <h6>${template.name}</h6>
+            <p class="small text-muted">${template.description}</p>
+          </div>
+        `;
+        
+        // Add click handler
+        templateCard.querySelector('.template-card').addEventListener('click', () => {
+          // Remove selected class from all templates
+          document.querySelectorAll('.template-card').forEach(card => {
+            card.classList.remove('selected');
+          });
+          
+          // Add selected class to this template
+          templateCard.querySelector('.template-card').classList.add('selected');
+          
+          // Store selected template
+          localStorage.setItem('selectedTemplate', JSON.stringify(template));
+          
+          // Update preview
+          updateTemplatePreview(template);
+          
+          // Enable next button
+          if (nextButton) {
+            nextButton.disabled = false;
+          }
+        });
+        
+        templateContainer.appendChild(templateCard);
+      });
+      
+      console.log('Added', templates.length, 'templates to container');
+    } else {
+      console.error('Template container not found!');
+    }
+  }
+
+  // Update template preview
+  function updateTemplatePreview(template) {
+    console.log('Updating preview with template:', template.name);
+    
+    const previewImage = document.querySelector('.preview-image');
+    if (previewImage) {
+      previewImage.src = template.image;
+      previewImage.onerror = () => {
+        previewImage.src = 'img/placeholder-template.jpg';
+      };
+    }
+    
+    const previewTitle = document.querySelector('.preview-title');
+    if (previewTitle) {
+      previewTitle.textContent = template.name;
+    }
+    
+    const previewDescription = document.querySelector('.preview-description');
+    if (previewDescription) {
+      previewDescription.textContent = template.description;
+    }
   }
 
   // API base URL - change this to your deployed API URL when needed
@@ -104,127 +212,6 @@ document.addEventListener('DOMContentLoaded', function() {
     container.className = 'alert-container';
     document.body.prepend(container);
     return container;
-  }
-
-  // Setup template selection functionality
-  function setupTemplateSelection() {
-    // Hide loading indicator after templates are loaded
-    const loadingEl = document.querySelector('.loading-templates');
-    if (loadingEl) {
-        loadingEl.style.display = 'none';
-    }
-    
-    // Find or create template container
-    let templateContainer = document.querySelector('.template-container');
-    if (!templateContainer) {
-        templateContainer = document.createElement('div');
-        templateContainer.className = 'template-container row mt-4';
-        const cardBody = document.querySelector('.template-selection-card .card-body');
-        if (cardBody) {
-            cardBody.appendChild(templateContainer);
-        }
-    }
-    
-    // Clear any existing templates
-    templateContainer.innerHTML = '';
-    
-    // Get templates (in real app, these would come from an API)
-    const templates = [
-        { id: 1, name: 'Standard Post', description: 'Clean, professional layout for general content', image: 'img/placeholder-template.jpg' },
-        { id: 2, name: 'Promotional', description: 'Eye-catching design for sales and promotions', image: 'img/placeholder-template.jpg' },
-        { id: 3, name: 'News Update', description: 'Formal layout for announcements and news', image: 'img/placeholder-template.jpg' },
-        { id: 4, name: 'Event Promotion', description: 'Showcase upcoming events with style', image: 'img/placeholder-template.jpg' }
-    ];
-    
-    // Store templates in localStorage for development
-    localStorage.setItem('templates', JSON.stringify(templates));
-    
-    // Create template cards
-    templates.forEach(template => {
-        const templateCard = document.createElement('div');
-        templateCard.className = 'col-md-3 mb-3';
-        templateCard.innerHTML = `
-            <div class="template-card" data-template-id="${template.id}">
-                <img src="${template.image}" alt="${template.name}" class="template-img mb-2">
-                <h6>${template.name}</h6>
-                <p class="small text-muted">${template.description}</p>
-            </div>
-        `;
-        
-        // Add click handler to select template
-        templateCard.querySelector('.template-card').addEventListener('click', () => {
-            // Remove selected class from all templates
-            document.querySelectorAll('.template-card').forEach(card => {
-                card.classList.remove('selected');
-            });
-            
-            // Add selected class to this template
-            templateCard.querySelector('.template-card').classList.add('selected');
-            
-            // Store selected template
-            localStorage.setItem('selectedTemplate', JSON.stringify(template));
-            
-            // Update preview
-            updateTemplatePreview(template);
-            
-            // Enable next button
-            const nextButton = document.querySelector('#nextStepBtn');
-            if (nextButton) {
-                nextButton.disabled = false;
-            }
-        });
-        
-        templateContainer.appendChild(templateCard);
-    });
-
-    // Create default template images if they don't exist
-    createDefaultTemplateImages();
-    
-    console.log('Templates setup complete:', templateContainer.children.length, 'templates added');
-  }
-
-  // Update template preview based on selected template
-  function updateTemplatePreview(template) {
-    const previewImage = document.querySelector('.preview-image');
-    if (previewImage) {
-        // Set src and add error handler
-        previewImage.src = template.image;
-        previewImage.onerror = () => {
-            previewImage.src = 'img/placeholder-template.jpg';
-        };
-    }
-    
-    // Update preview content
-    const previewTitle = document.querySelector('.preview-title');
-    if (previewTitle) {
-        previewTitle.textContent = template.name;
-    }
-    
-    const previewDescription = document.querySelector('.preview-description');
-    if (previewDescription) {
-        previewDescription.textContent = template.description;
-    }
-  }
-
-  // Create default template images and store in localStorage
-  function createDefaultTemplateImages() {
-    // Use these keys to check if images are already stored
-    const templateImageKeys = [
-        'template1Image',
-        'template2Image',
-        'template3Image',
-        'template4Image'
-    ];
-    
-    // Check if we need to create images
-    const needsImages = !localStorage.getItem(templateImageKeys[0]);
-    
-    if (needsImages) {
-        // Store default image paths
-        templateImageKeys.forEach((key, index) => {
-            localStorage.setItem(key, 'img/placeholder-template.jpg');
-        });
-    }
   }
 
   // Load business profile
