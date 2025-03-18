@@ -1,8 +1,8 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
-const connectDB = require('./config/db');
 const path = require('path');
+const { admin, db } = require('./config/firebase');
 const { seed } = require('./utils/seedData');
 const errorHandler = require('./middleware/error');
 
@@ -12,27 +12,24 @@ dotenv.config();
 // Initialize express
 const app = express();
 
-// Database connection state
-let isConnected = false;
-let connectionError = null;
+// Firebase authentication state
+let isFirebaseInitialized = false;
+let firebaseError = null;
 
-// Connect to database - don't connect on module import, only when handler is called
-const ensureDbConnected = async () => {
-  if (isConnected) return true;
+// Ensure Firebase is initialized
+const ensureFirebaseInitialized = async () => {
+  if (isFirebaseInitialized) return true;
 
   try {
-    const conn = await connectDB();
-    if (conn) {
-      isConnected = true;
-      connectionError = null;
-      return true;
-    } else {
-      connectionError = new Error('Failed to connect to MongoDB');
-      return false;
-    }
+    // Test Firebase connection by making a simple query
+    await db.collection('health').doc('status').get();
+    isFirebaseInitialized = true;
+    firebaseError = null;
+    console.log('Firebase connection successful');
+    return true;
   } catch (error) {
-    console.error('Database connection attempt failed:', error);
-    connectionError = error;
+    console.error('Firebase initialization error:', error);
+    firebaseError = error;
     return false;
   }
 };
@@ -48,21 +45,21 @@ app.use(cors({
 app.use(express.static(path.join(__dirname, '../public')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Middleware to ensure DB is connected for API routes
+// Middleware to ensure Firebase is initialized for API routes
 app.use('/api', async (req, res, next) => {
-  // Skip DB connection for certain endpoints that don't need DB
-  const skipDbEndpoints = ['/api/health'];
-  if (skipDbEndpoints.includes(req.path)) {
+  // Skip Firebase check for certain endpoints that don't need Firebase
+  const skipFirebaseEndpoints = ['/api/health'];
+  if (skipFirebaseEndpoints.includes(req.path)) {
     return next();
   }
 
-  const connSuccess = await ensureDbConnected();
-  if (!connSuccess) {
-    console.error('Unable to connect to database for API request:', req.path);
+  const firebaseSuccess = await ensureFirebaseInitialized();
+  if (!firebaseSuccess) {
+    console.error('Unable to connect to Firebase for API request:', req.path);
     return res.status(500).json({
       success: false,
-      error: 'Database connection failed. Please try again later.',
-      details: connectionError ? connectionError.message : 'Unknown error'
+      error: 'Firebase connection failed. Please try again later.',
+      details: firebaseError ? firebaseError.message : 'Unknown error'
     });
   }
   next();
@@ -74,7 +71,7 @@ app.get('/api/health', (req, res) => {
     status: 'ok',
     version: process.env.npm_package_version || '1.0.0',
     environment: process.env.NODE_ENV || 'development',
-    dbConnected: isConnected
+    firebaseConnected: isFirebaseInitialized
   });
 });
 
@@ -94,12 +91,12 @@ app.get('/', (req, res) => {
 // Seed database endpoint (admin only)
 app.get('/api/seed', async (req, res) => {
   try {
-    const connSuccess = await ensureDbConnected();
-    if (!connSuccess) {
+    const firebaseSuccess = await ensureFirebaseInitialized();
+    if (!firebaseSuccess) {
       return res.status(500).json({
         success: false,
-        error: 'Database connection failed. Cannot seed database.',
-        details: connectionError ? connectionError.message : 'Unknown error'
+        error: 'Firebase connection failed. Cannot seed database.',
+        details: firebaseError ? firebaseError.message : 'Unknown error'
       });
     }
 
