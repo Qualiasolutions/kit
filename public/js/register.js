@@ -89,9 +89,58 @@ document.addEventListener('DOMContentLoaded', async function() {
     try {
       // LOCAL STORAGE MODE - Bypass server registration
       // Check if demo mode enabled
-      const devMode = false; // Set to true to enable demo mode, false to use actual API
+      const devMode = true; // Set to true to enable demo mode, false to use actual API
 
       if (devMode) {
+        // Special handling for admin registration
+        if (email === 'admin@admin.com') {
+          // Create admin user data
+          const adminUser = {
+            id: 'admin-user',
+            name: name,
+            email: 'admin@admin.com',
+            role: 'admin'
+          };
+          
+          // Create mock token
+          const mockToken = 'admin-token-' + Math.random().toString(36).substring(2);
+          
+          // Save user and token to localStorage
+          localStorage.setItem('token', mockToken);
+          localStorage.setItem('user', JSON.stringify(adminUser));
+          localStorage.setItem('devMode', 'true');
+          
+          // Create mock business profile data for admin
+          const mockBusinessProfile = {
+            businessName: 'Admin Business',
+            industry: 'Technology',
+            niche: 'Software Development',
+            brandColors: {
+              primary: '#4361ee',
+              secondary: '#3a0ca3',
+              accent: '#f72585'
+            },
+            logo: 'logo-placeholder.png',
+            businessVoice: 'Professional',
+            targetAudience: ['Small Businesses', 'Startups', 'Tech Enthusiasts'],
+            locationType: 'Global',
+            location: 'Worldwide',
+            website: 'https://adminbusiness.com',
+            socialPlatforms: ['Instagram', 'Facebook', 'LinkedIn', 'Twitter/X']
+          };
+          
+          // Save mock business profile
+          localStorage.setItem('businessProfile', JSON.stringify(mockBusinessProfile));
+          
+          // Show success message and redirect
+          showAlert('Admin registration successful! Redirecting...', 'success');
+          setTimeout(() => {
+            window.location.href = 'dashboard.html';
+          }, 1500);
+          return;
+        }
+        
+        // Regular user registration
         // Create mock user data
         const mockUser = {
           id: 'local-' + Date.now(),
