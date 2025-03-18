@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', function() {
   tomorrow.setDate(tomorrow.getDate() + 1);
   tomorrow.setHours(18, 0, 0, 0);
   postDate.value = tomorrow.toISOString().slice(0, 16);
-  
+
   // Initialize
   setupEventListeners();
   loadBusinessProfile();
@@ -103,10 +103,10 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('logout-link').addEventListener('click', function(e) {
       e.preventDefault();
       localStorage.removeItem('token');
-      window.location.href = 'login.html';
-    });
+    window.location.href = 'login.html';
+  });
   }
-  
+
   // Load business profile
   function loadBusinessProfile() {
     if (devMode && mockProfile) {
@@ -684,9 +684,9 @@ document.addEventListener('DOMContentLoaded', function() {
   function savePost() {
     if (!generatedContent) {
       showAlert('Please generate content first', 'warning');
-      return;
-    }
-    
+        return;
+      }
+      
     savePostBtn.disabled = true;
     savePostBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Saving...';
     
@@ -713,7 +713,7 @@ document.addEventListener('DOMContentLoaded', function() {
           showAlert('Your post has been scheduled successfully!', 'success');
           
           setTimeout(() => {
-            window.location.href = 'dashboard.html';
+      window.location.href = 'dashboard.html';
           }, 1500);
         }, 1500);
         return;

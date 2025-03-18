@@ -1,4 +1,4 @@
-const User = require('../models/User');
+const { auth, db } = require('../config/firebase');
 
 // @desc    Register user
 // @route   POST /api/auth/register
@@ -33,68 +33,58 @@ exports.register = async (req, res) => {
       });
     }
 
-    // Check if user already exists with timeout handling
-    let userExists;
+    // Create user with Firebase
     try {
-      // Set a longer timeout for this operation by using exec() with options
-      // This creates a separate promise with its own timeout
-      const findOnePromise = User.findOne({ email }).maxTimeMS(30000).exec();
+      // Create the user account
+      const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+      const user = userCredential.user;
       
-      // Create a timeout promise
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Database query timed out after 30 seconds')), 30000)
-      );
-      
-      // Race the database query against the timeout
-      userExists = await Promise.race([findOnePromise, timeoutPromise]);
-      
-    } catch (dbError) {
-      console.error('Error checking for existing user:', dbError);
-      
-      // Special handling for timeout errors
-      if (dbError.message.includes('timed out')) {
-        return res.status(503).json({
-          success: false,
-          error: 'Database operation timed out. Please try again later.',
-        });
-      }
-      
-      throw dbError; // Re-throw for general error handling
-    }
-
-    if (userExists) {
-      return res.status(400).json({
-        success: false,
-        error: 'User already exists',
+      // Update user profile with name
+      await user.updateProfile({
+        displayName: name
       });
-    }
-
-    // Create user with timeout handling
-    let user;
-    try {
-      user = await Promise.race([
-        User.create({
-          name,
-          email,
-          password,
-        }),
-        new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('User creation timed out')), 30000)
-        )
-      ]);
-    } catch (createError) {
-      console.error('Error creating user:', createError);
-      if (createError.message.includes('timed out')) {
-        return res.status(503).json({
+      
+      // Store additional user data in Firestore
+      await db.collection('users').doc(user.uid).set({
+        name,
+        email,
+        createdAt: new Date()
+      });
+      
+      console.log('User created successfully:', user.uid);
+      
+      // Generate token
+      const token = await user.getIdToken();
+      
+      res.status(201).json({
+        success: true,
+        token,
+        user: {
+          id: user.uid,
+          name: user.displayName || name,
+          email: user.email
+        }
+      });
+    } catch (firebaseError) {
+      console.error('Firebase error:', firebaseError);
+      
+      // Handle specific Firebase errors
+      if (firebaseError.code === 'auth/email-already-in-use') {
+        return res.status(400).json({
           success: false,
-          error: 'User creation timed out. Please try again later.',
+          error: 'User already exists'
         });
       }
-      throw createError;
+      
+      if (firebaseError.code === 'auth/network-request-failed') {
+        return res.status(503).json({
+          success: false,
+          error: 'Network error. Please check your connection.'
+        });
+      }
+      
+      throw firebaseError;
     }
-
-    console.log('User created successfully:', user._id);
-    sendTokenResponse(user, 201, res);
   } catch (error) {
     console.error('Registration error:', error);
     res.status(500).json({
@@ -119,27 +109,44 @@ exports.login = async (req, res) => {
       });
     }
 
-    // Check for user
-    const user = await User.findOne({ email }).select('+password');
-
-    if (!user) {
-      return res.status(401).json({
-        success: false,
-        error: 'Invalid credentials',
+    // Sign in with Firebase
+    try {
+      const userCredential = await auth.signInWithEmailAndPassword(email, password);
+      const user = userCredential.user;
+      
+      // Get Firebase token
+      const token = await user.getIdToken();
+      
+      res.status(200).json({
+        success: true,
+        token,
+        user: {
+          id: user.uid,
+          name: user.displayName,
+          email: user.email
+        }
       });
+    } catch (firebaseError) {
+      console.error('Firebase login error:', firebaseError);
+      
+      // Handle specific Firebase errors
+      if (firebaseError.code === 'auth/user-not-found' || 
+          firebaseError.code === 'auth/wrong-password') {
+        return res.status(401).json({
+          success: false,
+          error: 'Invalid credentials'
+        });
+      }
+      
+      if (firebaseError.code === 'auth/too-many-requests') {
+        return res.status(429).json({
+          success: false,
+          error: 'Too many failed login attempts. Please try again later.'
+        });
+      }
+      
+      throw firebaseError;
     }
-
-    // Check if password matches
-    const isMatch = await user.matchPassword(password);
-
-    if (!isMatch) {
-      return res.status(401).json({
-        success: false,
-        error: 'Invalid credentials',
-      });
-    }
-
-    sendTokenResponse(user, 200, res);
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -153,11 +160,14 @@ exports.login = async (req, res) => {
 // @access  Private
 exports.getMe = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
-
+    // req.user comes from the auth middleware
     res.status(200).json({
       success: true,
-      data: user,
+      data: {
+        id: req.user.id,
+        email: req.user.email,
+        name: req.user.name
+      }
     });
   } catch (error) {
     res.status(500).json({
@@ -165,20 +175,4 @@ exports.getMe = async (req, res) => {
       error: error.message,
     });
   }
-};
-
-// Get token from model, create cookie and send response
-const sendTokenResponse = (user, statusCode, res) => {
-  // Create token
-  const token = user.getSignedJwtToken();
-
-  res.status(statusCode).json({
-    success: true,
-    token,
-    user: {
-      id: user._id,
-      name: user.name,
-      email: user.email,
-    },
-  });
 }; 
