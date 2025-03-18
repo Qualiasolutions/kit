@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', function() {
     try {
       // LOCAL STORAGE MODE - Bypass server registration
       // Check if demo mode enabled
-      const devMode = true; // Set to true to enable demo mode, false to use actual API
+      const devMode = false; // Set to true to enable demo mode, false to use actual API
 
       if (devMode) {
         // Create mock user data
