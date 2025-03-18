@@ -1,5 +1,7 @@
 # OmuMediaKit - AI-Powered Social Media Content Creation
 
+> Note: Development mode is enabled with mock Firebase integration.
+
 OmuMediaKit is a powerful tool for businesses to create, manage, and schedule social media content with AI assistance. It streamlines the content creation process and helps businesses maintain a consistent brand presence across social platforms.
 
 ## Features
