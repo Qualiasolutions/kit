@@ -351,261 +351,180 @@
     </div>
   </nav>
 
-  <div class="container py-4 page-content">
+  <div class="container py-5">
     <div class="row mb-4">
-      <div class="col-lg-8">
-        <h1 class="mb-2">Create a Social Media Post</h1>
-        <p class="text-muted">Craft and schedule engaging content for your social media platforms.</p>
-      </div>
-      <div class="col-lg-4 text-lg-end">
-        <a href="dashboard.html" class="btn btn-outline-primary">
-          <i class="bi bi-arrow-left me-2"></i> Back to Dashboard
-        </a>
-      </div>
-    </div>
-
-    <div class="step-indicator">
-      <div class="step active" id="step-1">
-        <div class="step-number">1</div>
-        <div class="step-title">Choose Template</div>
-      </div>
-      <div class="step" id="step-2">
-        <div class="step-number">2</div>
-        <div class="step-title">Generate Content</div>
-      </div>
-      <div class="step" id="step-3">
-        <div class="step-number">3</div>
-        <div class="step-title">Customize</div>
-      </div>
-      <div class="step" id="step-4">
-        <div class="step-number">4</div>
-        <div class="step-title">Schedule</div>
+      <div class="col-md-12">
+        <h1>Create a Social Media Post</h1>
+        <p class="lead">Craft and schedule engaging content for your social media platforms.</p>
       </div>
     </div>
 
     <div class="row">
       <div class="col-lg-8">
-        <!-- Step 1: Template Selection -->
-        <div class="card mb-4" id="template-selection">
-          <div class="card-header d-flex justify-content-between align-items-center">
-            <div>
-              <i class="bi bi-grid-3x3-gap me-2 text-primary"></i>
-              <span>Select a Template</span>
-            </div>
+        <!-- Steps Progress -->
+        <div class="step-progress mb-4">
+          <div class="step-item active" data-step="1">
+            <div class="step-number">1</div>
+            <div class="step-title">Choose Template</div>
           </div>
-          <div class="card-body">
-            <div class="mb-4">
-              <p>Choose a content template that fits your brand's style and objectives.</p>
-            </div>
-            <div class="row" id="template-container">
-              <!-- Templates will be loaded dynamically -->
-              <div class="text-center py-5" id="template-loading">
-                <div class="spinner-border text-primary" role="status">
-                  <span class="visually-hidden">Loading templates...</span>
-                </div>
-                <p class="mt-3 text-muted">Loading available templates...</p>
-              </div>
-            </div>
+          <div class="step-item" data-step="2">
+            <div class="step-number">2</div>
+            <div class="step-title">Generate Content</div>
+          </div>
+          <div class="step-item" data-step="3">
+            <div class="step-number">3</div>
+            <div class="step-title">Customize</div>
+          </div>
+          <div class="step-item" data-step="4">
+            <div class="step-number">4</div>
+            <div class="step-title">Schedule</div>
           </div>
         </div>
-        
-        <!-- Step 2: Content Generation -->
-        <div class="card mb-4" id="content-generation" style="display: none;">
-          <div class="card-header d-flex justify-content-between align-items-center">
-            <div>
-              <i class="bi bi-magic me-2 text-primary"></i>
-              <span>Generate Content</span>
-            </div>
-          </div>
-          <div class="card-body">
-            <div class="mb-4">
-              <p>Our AI will generate content based on your business profile and selected template.</p>
-              
-              <div class="form-check form-switch mb-3">
-                <input class="form-check-input" type="checkbox" id="use-ai" checked>
-                <label class="form-check-label" for="use-ai">Use AI to generate content</label>
+
+        <!-- Tab Content -->
+        <div class="tab-content">
+          <!-- Template Selection Tab -->
+          <div class="tab-pane fade show active" id="step1Content">
+            <div class="card mb-4 template-selection-card">
+              <div class="card-header">
+                <h5 class="mb-0">Select a Template</h5>
               </div>
-              
-              <div id="ai-options">
-                <div class="alert alert-info">
-                  <i class="bi bi-lightbulb me-2"></i>
-                  Content will be generated using our AI service based on your business profile and selected template.
-                </div>
-                
-                <button id="generate-btn" class="btn btn-primary">
-                  <i class="bi bi-robot me-2"></i> Generate Content
-                </button>
-                
-                <div id="generating-indicator" style="display: none;" class="text-center py-3">
+              <div class="card-body">
+                <div class="alert-container mb-3"></div>
+                <p>Choose a content template that fits your brand's style and objectives.</p>
+
+                <!-- Loading Indicator -->
+                <div class="text-center my-5 loading-templates">
                   <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Generating content...</span>
+                    <span class="visually-hidden">Loading...</span>
                   </div>
-                  <p class="mt-3 text-muted">Generating your content with AI, please wait...</p>
+                  <p class="mt-3">Loading available templates...</p>
                 </div>
-              </div>
-              
-              <div id="manual-content" style="display: none;">
-                <p class="text-muted">Enter your content manually below.</p>
+
+                <!-- Template container will be populated by JavaScript -->
               </div>
             </div>
           </div>
-        </div>
-        
-        <!-- Step 3: Customize Content -->
-        <div class="card mb-4" id="customize-content" style="display: none;">
-          <div class="card-header d-flex justify-content-between align-items-center">
-            <div>
-              <i class="bi bi-pencil-square me-2 text-primary"></i>
-              <span>Customize Your Post</span>
-            </div>
-          </div>
-          <div class="card-body">
-            <form id="post-form">
-              <div class="mb-3">
-                <label for="headline" class="form-label">Headline / Title</label>
-                <input type="text" class="form-control" id="headline" name="headline" placeholder="Enter a catchy headline">
-              </div>
-              
-              <div class="mb-3">
-                <label for="caption" class="form-label">Caption</label>
-                <textarea class="form-control" id="caption" name="caption" rows="5" placeholder="Enter your post caption"></textarea>
-              </div>
-              
-              <div class="mb-3">
-                <label for="call-to-action" class="form-label">Call to Action</label>
-                <input type="text" class="form-control" id="call-to-action" name="callToAction" placeholder="What should your audience do?">
-              </div>
-              
-              <div class="mb-3">
-                <label for="hashtags" class="form-label">Hashtags</label>
-                <input type="text" class="form-control" id="hashtags" name="hashtags" placeholder="#yourhashtags #separated #byspace">
-              </div>
-              
-              <div class="mb-3">
-                <label for="image-description" class="form-label">Image Description</label>
-                <textarea class="form-control" id="image-description" name="imageDescription" rows="3" placeholder="Describe what the image should contain"></textarea>
-              </div>
-              
-              <div class="mb-4">
-                <label class="form-label">Target Platforms</label>
+          
+          <!-- Step 2: Content Generation -->
+          <div class="tab-pane fade" id="step2Content">
+            <div class="card mb-4">
+              <div class="card-header d-flex justify-content-between align-items-center">
                 <div>
-                  <button type="button" class="btn platform-btn active" data-platform="instagram">
-                    <i class="bi bi-instagram platform-icon"></i>Instagram
-                  </button>
-                  <button type="button" class="btn platform-btn" data-platform="facebook">
-                    <i class="bi bi-facebook platform-icon"></i>Facebook
-                  </button>
-                  <button type="button" class="btn platform-btn" data-platform="twitter">
-                    <i class="bi bi-twitter platform-icon"></i>Twitter
-                  </button>
-                  <button type="button" class="btn platform-btn" data-platform="linkedin">
-                    <i class="bi bi-linkedin platform-icon"></i>LinkedIn
-                  </button>
+                  <i class="bi bi-magic me-2 text-primary"></i>
+                  <span>Generate Content</span>
                 </div>
               </div>
-              
-              <div class="mb-3">
-                <label for="image-upload" class="form-label">Upload Image</label>
-                <input type="file" class="form-control" id="image-upload" name="image" accept="image/*">
+              <div class="card-body">
+                <div class="mb-4">
+                  <p>Our AI will generate content based on your business profile and selected template.</p>
+                  
+                  <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" id="use-ai" checked>
+                    <label class="form-check-label" for="use-ai">Use AI to generate content</label>
+                  </div>
+                  
+                  <div id="ai-options">
+                    <div class="alert alert-info">
+                      <i class="bi bi-lightbulb me-2"></i>
+                      Content will be generated using our AI service based on your business profile and selected template.
+                    </div>
+                    
+                    <button id="generate-btn" class="btn btn-primary">
+                      <i class="bi bi-robot me-2"></i> Generate Content
+                    </button>
+                    
+                    <div id="generating-indicator" style="display: none;" class="text-center py-3">
+                      <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Generating content...</span>
+                      </div>
+                      <p class="mt-3 text-muted">Generating your content with AI, please wait...</p>
+                    </div>
+                  </div>
+                  
+                  <div id="manual-content" style="display: none;">
+                    <p class="text-muted">Enter your content manually below.</p>
+                  </div>
+                  
+                  <div class="mb-3 mt-4">
+                    <label for="generatedContent" class="form-label">Post Content</label>
+                    <textarea id="generatedContent" class="form-control" rows="6" placeholder="Your content will appear here..."></textarea>
+                  </div>
+                </div>
               </div>
-            </form>
+            </div>
+          </div>
+          
+          <!-- Step 3: Customize Content -->
+          <div class="tab-pane fade" id="step3Content">
+            <div class="card mb-4">
+              <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                  <i class="bi bi-pencil-square me-2 text-primary"></i>
+                  <span>Customize Content</span>
+                </div>
+              </div>
+              <div class="card-body">
+                <!-- Customization options will go here -->
+                <p>Customize your content before publishing</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Step 4: Schedule Post -->
+          <div class="tab-pane fade" id="step4Content">
+            <div class="card mb-4">
+              <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                  <i class="bi bi-calendar-event me-2 text-primary"></i>
+                  <span>Schedule Post</span>
+                </div>
+              </div>
+              <div class="card-body">
+                <!-- Scheduling options will go here -->
+                <p>Choose when to publish your post</p>
+              </div>
+            </div>
           </div>
         </div>
         
-        <!-- Step 4: Schedule -->
-        <div class="card mb-4" id="schedule-post" style="display: none;">
-          <div class="card-header d-flex justify-content-between align-items-center">
-            <div>
-              <i class="bi bi-calendar-event me-2 text-primary"></i>
-              <span>Schedule Your Post</span>
-            </div>
-          </div>
-          <div class="card-body">
-            <div class="mb-4">
-              <p>Choose when to publish your post.</p>
-              
-              <div class="form-check form-switch mb-3">
-                <input class="form-check-input" type="checkbox" id="schedule-toggle" checked>
-                <label class="form-check-label" for="schedule-toggle">Schedule for later</label>
-              </div>
-              
-              <div id="schedule-options">
-                <div class="mb-3">
-                  <label for="schedule-date" class="form-label">Date</label>
-                  <input type="date" class="form-control" id="schedule-date" name="scheduleDate">
-                </div>
-                
-                <div class="mb-3">
-                  <label for="schedule-time" class="form-label">Time</label>
-                  <input type="time" class="form-control" id="schedule-time" name="scheduleTime">
-                </div>
-              </div>
-              
-              <div id="publish-now" style="display: none;">
-                <div class="alert alert-info">
-                  <i class="bi bi-info-circle me-2"></i>
-                  Your post will be published immediately after saving.
-                </div>
-              </div>
-            </div>
-            
-            <div>
-              <button type="button" id="save-post-btn" class="btn btn-primary me-2">
-                <i class="bi bi-save me-2"></i> Save Post
-              </button>
-              <button type="button" id="preview-post-btn" class="btn btn-outline-primary">
-                <i class="bi bi-eye me-2"></i> Preview
-              </button>
-            </div>
-            
-            <div id="saving-indicator" style="display: none;" class="text-center py-3 mt-3">
-              <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Saving post...</span>
-              </div>
-              <p class="mt-3 text-muted">Saving your post, please wait...</p>
-            </div>
-          </div>
-        </div>
-        
-        <div class="card-footer d-flex justify-content-between mt-3">
-          <button type="button" id="prev-step-btn" class="btn btn-outline-primary" style="display: none;">
-            <i class="bi bi-arrow-left me-2"></i> Previous Step
+        <!-- Navigation Buttons -->
+        <div class="d-flex justify-content-between mt-4">
+          <button type="button" class="btn btn-outline-secondary" id="prevStepBtn">
+            <i class="bi bi-arrow-left me-2"></i> Previous
           </button>
-          <button type="button" id="next-step-btn" class="btn btn-primary">
-            Next Step <i class="bi bi-arrow-right ms-2"></i>
+          <button type="button" class="btn btn-primary" id="nextStepBtn" disabled>
+            Next <i class="bi bi-arrow-right ms-2"></i>
           </button>
         </div>
       </div>
       
       <div class="col-lg-4">
-        <div class="card position-sticky" style="top: 2rem;">
-          <div class="card-header">
-            <i class="bi bi-eye me-2 text-primary"></i>
-            <span>Post Preview</span>
+        <!-- Preview Card -->
+        <div class="card sticky-top" style="top: 20px;">
+          <div class="card-header bg-light">
+            <h5 class="mb-0">
+              <i class="bi bi-eye me-2"></i>
+              Post Preview
+            </h5>
           </div>
           <div class="card-body">
-            <div class="preview-card">
-              <div class="preview-header">
-                <div class="text-primary me-2">
-                  <i class="bi bi-instagram"></i>
-                </div>
-                <strong id="preview-business-name">Your Business</strong>
-              </div>
-              
-              <div class="preview-image-container">
-                <img id="preview-image" src="img/placeholder-image.jpg" alt="Preview" class="preview-image">
-              </div>
-              
-              <div class="preview-content">
-                <h6 id="preview-headline">Your Headline Will Appear Here</h6>
-                <p id="preview-caption" class="caption-preview">Your caption will appear here.</p>
-                <p id="preview-cta" class="text-primary">Call to action will appear here.</p>
-                <p id="preview-hashtags" class="text-muted">#hashtags #will #appear #here</p>
-              </div>
+            <!-- Business Logo -->
+            <div class="d-flex align-items-center mb-3">
+              <img src="/img/logo.png" alt="Business Logo" class="business-logo me-2" style="width: 32px; height: 32px; border-radius: 50%;">
+              <div class="business-name fw-bold">Your Business</div>
             </div>
             
-            <div class="alert alert-info mt-3">
-              <small>This is a preview of how your post might appear. Actual appearance may vary by platform.</small>
+            <!-- Preview Image -->
+            <div class="mb-3">
+              <img src="/img/placeholder-template.jpg" alt="Preview" class="preview-image img-fluid rounded mb-2">
+              <h6 class="preview-title">Select a template</h6>
+              <p class="preview-description small text-muted">Your content will appear here</p>
+            </div>
+            
+            <div class="alert alert-info small">
+              <i class="bi bi-info-circle me-1"></i>
+              Final appearance may vary by platform. This is a general preview.
             </div>
           </div>
         </div>

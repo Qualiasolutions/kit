@@ -81,6 +81,23 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
+  // Next step button
+  const nextStepBtn = document.getElementById('next-step-btn');
+  if (nextStepBtn) {
+    nextStepBtn.addEventListener('click', function() {
+      // Get current step
+      const currentStepNumber = getCurrentStep();
+      
+      // Validate current step
+      if (!validateStep(currentStepNumber)) {
+        return;
+      }
+      
+      // Move to next step
+      goToStep(currentStepNumber + 1);
+    });
+  }
+
   // Create alert container if it doesn't exist
   function createAlertContainer() {
     const container = document.createElement('div');
@@ -89,51 +106,123 @@ document.addEventListener('DOMContentLoaded', function() {
     return container;
   }
 
-  // Function to set up template selection
+  // Setup template selection functionality
   function setupTemplateSelection() {
-    // Predefined templates
+    // Hide loading indicator after templates are loaded
+    const loadingEl = document.querySelector('.loading-templates');
+    if (loadingEl) {
+        loadingEl.style.display = 'none';
+    }
+    
+    // Find or create template container
+    let templateContainer = document.querySelector('.template-container');
+    if (!templateContainer) {
+        templateContainer = document.createElement('div');
+        templateContainer.className = 'template-container row mt-4';
+        const cardBody = document.querySelector('.template-selection-card .card-body');
+        if (cardBody) {
+            cardBody.appendChild(templateContainer);
+        }
+    }
+    
+    // Clear any existing templates
+    templateContainer.innerHTML = '';
+    
+    // Get templates (in real app, these would come from an API)
     const templates = [
-      { id: 'template1', name: 'Standard Post', description: 'Simple and clean layout' },
-      { id: 'template2', name: 'Product Showcase', description: 'Highlight your products' },
-      { id: 'template3', name: 'Quote Post', description: 'Share inspiring quotes' },
-      { id: 'template4', name: 'Announcement', description: 'Share important news' }
+        { id: 1, name: 'Standard Post', description: 'Clean, professional layout for general content', image: '/img/placeholder-template.jpg' },
+        { id: 2, name: 'Promotional', description: 'Eye-catching design for sales and promotions', image: '/img/placeholder-template.jpg' },
+        { id: 3, name: 'News Update', description: 'Formal layout for announcements and news', image: '/img/placeholder-template.jpg' },
+        { id: 4, name: 'Event Promotion', description: 'Showcase upcoming events with style', image: '/img/placeholder-template.jpg' }
     ];
-
-    // Get template container
-    const templateContainer = document.querySelector('.template-container');
-    if (!templateContainer) return;
-
+    
+    // Store templates in localStorage for development
+    localStorage.setItem('templates', JSON.stringify(templates));
+    
     // Create template cards
     templates.forEach(template => {
-      const templateCard = document.createElement('div');
-      templateCard.className = 'col-md-3 col-sm-6';
-      templateCard.innerHTML = `
-        <div class="card template-card" data-template-id="${template.id}">
-          <img src="img/templates/${template.id}.jpg" alt="${template.name}" class="card-img-top">
-          <div class="card-body">
-            <h5 class="card-title">${template.name}</h5>
-            <p class="card-text text-muted small">${template.description}</p>
-          </div>
-        </div>
-      `;
-      templateContainer.appendChild(templateCard);
-
-      // Add click event
-      const card = templateCard.querySelector('.template-card');
-      card.addEventListener('click', function() {
-        // Remove active class from all cards
-        document.querySelectorAll('.template-card').forEach(c => c.classList.remove('selected'));
+        const templateCard = document.createElement('div');
+        templateCard.className = 'col-md-3 mb-3';
+        templateCard.innerHTML = `
+            <div class="template-card" data-template-id="${template.id}">
+                <img src="${template.image}" alt="${template.name}" class="template-img mb-2">
+                <h6>${template.name}</h6>
+                <p class="small text-muted">${template.description}</p>
+            </div>
+        `;
         
-        // Add active class to clicked card
-        this.classList.add('selected');
+        // Add click handler to select template
+        templateCard.querySelector('.template-card').addEventListener('click', () => {
+            // Remove selected class from all templates
+            document.querySelectorAll('.template-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // Add selected class to this template
+            templateCard.querySelector('.template-card').classList.add('selected');
+            
+            // Store selected template
+            localStorage.setItem('selectedTemplate', JSON.stringify(template));
+            
+            // Update preview
+            updateTemplatePreview(template);
+            
+            // Enable next button
+            const nextButton = document.querySelector('#nextStepBtn');
+            if (nextButton) {
+                nextButton.disabled = false;
+            }
+        });
         
-        // Store selected template
-        localStorage.setItem('selectedTemplate', template.id);
-        
-        // Update preview
-        updateTemplatePreview(template.id);
-      });
+        templateContainer.appendChild(templateCard);
     });
+
+    // Create default template images if they don't exist
+    createDefaultTemplateImages();
+  }
+
+  // Update template preview based on selected template
+  function updateTemplatePreview(template) {
+    const previewImage = document.querySelector('.preview-image');
+    if (previewImage) {
+        // Set src and add error handler
+        previewImage.src = template.image;
+        previewImage.onerror = () => {
+            previewImage.src = '/img/placeholder-template.jpg';
+        };
+    }
+    
+    // Update preview content
+    const previewTitle = document.querySelector('.preview-title');
+    if (previewTitle) {
+        previewTitle.textContent = template.name;
+    }
+    
+    const previewDescription = document.querySelector('.preview-description');
+    if (previewDescription) {
+        previewDescription.textContent = template.description;
+    }
+  }
+
+  // Create default template images and store in localStorage
+  function createDefaultTemplateImages() {
+    // Use these keys to check if images are already stored
+    const templateImageKeys = [
+        'template1Image',
+        'template2Image',
+        'template3Image',
+        'template4Image'
+    ];
+    
+    // Check if we need to create images
+    const needsImages = !localStorage.getItem(templateImageKeys[0]);
+    
+    if (needsImages) {
+        // Store default image paths
+        templateImageKeys.forEach((key, index) => {
+            localStorage.setItem(key, '/img/placeholder-template.jpg');
+        });
+    }
   }
 
   // Load business profile
@@ -347,16 +436,6 @@ document.addEventListener('DOMContentLoaded', function() {
     return content;
   }
 
-  // Function to update template preview
-  function updateTemplatePreview(templateId) {
-    const previewImage = document.querySelector('.preview-image');
-    if (previewImage) {
-      // Set the preview image based on template ID
-      previewImage.src = `img/templates/${templateId}.jpg`;
-      previewImage.alt = `Template ${templateId}`;
-    }
-  }
-
   // Function to save post
   function savePost() {
     try {
@@ -432,5 +511,68 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       }
     }, 5000);
+  }
+
+  // Get current step
+  function getCurrentStep() {
+    const activeStep = document.querySelector('.step-item.active');
+    if (activeStep) {
+        return parseInt(activeStep.dataset.step || '1');
+    }
+    return 1;
+  }
+
+  // Validate current step
+  function validateStep(step) {
+    switch(step) {
+        case 1:
+            // Check if template is selected
+            const selectedTemplate = localStorage.getItem('selectedTemplate');
+            if (!selectedTemplate) {
+                alert('Please select a template to continue');
+                return false;
+            }
+            return true;
+        case 2:
+            // Check if content is generated
+            const generatedContent = document.querySelector('#generatedContent');
+            if (!generatedContent || !generatedContent.value.trim()) {
+                alert('Please generate content before proceeding');
+                return false;
+            }
+            return true;
+        case 3:
+            // Allow customization
+            return true;
+        default:
+            return true;
+    }
+  }
+
+  // Go to specified step
+  function goToStep(stepNumber) {
+    // Update step indicators
+    document.querySelectorAll('.step-item').forEach(step => {
+        const stepNum = parseInt(step.dataset.step || '1');
+        if (stepNum < stepNumber) {
+            step.classList.remove('active');
+            step.classList.add('completed');
+        } else if (stepNum === stepNumber) {
+            step.classList.add('active');
+            step.classList.remove('completed');
+        } else {
+            step.classList.remove('active', 'completed');
+        }
+    });
+    
+    // Show appropriate tab content
+    document.querySelectorAll('.tab-pane').forEach(tab => {
+        tab.classList.remove('show', 'active');
+    });
+    
+    const activeTab = document.querySelector(`#step${stepNumber}Content`);
+    if (activeTab) {
+        activeTab.classList.add('show', 'active');
+    }
   }
 }); 
