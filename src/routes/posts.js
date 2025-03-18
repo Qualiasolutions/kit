@@ -6,7 +6,8 @@ const {
   updatePost,
   deletePost,
   getScheduledPosts,
-  updatePostStatus
+  updatePostStatus,
+  generatePost
 } = require('../controllers/postController');
 
 const router = express.Router();
@@ -21,6 +22,9 @@ router.use(protect);
 router.route('/')
   .get(getPosts)
   .post(createPost);
+
+// Route for generating posts with AI
+router.post('/generate', generatePost);
 
 // Route for scheduled posts
 router.route('/scheduled')

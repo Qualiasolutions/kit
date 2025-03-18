@@ -42,8 +42,6 @@ document.addEventListener('DOMContentLoaded', function() {
   const secondaryColor = document.getElementById('secondary-color');
   const accentColor = document.getElementById('accent-color');
   const useOpenAI = document.getElementById('use-openai');
-  const apiKeyContainer = document.getElementById('api-key-container');
-  const openaiKey = document.getElementById('openai-key');
   const aiTemplateBtn = document.getElementById('ai-template-btn');
   const generateBtn = document.getElementById('generate-btn');
   const previewContent = document.getElementById('preview-content');
@@ -70,11 +68,6 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Setup all event listeners
   function setupEventListeners() {
-    // OpenAI toggle
-    useOpenAI.addEventListener('change', function() {
-      apiKeyContainer.classList.toggle('show', this.checked);
-    });
-    
     // Template card selection
     document.querySelectorAll('.template-card').forEach(card => {
       card.addEventListener('click', function() {
@@ -103,8 +96,8 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('logout-link').addEventListener('click', function(e) {
       e.preventDefault();
       localStorage.removeItem('token');
-    window.location.href = 'login.html';
-  });
+      window.location.href = 'login.html';
+    });
   }
 
   // Load business profile
@@ -249,84 +242,56 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Check if using OpenAI
     if (useOpenAI.checked) {
-      // Verify API key
-      if (!openaiKey.value.trim()) {
-        showAlert('Please enter your OpenAI API key', 'warning');
-        loadingOverlay.classList.add('d-none');
-        generateBtn.disabled = false;
-        return;
-      }
-      
-      // Generate with OpenAI
-      generateWithOpenAI(businessData);
+      // Use server-side OpenAI API
+      generateWithServerOpenAI(businessData);
     } else {
-      // Generate with built-in templates
+      // Use built-in template engine
       generateWithBuiltIn(businessData);
     }
   }
   
-  // Generate content with OpenAI
-  function generateWithOpenAI(businessData) {
-    const apiKey = openaiKey.value.trim();
+  // Use server-side OpenAI for content generation
+  function generateWithServerOpenAI(businessData) {
+    // Prepare the request data
+    const requestData = {
+      businessData,
+      templateId: selectedTemplate,
+      generateImage: true
+    };
     
-    updateLoadingMessage('Connecting to OpenAI...');
-    
-    // Define template type based on selection
-    let templateType = 'Standard';
-    switch (selectedTemplate) {
-      case 'template-1':
-        templateType = 'Modern & Clean';
-        break;
-      case 'template-2':
-        templateType = 'Bold & Colorful';
-        break;
-      case 'template-3':
-        templateType = 'Business Special';
-        break;
-    }
-    
-    // Use our backend API to generate content
-    fetch(`${API_URL}/api/ai/generate`, {
+    // Call our backend service which has the OpenAI API key
+    fetch(`${API_URL}/api/posts/generate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify({
-        apiKey: apiKey,
-        profileId: profile._id,
-        templateType: templateType
-      })
+      body: JSON.stringify(requestData)
     })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('API error: ' + response.statusText);
-      }
-      return response.json();
-    })
+    .then(response => response.json())
     .then(data => {
+      // Process successful response
       if (data.success) {
-        // Transform the response to match our expected format
-        const content = {
-          headline: data.data.headline,
-          caption: data.data.mainText,
-          callToAction: data.data.callToAction,
-          hashtags: data.data.tags.join(' '),
-          imageDescription: data.data.imagePrompt
-        };
+        generatedContent = data.content;
         
-        // Save the generated content
-        generatedContent = content;
-        
-        // Display the content in the preview
-        displayPreview(businessData, content);
+        // Display preview
+        setTimeout(() => {
+          displayPreview(businessData, generatedContent);
+          
+          // Hide loading overlay
+          loadingOverlay.classList.add('d-none');
+          generateBtn.disabled = false;
+          
+          // Show save controls
+          saveControls.classList.remove('d-none');
+        }, 3000); // Keep minimum loading time for UX
       } else {
-        throw new Error(data.error || 'Failed to generate content');
+        throw new Error(data.error || 'Error generating content');
       }
     })
     .catch(error => {
-      console.error('API error:', error);
-      showAlert('Error generating content with AI. Using built-in generation instead.', 'warning');
+      console.error('Error generating content with OpenAI:', error);
+      showAlert('Error generating content. Falling back to built-in templates.', 'warning');
       generateWithBuiltIn(businessData);
     });
   }

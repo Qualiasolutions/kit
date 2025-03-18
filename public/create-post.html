@@ -353,7 +353,7 @@
     <!-- Alert Container -->
     <div id="alert-container"></div>
     
-    <div class="row mb-5">
+    <div class="row mb-4">
       <div class="col-12 text-center">
         <h1 class="mb-2 display-5 fw-bold">AI Content Creator</h1>
         <p class="lead text-muted">Create professional branded content in seconds</p>
@@ -395,26 +395,16 @@
                 <div class="form-check form-switch ps-0">
                   <div class="d-flex align-items-center">
                     <div class="form-check form-switch">
-                      <input class="form-check-input" type="checkbox" id="use-openai">
+                      <input class="form-check-input" type="checkbox" id="use-openai" checked>
                       <label class="form-check-label ms-2" for="use-openai">
-                        <span class="fw-medium">Use OpenAI</span> for enhanced generation
+                        <span class="fw-medium">Use AI</span> for enhanced generation
                       </label>
                     </div>
                   </div>
                 </div>
-                
-                <div class="api-key-input mt-3 p-3 rounded" id="api-key-container" style="background-color: #f0f9f8;">
-                  <label for="openai-key" class="form-label fw-medium">OpenAI API Key</label>
-                  <div class="input-group">
-                    <span class="input-group-text bg-white">
-                      <i class="bi bi-key-fill text-primary"></i>
-                    </span>
-                    <input type="password" class="form-control" id="openai-key" placeholder="Enter your OpenAI API key">
-                  </div>
-                  <div class="form-text mt-2">
-                    <i class="bi bi-shield-lock-fill me-1"></i>
-                    Your API key is not stored on our servers.
-                  </div>
+                <div class="form-text mt-2">
+                  <i class="bi bi-info-circle-fill me-1 text-primary"></i>
+                  Our system uses OpenAI to generate high-quality content based on your business profile.
                 </div>
               </div>
             </div>
@@ -436,6 +426,7 @@
           </div>
           <div class="card-body">
             <div class="row g-4">
+              <!-- Row 1 - First 3 Templates -->
               <div class="col-md-4">
                 <div class="template-card card h-100">
                   <div class="position-relative">
@@ -486,6 +477,135 @@
                       </label>
                     </div>
                     <p class="card-text small text-muted mt-2">Professional layout perfect for corporate communications.</p>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Row 2 - Templates 4-6 -->
+              <div class="col-md-4">
+                <div class="template-card card h-100">
+                  <div class="position-relative">
+                    <img src="https://images.unsplash.com/photo-1506784983877-45594efa4cbe?w=500&q=80" alt="Minimalist Template" class="card-img-top template-img">
+                    <span class="badge-template">Minimalist</span>
+                  </div>
+                  <div class="card-body">
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" name="template" id="template4" value="template-4">
+                      <label class="form-check-label fw-medium" for="template4">
+                        Minimalist
+                      </label>
+                    </div>
+                    <p class="card-text small text-muted mt-2">Clean design with lots of whitespace and subtle accents.</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="col-md-4">
+                <div class="template-card card h-100">
+                  <div class="position-relative">
+                    <img src="https://images.unsplash.com/photo-1504384764586-bb4cdc1707b0?w=500&q=80" alt="Gradient Style Template" class="card-img-top template-img">
+                    <span class="badge-template">Trendy</span>
+                  </div>
+                  <div class="card-body">
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" name="template" id="template5" value="template-5">
+                      <label class="form-check-label fw-medium" for="template5">
+                        Gradient Style
+                      </label>
+                    </div>
+                    <p class="card-text small text-muted mt-2">Modern gradient backgrounds with balanced typography.</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="col-md-4">
+                <div class="template-card card h-100">
+                  <div class="position-relative">
+                    <img src="https://images.unsplash.com/photo-1512295767273-ac109ac3acfa?w=500&q=80" alt="Creative Layout Template" class="card-img-top template-img">
+                    <span class="badge-template">Creative</span>
+                  </div>
+                  <div class="card-body">
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" name="template" id="template6" value="template-6">
+                      <label class="form-check-label fw-medium" for="template6">
+                        Creative Layout
+                      </label>
+                    </div>
+                    <p class="card-text small text-muted mt-2">Artistic design for brands that want to stand out.</p>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Row 3 - Templates 7-9 -->
+              <div class="col-md-4">
+                <div class="template-card card h-100">
+                  <div class="position-relative">
+                    <img src="https://images.unsplash.com/photo-1606857521015-7f9fcf423740?w=500&q=80" alt="Seasonal Template" class="card-img-top template-img">
+                    <span class="badge-template">Seasonal</span>
+                  </div>
+                  <div class="card-body">
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" name="template" id="template7" value="template-7">
+                      <label class="form-check-label fw-medium" for="template7">
+                        Seasonal Promo
+                      </label>
+                    </div>
+                    <p class="card-text small text-muted mt-2">Perfect for seasonal promotions and holiday campaigns.</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="col-md-4">
+                <div class="template-card card h-100">
+                  <div class="position-relative">
+                    <img src="https://images.unsplash.com/photo-1603738733651-31b4a1c0af9e?w=500&q=80" alt="Product Showcase Template" class="card-img-top template-img">
+                    <span class="badge-template">Products</span>
+                  </div>
+                  <div class="card-body">
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" name="template" id="template8" value="template-8">
+                      <label class="form-check-label fw-medium" for="template8">
+                        Product Showcase
+                      </label>
+                    </div>
+                    <p class="card-text small text-muted mt-2">Highlight your products with this showcase layout.</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="col-md-4">
+                <div class="template-card card h-100">
+                  <div class="position-relative">
+                    <img src="https://images.unsplash.com/photo-1517842645767-c639042777db?w=500&q=80" alt="Quote Template" class="card-img-top template-img">
+                    <span class="badge-template">Quotes</span>
+                  </div>
+                  <div class="card-body">
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" name="template" id="template9" value="template-9">
+                      <label class="form-check-label fw-medium" for="template9">
+                        Quote Template
+                      </label>
+                    </div>
+                    <p class="card-text small text-muted mt-2">Elegant design for sharing quotes and testimonials.</p>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Row 4 - Template 10 -->
+              <div class="col-md-4">
+                <div class="template-card card h-100">
+                  <div class="position-relative">
+                    <img src="https://images.unsplash.com/photo-1552663651-2e4250e6c7e8?w=500&q=80" alt="Call to Action Template" class="card-img-top template-img">
+                    <span class="badge-template">CTA</span>
+                  </div>
+                  <div class="card-body">
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" name="template" id="template10" value="template-10">
+                      <label class="form-check-label fw-medium" for="template10">
+                        Call to Action
+                      </label>
+                    </div>
+                    <p class="card-text small text-muted mt-2">Focused template to drive audience engagement and actions.</p>
                   </div>
                 </div>
               </div>
