@@ -23,9 +23,5 @@
       "src": "/(.*)",
       "dest": "src/server.js"
     }
-  ],
-  "env": {
-    "CLOUDINARY_CLOUD_NAME": "ddfjuxhxh",
-    "CLOUDINARY_API_KEY": "122669963755112"
-  }
+  ]
 } 
