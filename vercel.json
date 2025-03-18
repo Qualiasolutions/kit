@@ -8,6 +8,12 @@
     { "src": "/api/(.*)", "dest": "src/index.js" },
     { "src": "/(.*)", "dest": "/public/$1" }
   ],
+  "functions": {
+    "src/index.js": {
+      "memory": 1024,
+      "maxDuration": 10
+    }
+  },
   "env": {
     "MONGODB_URI": "@mongodb_uri",
     "JWT_SECRET": "@jwt_secret",
