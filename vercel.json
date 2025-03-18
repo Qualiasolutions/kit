@@ -23,5 +23,15 @@
       "src": "/(.*)",
       "dest": "src/server.js"
     }
-  ]
+  ],
+  "env": {
+    "FIREBASE_API_KEY": "AIzaSyCaZxZGHEA8ksXtFsM8PqKtDIx2Q68uwZA",
+    "FIREBASE_AUTH_DOMAIN": "qaaaa-448c6.firebaseapp.com",
+    "FIREBASE_PROJECT_ID": "qaaaa-448c6",
+    "FIREBASE_STORAGE_BUCKET": "qaaaa-448c6.firebasestorage.app",
+    "FIREBASE_MESSAGING_SENDER_ID": "518781259229",
+    "FIREBASE_APP_ID": "1:518781259229:web:30604a80d3d0a3c6b73a34",
+    "CLOUDINARY_CLOUD_NAME": "ddfjuxhxh",
+    "CLOUDINARY_API_KEY": "122669963755112"
+  }
 } 
