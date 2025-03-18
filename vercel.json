@@ -9,8 +9,6 @@
     { "src": "/(.*)", "dest": "/public/$1" }
   ],
   "env": {
-    "MONGODB_URI": "@mongodb_uri",
-    "JWT_SECRET": "@jwt_secret",
     "FIREBASE_API_KEY": "@firebase_api_key",
     "FIREBASE_AUTH_DOMAIN": "@firebase_auth_domain",
     "FIREBASE_PROJECT_ID": "@firebase_project_id",
