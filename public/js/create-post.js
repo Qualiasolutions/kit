@@ -130,10 +130,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Get templates (in real app, these would come from an API)
     const templates = [
-        { id: 1, name: 'Standard Post', description: 'Clean, professional layout for general content', image: '/img/placeholder-template.jpg' },
-        { id: 2, name: 'Promotional', description: 'Eye-catching design for sales and promotions', image: '/img/placeholder-template.jpg' },
-        { id: 3, name: 'News Update', description: 'Formal layout for announcements and news', image: '/img/placeholder-template.jpg' },
-        { id: 4, name: 'Event Promotion', description: 'Showcase upcoming events with style', image: '/img/placeholder-template.jpg' }
+        { id: 1, name: 'Standard Post', description: 'Clean, professional layout for general content', image: 'img/placeholder-template.jpg' },
+        { id: 2, name: 'Promotional', description: 'Eye-catching design for sales and promotions', image: 'img/placeholder-template.jpg' },
+        { id: 3, name: 'News Update', description: 'Formal layout for announcements and news', image: 'img/placeholder-template.jpg' },
+        { id: 4, name: 'Event Promotion', description: 'Showcase upcoming events with style', image: 'img/placeholder-template.jpg' }
     ];
     
     // Store templates in localStorage for development
@@ -179,6 +179,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Create default template images if they don't exist
     createDefaultTemplateImages();
+    
+    console.log('Templates setup complete:', templateContainer.children.length, 'templates added');
   }
 
   // Update template preview based on selected template
@@ -188,7 +190,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Set src and add error handler
         previewImage.src = template.image;
         previewImage.onerror = () => {
-            previewImage.src = '/img/placeholder-template.jpg';
+            previewImage.src = 'img/placeholder-template.jpg';
         };
     }
     
@@ -220,7 +222,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (needsImages) {
         // Store default image paths
         templateImageKeys.forEach((key, index) => {
-            localStorage.setItem(key, '/img/placeholder-template.jpg');
+            localStorage.setItem(key, 'img/placeholder-template.jpg');
         });
     }
   }
