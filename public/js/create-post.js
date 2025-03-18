@@ -6,17 +6,22 @@ document.addEventListener('DOMContentLoaded', function() {
     return;
   }
 
+  // API base URL - change this to your deployed API URL when needed
+  const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+    ? '' // Empty for local development (relative path)
+    : 'https://kit-lime.vercel.app'; // Updated with actual deployed URL
+
   // Initialize UI elements
   initializeUI();
   
   // Load business profile data
-  loadBusinessProfile(token);
+  loadBusinessProfile(token, API_URL);
   
   // Load templates
   loadTemplates();
   
   // Set up event listeners
-  setupEventListeners();
+  setupEventListeners(API_URL);
   
   // Set up logout functionality
   document.getElementById('logout-link').addEventListener('click', function(e) {
@@ -51,7 +56,7 @@ function initializeUI() {
   document.getElementById('image-upload').addEventListener('change', handleImageUpload);
 }
 
-function setupEventListeners() {
+function setupEventListeners(API_URL) {
   // Next and Previous buttons for multi-step process
   document.getElementById('next-step-btn').addEventListener('click', nextStep);
   document.getElementById('prev-step-btn').addEventListener('click', prevStep);
@@ -85,7 +90,9 @@ function setupEventListeners() {
   });
   
   // Generate content button
-  document.getElementById('generate-btn').addEventListener('click', generateContent);
+  document.getElementById('generate-btn').addEventListener('click', function() {
+    generateContent(API_URL);
+  });
   
   // Platform selection buttons
   const platformButtons = document.querySelectorAll('.platform-btn');
@@ -111,7 +118,9 @@ function setupEventListeners() {
   });
   
   // Save post button
-  document.getElementById('save-post-btn').addEventListener('click', savePost);
+  document.getElementById('save-post-btn').addEventListener('click', function() {
+    savePost(API_URL);
+  });
   
   // Preview button
   document.getElementById('preview-post-btn').addEventListener('click', function() {
@@ -228,9 +237,9 @@ function updateNavigationButtons() {
   }
 }
 
-async function loadBusinessProfile(token) {
+async function loadBusinessProfile(token, API_URL) {
   try {
-    const response = await fetch('/api/users/me', {
+    const response = await fetch(`${API_URL}/api/users/me`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -248,11 +257,33 @@ async function loadBusinessProfile(token) {
       // Update UI with business profile data
       updateBusinessProfileUI(businessProfile);
     } else {
+      // Check if we're in dev mode
+      const devMode = localStorage.getItem('devMode') === 'true';
+      if (devMode) {
+        const mockProfile = JSON.parse(localStorage.getItem('mockProfile'));
+        if (mockProfile) {
+          businessProfile = mockProfile;
+          updateBusinessProfileUI(mockProfile);
+          return;
+        }
+      }
+      
       // Redirect to profile setup if no profile exists
       window.location.href = 'profile-setup.html';
     }
   } catch (error) {
     console.error('Error loading business profile:', error);
+    // Try fallback for dev mode
+    const devMode = localStorage.getItem('devMode') === 'true';
+    if (devMode) {
+      const mockProfile = JSON.parse(localStorage.getItem('mockProfile'));
+      if (mockProfile) {
+        businessProfile = mockProfile;
+        updateBusinessProfileUI(mockProfile);
+        return;
+      }
+    }
+    
     showAlert('Failed to load your business profile. Please try again later.', 'danger');
   }
 }
@@ -409,7 +440,7 @@ function loadTemplates() {
   }, 500);
 }
 
-async function generateContent() {
+async function generateContent(API_URL) {
   if (!selectedTemplate) {
     showAlert('Please select a template first', 'warning');
     return;
@@ -427,7 +458,7 @@ async function generateContent() {
   
   try {
     // Call the server to generate content
-    const result = await generateWithServerOpenAI(businessProfile, selectedTemplate);
+    const result = await generateWithServerOpenAI(businessProfile, selectedTemplate, API_URL);
     
     if (result) {
       // Fill in the form fields with generated content
@@ -457,11 +488,11 @@ async function generateContent() {
   }
 }
 
-async function generateWithServerOpenAI(businessData, templateId) {
+async function generateWithServerOpenAI(businessData, templateId, API_URL) {
   try {
     const token = localStorage.getItem('token');
     
-    const response = await fetch('/api/posts/generate', {
+    const response = await fetch(`${API_URL}/api/posts/generate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -530,7 +561,7 @@ function handleImageUpload(event) {
   }
 }
 
-async function savePost() {
+async function savePost(API_URL) {
   // Show saving indicator
   document.getElementById('saving-indicator').style.display = 'block';
   document.getElementById('save-post-btn').disabled = true;
@@ -589,7 +620,7 @@ async function savePost() {
     
     // Send to server
     const token = localStorage.getItem('token');
-    const response = await fetch('/api/posts', {
+    const response = await fetch(`${API_URL}/api/posts`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`

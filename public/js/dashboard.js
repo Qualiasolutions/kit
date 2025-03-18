@@ -41,6 +41,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Clear localStorage
     localStorage.removeItem('token');
+    localStorage.removeItem('userId');
     localStorage.removeItem('user');
     localStorage.removeItem('devMode');
     localStorage.removeItem('mockProfile');
@@ -129,15 +130,15 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // Get user data
-  fetchUserData(token);
+  fetchUserData(token, API_URL);
 
   // Load user's posts
-  fetchPosts(token);
+  fetchPosts(token, API_URL);
 });
 
-async function fetchUserData(token) {
+async function fetchUserData(token, API_URL) {
   try {
-    const response = await fetch('/api/users/me', {
+    const response = await fetch(`${API_URL}/api/users/me`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -162,12 +163,40 @@ async function fetchUserData(token) {
       // Display business profile data
       displayBusinessProfile(data.user.businessProfile);
     } else {
+      // Check if we're in dev mode
+      const devMode = localStorage.getItem('devMode') === 'true';
+      
+      if (devMode) {
+        // Check if we have a profile in localStorage
+        const mockProfile = JSON.parse(localStorage.getItem('mockProfile'));
+        
+        if (mockProfile) {
+          // Show profile section for dev mode
+          document.getElementById('profile-incomplete').style.display = 'none';
+          document.getElementById('profile-complete').style.display = 'block';
+          
+          // Update profile display
+          displayBusinessProfile(mockProfile);
+          return;
+        }
+      }
+      
       // Profile is incomplete, show incomplete section and hide complete
       document.getElementById('profile-incomplete').style.display = 'block';
       document.getElementById('profile-complete').style.display = 'none';
     }
   } catch (error) {
     console.error('Error fetching user data:', error);
+    // Show a fallback message in case of error
+    const devMode = localStorage.getItem('devMode') === 'true';
+    if (devMode) {
+      const mockProfile = JSON.parse(localStorage.getItem('mockProfile'));
+      if (mockProfile) {
+        document.getElementById('profile-incomplete').style.display = 'none';
+        document.getElementById('profile-complete').style.display = 'block';
+        displayBusinessProfile(mockProfile);
+      }
+    }
   }
 }
 
@@ -227,14 +256,14 @@ function adjustColor(color, amount) {
   return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
 }
 
-async function fetchPosts(token) {
+async function fetchPosts(token, API_URL) {
   try {
     // Show loading
     document.getElementById('posts-loading').style.display = 'block';
     document.getElementById('no-posts').style.display = 'none';
     document.getElementById('posts-list').innerHTML = '';
 
-    const response = await fetch('/api/posts', {
+    const response = await fetch(`${API_URL}/api/posts`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -330,7 +359,7 @@ function createPostElement(post) {
       <div class="text-end">
         <span class="badge bg-primary mb-2">${formattedDate}</span>
         <div>
-          <a href="/edit-post.html?id=${post._id}" class="btn btn-sm btn-outline-primary py-0 px-2">
+          <a href="${window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? '' : 'https://kit-lime.vercel.app'}/edit-post.html?id=${post._id}" class="btn btn-sm btn-outline-primary py-0 px-2">
             <i class="bi bi-pencil-square"></i>
           </a>
         </div>

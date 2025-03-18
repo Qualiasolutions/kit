@@ -1,32 +1,26 @@
 {
   "version": 2,
   "builds": [
-    {
-      "src": "src/server.js",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": ["public/**"]
-      }
-    }
+    { "src": "public/**/*", "use": "@vercel/static" },
+    { "src": "src/index.js", "use": "@vercel/node" }
   ],
   "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "src/server.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "src/server.js"
-    }
+    { "src": "/api/(.*)", "dest": "src/index.js" },
+    { "src": "/(.*)", "dest": "/public/$1" }
   ],
   "env": {
-    "FIREBASE_API_KEY": "AIzaSyCaZxZGHEA8ksXtFsM8PqKtDIx2Q68uwZA",
-    "FIREBASE_AUTH_DOMAIN": "qaaaa-448c6.firebaseapp.com",
-    "FIREBASE_PROJECT_ID": "qaaaa-448c6",
-    "FIREBASE_STORAGE_BUCKET": "qaaaa-448c6.firebasestorage.app",
-    "FIREBASE_MESSAGING_SENDER_ID": "518781259229",
-    "FIREBASE_APP_ID": "1:518781259229:web:30604a80d3d0a3c6b73a34",
-    "CLOUDINARY_CLOUD_NAME": "ddfjuxhxh",
-    "CLOUDINARY_API_KEY": "122669963755112"
+    "MONGODB_URI": "@mongodb_uri",
+    "JWT_SECRET": "@jwt_secret",
+    "FIREBASE_API_KEY": "@firebase_api_key",
+    "FIREBASE_AUTH_DOMAIN": "@firebase_auth_domain",
+    "FIREBASE_PROJECT_ID": "@firebase_project_id",
+    "FIREBASE_STORAGE_BUCKET": "@firebase_storage_bucket",
+    "FIREBASE_MESSAGING_SENDER_ID": "@firebase_messaging_sender_id",
+    "FIREBASE_APP_ID": "@firebase_app_id",
+    "CLOUDINARY_CLOUD_NAME": "@cloudinary_cloud_name",
+    "CLOUDINARY_API_KEY": "@cloudinary_api_key",
+    "CLOUDINARY_API_SECRET": "@cloudinary_api_secret",
+    "OPENAI_API_KEY": "@openai_api_key",
+    "NODE_ENV": "production"
   }
 } 

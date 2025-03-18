@@ -9,11 +9,21 @@ const errorHandler = require('./middleware/error');
 // Load environment variables
 dotenv.config();
 
-// Connect to database
-connectDB();
-
 // Initialize express
 const app = express();
+
+// Connect to database - don't connect on module import, only when handler is called
+let isConnected = false;
+const ensureDbConnected = async () => {
+  if (!isConnected) {
+    try {
+      await connectDB();
+      isConnected = true;
+    } catch (error) {
+      console.error('Database connection error:', error);
+    }
+  }
+};
 
 // Middleware
 app.use(express.json());
@@ -25,6 +35,12 @@ app.use(cors({
 // Set static folder
 app.use(express.static(path.join(__dirname, '../public')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Middleware to ensure DB is connected for API routes
+app.use('/api', async (req, res, next) => {
+  await ensureDbConnected();
+  next();
+});
 
 // Define routes
 app.use('/api/auth', require('./routes/auth'));
@@ -42,6 +58,7 @@ app.get('/', (req, res) => {
 // Seed database endpoint (admin only)
 app.get('/api/seed', async (req, res) => {
   try {
+    await ensureDbConnected();
     const secretKey = req.query.key;
     if (secretKey !== process.env.SEED_KEY && secretKey !== 'omu-secret-seed-key') {
       return res.status(401).json({ success: false, error: 'Unauthorized' });
@@ -76,8 +93,13 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
-// Start server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-}); 
+// In local development environment, start the server
+if (process.env.NODE_ENV !== 'production') {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
+// Export the Express app for serverless deployment
+module.exports = app; 
