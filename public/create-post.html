@@ -6,6 +6,9 @@
   <title>Create Post - OmuMediaKit</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
   <style>
     :root {
@@ -16,13 +19,14 @@
       --accent: #4db6ac;
       --light-bg: #f5f9f8;
       --dark-text: #263238;
-      --card-shadow: 0 8px 16px rgba(0, 139, 123, 0.1);
+      --card-shadow: 0 8px 24px rgba(0, 139, 123, 0.08);
+      --hover-shadow: 0 12px 32px rgba(0, 139, 123, 0.15);
     }
     
     body {
       background-color: var(--light-bg);
       color: var(--dark-text);
-      font-family: 'Segoe UI', 'Arial', sans-serif;
+      font-family: 'Inter', 'Segoe UI', 'Arial', sans-serif;
     }
     
     .navbar {
@@ -31,16 +35,32 @@
     
     .card {
       border: none;
-      border-radius: 12px;
+      border-radius: 16px;
       box-shadow: var(--card-shadow);
       transition: all 0.3s ease;
       overflow: hidden;
+    }
+    
+    .card:hover {
+      box-shadow: var(--hover-shadow);
     }
     
     .card-header {
       background-color: white;
       border-bottom: 1px solid rgba(0, 0, 0, 0.05);
       padding: 1.2rem 1.5rem;
+    }
+    
+    .btn {
+      border-radius: 10px;
+      padding: 0.5rem 1.5rem;
+      transition: all 0.3s;
+      font-weight: 500;
+    }
+    
+    .btn-lg {
+      padding: 0.8rem 2rem;
+      font-size: 1.1rem;
     }
     
     .btn-primary {
@@ -51,6 +71,8 @@
     .btn-primary:hover {
       background-color: var(--primary-dark);
       border-color: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(0, 139, 123, 0.25);
     }
     
     .btn-success {
@@ -61,19 +83,33 @@
     .btn-success:hover {
       background-color: var(--accent);
       border-color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(38, 166, 154, 0.25);
+    }
+    
+    .btn-outline-primary {
+      color: var(--primary);
+      border-color: var(--primary);
+    }
+    
+    .btn-outline-primary:hover {
+      background-color: var(--primary);
+      border-color: var(--primary);
+      transform: translateY(-2px);
     }
     
     .template-card {
       cursor: pointer;
       transition: all 0.3s;
       border: 2px solid transparent;
-      border-radius: 12px;
+      border-radius: 16px;
       overflow: hidden;
+      height: 100%;
     }
     
     .template-card:hover {
       transform: translateY(-5px);
-      box-shadow: 0 12px 24px rgba(0, 139, 123, 0.15);
+      box-shadow: var(--hover-shadow);
     }
     
     .template-card.selected {
@@ -81,17 +117,34 @@
       box-shadow: 0 0 0 3px rgba(0, 139, 123, 0.2);
     }
     
+    .template-img {
+      height: 220px;
+      object-fit: cover;
+      transition: all 0.5s;
+    }
+    
+    .template-card:hover .template-img {
+      transform: scale(1.05);
+    }
+    
     .color-box {
-      width: 24px;
-      height: 24px;
-      border-radius: 6px;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      transition: all 0.3s;
+    }
+    
+    .color-box:hover {
+      transform: scale(1.2);
     }
     
     .preview-container {
       position: relative;
       min-height: 400px;
       background-color: white;
-      border-radius: 8px;
+      border-radius: 16px;
+      box-shadow: var(--card-shadow);
+      padding: 1.5rem;
     }
     
     .loading-overlay {
@@ -100,24 +153,62 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background-color: rgba(255, 255, 255, 0.9);
+      background-color: rgba(255, 255, 255, 0.95);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       z-index: 10;
-      border-radius: 8px;
+      border-radius: 16px;
+      backdrop-filter: blur(5px);
+    }
+    
+    .loading-animation {
+      width: 80px;
+      height: 80px;
+      margin-bottom: 1.5rem;
+      position: relative;
+    }
+    
+    .loading-animation:before,
+    .loading-animation:after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background-color: var(--primary);
+      opacity: 0.6;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    
+    .loading-animation:after {
+      animation-delay: -1s;
+    }
+    
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(0);
+        opacity: 0.8;
+      }
+      50% {
+        transform: scale(1);
+        opacity: 0;
+      }
     }
     
     .api-key-input {
+      max-height: 0;
+      overflow: hidden;
+      transition: all 0.5s ease;
       opacity: 0;
-      height: 0;
-      transition: all 0.3s;
     }
     
     .api-key-input.show {
+      max-height: 500px;
       opacity: 1;
-      height: auto;
       margin-top: 1rem;
     }
     
@@ -126,14 +217,25 @@
       border-color: var(--primary);
     }
     
-    .card-img-top {
-      height: 180px;
-      object-fit: cover;
+    .form-check-input {
+      width: 3.2rem !important;
+      height: 1.5rem;
+    }
+    
+    .form-control, .input-group-text {
+      border-radius: 10px;
+      padding: 0.6rem 1rem;
+      border: 1px solid rgba(0, 0, 0, 0.1);
     }
     
     .form-control:focus {
       border-color: var(--primary-light);
-      box-shadow: 0 0 0 0.25rem rgba(0, 139, 123, 0.25);
+      box-shadow: 0 0 0 0.25rem rgba(0, 139, 123, 0.15);
+    }
+    
+    .input-group > .form-control:not(:first-child) {
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
     }
     
     .spinner-border {
@@ -148,8 +250,69 @@
       background-color: var(--primary-dark) !important;
     }
     
-    h1, h2, h3, h4, h5, h6 {
+    .section-title {
+      position: relative;
+      display: inline-block;
+      margin-bottom: 1.5rem;
+    }
+    
+    .section-title:after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 0;
+      width: 50px;
+      height: 3px;
+      background-color: var(--primary);
+      border-radius: 3px;
+    }
+    
+    .alert {
+      border-radius: 12px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    }
+    
+    .badge-template {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(0,0,0,0.5);
+      color: white;
+      padding: 0.35em 0.8em;
+      font-size: 75%;
       font-weight: 600;
+      border-radius: 30px;
+      backdrop-filter: blur(4px);
+    }
+    
+    .dropdown-menu {
+      border-radius: 12px;
+      border: none;
+      box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+      padding: 0.5rem;
+    }
+    
+    .dropdown-item {
+      border-radius: 8px;
+      padding: 0.6rem 1rem;
+      margin-bottom: 2px;
+    }
+    
+    .dropdown-item:active, .dropdown-item:hover {
+      background-color: var(--light-bg);
+      color: var(--primary);
+    }
+    
+    .date-picker {
+      border-radius: 10px;
+      border: 1px solid rgba(0,0,0,0.1);
+      padding: 0.6rem 1rem;
+    }
+    
+    .date-picker:focus {
+      border-color: var(--primary-light);
+      box-shadow: 0 0 0 0.25rem rgba(0, 139, 123, 0.15);
+      outline: none;
     }
   </style>
 </head>
@@ -186,38 +349,39 @@
     </div>
   </nav>
 
-  <div class="container py-3">
+  <div class="container py-4">
     <!-- Alert Container -->
     <div id="alert-container"></div>
     
-    <div class="row mb-4">
+    <div class="row mb-5">
       <div class="col-12 text-center">
-        <h1 class="mb-2 display-5">AI Content Creator</h1>
-        <p class="lead text-muted">Generate professional content with a single click</p>
+        <h1 class="mb-2 display-5 fw-bold">AI Content Creator</h1>
+        <p class="lead text-muted">Create professional branded content in seconds</p>
       </div>
     </div>
     
     <!-- Main Content -->
-    <div class="row">
+    <div class="row g-4">
       <!-- Business Profile Card -->
       <div class="col-md-4 mb-4">
         <div class="card h-100">
           <div class="card-header d-flex align-items-center">
-            <i class="bi bi-building me-2 text-primary"></i>
-            <h4 class="mb-0">Your Business</h4>
+            <i class="bi bi-building-fill me-2 text-primary"></i>
+            <h5 class="mb-0 fw-bold">Your Business</h5>
           </div>
           <div class="card-body">
             <div class="d-flex align-items-center mb-4">
               <div class="position-relative me-3">
-                <img src="img/placeholder-logo.png" id="business-logo" alt="Business Logo" style="width: 72px; height: 72px; object-fit: cover; border-radius: 12px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                <img src="img/placeholder-logo.png" id="business-logo" alt="Business Logo" style="width: 80px; height: 80px; object-fit: cover; border-radius: 16px; box-shadow: 0 8px 16px rgba(0,0,0,0.1);">
               </div>
               <div>
                 <h5 id="business-name-display" class="fw-bold mb-1">Your Business</h5>
                 <p class="text-muted mb-0" id="business-type-display">Business Type</p>
               </div>
             </div>
-            <h6 class="mb-3 d-flex align-items-center">
-              <i class="bi bi-palette me-2 text-primary"></i>
+            
+            <h6 class="mb-3 d-flex align-items-center section-title">
+              <i class="bi bi-palette-fill me-2 text-primary"></i>
               Brand Colors
             </h6>
             <div class="d-flex mb-4">
@@ -225,146 +389,152 @@
               <div class="color-box me-2 shadow-sm" id="secondary-color" style="background-color: #26a69a;"></div>
               <div class="color-box shadow-sm" id="accent-color" style="background-color: #4db6ac;"></div>
             </div>
-            <div class="form-check form-switch mt-4 ps-0">
-              <div class="d-flex align-items-center">
-                <div class="form-check form-switch">
-                  <input class="form-check-input" type="checkbox" id="use-openai" style="width: 3rem;">
-                  <label class="form-check-label ms-2" for="use-openai">
-                    <span class="fw-medium">Use OpenAI</span> for enhanced generation
-                  </label>
+            
+            <div class="card mt-4 bg-light border-0">
+              <div class="card-body">
+                <div class="form-check form-switch ps-0">
+                  <div class="d-flex align-items-center">
+                    <div class="form-check form-switch">
+                      <input class="form-check-input" type="checkbox" id="use-openai">
+                      <label class="form-check-label ms-2" for="use-openai">
+                        <span class="fw-medium">Use OpenAI</span> for enhanced generation
+                      </label>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-            <div class="api-key-input mt-3 p-3 rounded" id="api-key-container" style="background-color: #f0f9f8;">
-              <label for="openai-key" class="form-label fw-medium">OpenAI API Key</label>
-              <div class="input-group">
-                <span class="input-group-text bg-white">
-                  <i class="bi bi-key text-primary"></i>
-                </span>
-                <input type="password" class="form-control" id="openai-key" placeholder="Enter your OpenAI API key">
-              </div>
-              <div class="form-text mt-2">
-                <i class="bi bi-shield-lock me-1"></i>
-                Your API key is not stored on our servers.
+                
+                <div class="api-key-input mt-3 p-3 rounded" id="api-key-container" style="background-color: #f0f9f8;">
+                  <label for="openai-key" class="form-label fw-medium">OpenAI API Key</label>
+                  <div class="input-group">
+                    <span class="input-group-text bg-white">
+                      <i class="bi bi-key-fill text-primary"></i>
+                    </span>
+                    <input type="password" class="form-control" id="openai-key" placeholder="Enter your OpenAI API key">
+                  </div>
+                  <div class="form-text mt-2">
+                    <i class="bi bi-shield-lock-fill me-1"></i>
+                    Your API key is not stored on our servers.
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-      
+            
       <!-- Template Selection -->
       <div class="col-md-8 mb-4">
         <div class="card">
           <div class="card-header d-flex justify-content-between align-items-center">
             <div class="d-flex align-items-center">
-              <i class="bi bi-grid-3x3-gap me-2 text-primary"></i>
-              <h4 class="mb-0">Choose Template</h4>
+              <i class="bi bi-grid-3x3-gap-fill me-2 text-primary"></i>
+              <h5 class="mb-0 fw-bold">Choose a Template</h5>
             </div>
-            <button class="btn btn-success" id="ai-template-btn">
+            <button id="ai-template-btn" class="btn btn-sm btn-outline-primary px-3">
               <i class="bi bi-magic me-1"></i> Let AI Choose
             </button>
           </div>
           <div class="card-body">
-            <div class="row" id="template-options">
-              <!-- Templates will be loaded dynamically -->
-              <div class="col-md-4 mb-4">
-                <div class="template-card card">
+            <div class="row g-4">
+              <div class="col-md-4">
+                <div class="template-card card h-100">
                   <div class="position-relative">
-                    <img src="https://via.placeholder.com/400x300/e0f2f1/00695c?text=Modern" class="card-img-top" alt="Modern Template">
+                    <img src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=500&q=80" alt="Modern & Clean Template" class="card-img-top template-img">
+                    <span class="badge-template">Modern</span>
                   </div>
                   <div class="card-body">
-                    <h5 class="card-title">Modern & Clean</h5>
-                    <div class="form-check mt-2">
-                      <input class="form-check-input" type="radio" name="template" value="template-1" id="template-1">
-                      <label class="form-check-label" for="template-1">Select Template</label>
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" name="template" id="template1" value="template-1">
+                      <label class="form-check-label fw-medium" for="template1">
+                        Modern & Clean
+                      </label>
                     </div>
+                    <p class="card-text small text-muted mt-2">Minimalist design with focus on your brand message.</p>
                   </div>
                 </div>
               </div>
-              <div class="col-md-4 mb-4">
-                <div class="template-card card">
+              
+              <div class="col-md-4">
+                <div class="template-card card h-100">
                   <div class="position-relative">
-                    <img src="https://via.placeholder.com/400x300/e0f2f1/00695c?text=Bold" class="card-img-top" alt="Bold Template">
+                    <img src="https://images.unsplash.com/photo-1586936893354-362ad6ae47ba?w=500&q=80" alt="Bold & Colorful Template" class="card-img-top template-img">
+                    <span class="badge-template">Bold</span>
                   </div>
                   <div class="card-body">
-                    <h5 class="card-title">Bold & Colorful</h5>
-                    <div class="form-check mt-2">
-                      <input class="form-check-input" type="radio" name="template" value="template-2" id="template-2">
-                      <label class="form-check-label" for="template-2">Select Template</label>
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" name="template" id="template2" value="template-2">
+                      <label class="form-check-label fw-medium" for="template2">
+                        Bold & Colorful
+                      </label>
                     </div>
+                    <p class="card-text small text-muted mt-2">Eye-catching design with vibrant colors and emphasis.</p>
                   </div>
                 </div>
               </div>
-              <div class="col-md-4 mb-4">
-                <div class="template-card card">
+              
+              <div class="col-md-4">
+                <div class="template-card card h-100">
                   <div class="position-relative">
-                    <img src="https://via.placeholder.com/400x300/e0f2f1/00695c?text=Business" class="card-img-top" alt="Business Template">
+                    <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=500&q=80" alt="Business Special Template" class="card-img-top template-img">
+                    <span class="badge-template">Professional</span>
                   </div>
                   <div class="card-body">
-                    <h5 class="card-title">Business Special</h5>
-                    <div class="form-check mt-2">
-                      <input class="form-check-input" type="radio" name="template" value="template-3" id="template-3">
-                      <label class="form-check-label" for="template-3">Select Template</label>
+                    <div class="form-check">
+                      <input class="form-check-input" type="radio" name="template" id="template3" value="template-3">
+                      <label class="form-check-label fw-medium" for="template3">
+                        Business Special
+                      </label>
                     </div>
+                    <p class="card-text small text-muted mt-2">Professional layout perfect for corporate communications.</p>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-          <div class="card-footer bg-transparent py-3">
-            <button id="generate-btn" class="btn btn-primary btn-lg w-100 d-flex align-items-center justify-content-center">
-              <i class="bi bi-wand-magic-sparkles me-2"></i> Generate Content
-            </button>
+            
+            <div class="d-grid mt-4">
+              <button id="generate-btn" class="btn btn-primary btn-lg">
+                <i class="bi bi-stars me-2"></i> Generate Content
+              </button>
+            </div>
           </div>
         </div>
       </div>
     </div>
     
-    <!-- Preview Section -->
-    <div class="row mt-2">
+    <!-- Content Preview -->
+    <div class="row mt-2 mb-4">
       <div class="col-12">
-        <div class="card">
-          <div class="card-header d-flex align-items-center">
-            <i class="bi bi-eye me-2 text-primary"></i>
-            <h4 class="mb-0">Generated Content</h4>
+        <div class="preview-container">
+          <h5 class="section-title fw-bold mb-4">
+            <i class="bi bi-eye-fill me-2 text-primary"></i>
+            Preview
+          </h5>
+          
+          <div id="preview-content" class="text-center py-4">
+            <img src="img/preview-placeholder.svg" alt="Preview Placeholder" style="max-width: 200px; opacity: 0.5; margin-bottom: 2rem;">
+            <h4 class="text-muted fw-light">Your content will appear here</h4>
+            <p class="text-muted mt-3">Select a template and click "Generate Content" to create your branded post</p>
           </div>
-          <div class="card-body preview-container">
-            <!-- Loading Overlay -->
-            <div class="loading-overlay d-none" id="loading-overlay">
-              <div class="spinner-border mb-3" role="status" style="width: 3rem; height: 3rem;">
-                <span class="visually-hidden">Loading...</span>
-              </div>
-              <h5 class="mb-2">AI Magic in Progress</h5>
-              <p class="text-muted" id="loading-message">Generating content based on your business profile...</p>
-            </div>
-            
-            <!-- Content Preview -->
-            <div id="preview-content" class="text-center py-5">
-              <div class="mb-4">
-                <i class="bi bi-image" style="font-size: 64px; color: #b2dfdb;"></i>
-                <p class="text-muted mt-3">Select a template and click "Generate Content" to see your branded content here</p>
-              </div>
-            </div>
+          
+          <div id="loading-overlay" class="loading-overlay d-none">
+            <div class="loading-animation"></div>
+            <h4 class="mb-2 fw-bold">Creating your content</h4>
+            <p id="loading-message" class="text-muted">Analyzing your brand profile...</p>
           </div>
-          <div class="card-footer bg-transparent d-none" id="save-controls">
-            <div class="row">
+          
+          <!-- Save Controls -->
+          <div id="save-controls" class="mt-4 d-none">
+            <hr>
+            <div class="row align-items-center">
               <div class="col-md-6">
-                <div class="mb-3 mb-md-0">
-                  <label for="post-date" class="form-label fw-medium">
-                    <i class="bi bi-calendar-event me-1 text-primary"></i>
-                    Schedule Post
-                  </label>
-                  <div class="input-group">
-                    <span class="input-group-text bg-white">
-                      <i class="bi bi-calendar text-primary"></i>
-                    </span>
-                    <input type="datetime-local" class="form-control" id="post-date">
-                  </div>
+                <div class="mb-3">
+                  <label for="post-date" class="form-label fw-medium">Schedule for:</label>
+                  <input type="datetime-local" class="form-control date-picker" id="post-date">
                 </div>
               </div>
-              <div class="col-md-6 d-flex align-items-end">
-                <button id="save-post-btn" class="btn btn-success btn-lg w-100 d-flex align-items-center justify-content-center">
-                  <i class="bi bi-calendar-check me-2"></i> Schedule Post
+              <div class="col-md-6 text-md-end">
+                <button id="save-post-btn" class="btn btn-success btn-lg">
+                  <i class="bi bi-calendar-check-fill me-2"></i> Schedule Post
                 </button>
               </div>
             </div>
@@ -372,21 +542,14 @@
         </div>
       </div>
     </div>
+    
+    <!-- Footer -->
+    <footer class="mt-5 pt-4 pb-2 text-center text-muted">
+      <p class="small">&copy; 2023 OmuMediaKit by Qualia Solutions. All rights reserved.</p>
+    </footer>
   </div>
-
-  <footer class="py-4 bg-dark mt-5 text-white">
-    <div class="container">
-      <div class="row">
-        <div class="col-12 text-center">
-          <p class="m-0">
-            <i class="bi bi-layers-half me-2"></i>
-            Copyright &copy; OmuMediaKit 2025
-          </p>
-        </div>
-      </div>
-    </div>
-  </footer>
-
+  
+  <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
   <script src="js/create-post.js"></script>
 </body>
