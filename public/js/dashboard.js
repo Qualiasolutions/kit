@@ -58,15 +58,20 @@ document.addEventListener('DOMContentLoaded', function() {
         // Check if we have a profile in localStorage
         const mockProfile = JSON.parse(localStorage.getItem('businessProfile')) || JSON.parse(localStorage.getItem('mockProfile'));
         
-        if (mockProfile) {
-          // Show profile section for dev mode
-          document.getElementById('profile-incomplete').style.display = 'none';
-          document.getElementById('profile-complete').style.display = 'block';
-          
-          // Update profile display
-          updateProfileDisplay(mockProfile);
+        if (!mockProfile) {
+          // No profile found, show incomplete section
+          profileIncomplete.style.display = 'block';
+          profileComplete.style.display = 'none';
           return;
         }
+        
+        // Show profile section
+        profileIncomplete.style.display = 'none';
+        profileComplete.style.display = 'flex';
+        
+        // Update profile display
+        updateProfileDisplay(mockProfile);
+        return;
       }
       
       // If not in dev mode, fetch from server
@@ -110,14 +115,21 @@ document.addEventListener('DOMContentLoaded', function() {
     const niche = profile.niche || 'General';
     businessIndustryDisplay.textContent = `${industry} / ${niche}`;
     
-    // Logo
-    if (profile.logo && profile.logo !== 'no-logo.png') {
-      if (devMode) {
-        // For dev mode, we might have a data URL
+    // Logo - Fix for displaying logo properly
+    if (profile.logo) {
+      if (profile.logo.startsWith('http') || profile.logo.startsWith('data:')) {
+        // Direct URL or data URL
         businessLogo.src = profile.logo;
+      } else if (devMode) {
+        // For dev mode with relative path
+        businessLogo.src = 'img/placeholder-logo.png';
       } else {
+        // For server path
         businessLogo.src = `${API_URL}/uploads/${profile.logo}`;
       }
+    } else {
+      // Default logo
+      businessLogo.src = 'img/placeholder-logo.png';
     }
     
     // Brand colors
