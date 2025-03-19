@@ -2,6 +2,8 @@ const { fabric } = require('fabric');
 const fs = require('fs');
 const path = require('path');
 const ErrorResponse = require('../utils/errorResponse');
+const localStorageService = require('./localStorageService');
+const { db } = require('../config/firebase');
 
 /**
  * Template service for creating and managing post templates
@@ -48,6 +50,76 @@ class TemplateService {
       twitter: { width: 1024, height: 512 },
       linkedin: { width: 1200, height: 627 }
     };
+    
+    // Attempt to load templates from Firestore on init
+    this.initTemplates();
+  }
+  
+  /**
+   * Initialize templates from Firestore or local storage
+   */
+  async initTemplates() {
+    try {
+      // Try to load templates from Firebase
+      const templatesSnapshot = await db.collection('templates').get();
+      
+      if (!templatesSnapshot.empty) {
+        const templates = {};
+        templatesSnapshot.forEach(doc => {
+          const data = doc.data();
+          templates[doc.id] = {
+            name: data.name,
+            description: data.description,
+            platforms: data.platforms || ['instagram', 'facebook'],
+            imageUrl: data.imageUrl
+          };
+        });
+        
+        // Update template library with data from Firestore
+        this.templateLibrary = { ...this.templateLibrary, ...templates };
+        console.log('Templates loaded from Firestore');
+        
+        // Also save to local storage as backup
+        Object.entries(templates).forEach(async ([id, template]) => {
+          await localStorageService.saveData('templates', id, template);
+        });
+      }
+    } catch (firestoreError) {
+      console.warn('Failed to load templates from Firestore:', firestoreError.message);
+      
+      try {
+        // Try to load from local storage
+        const localTemplates = await localStorageService.getAllData('templates');
+        
+        if (localTemplates && localTemplates.length > 0) {
+          const templates = {};
+          localTemplates.forEach(template => {
+            templates[template.id] = {
+              name: template.name,
+              description: template.description,
+              platforms: template.platforms || ['instagram', 'facebook'],
+              imageUrl: template.imageUrl
+            };
+          });
+          
+          // Update template library with local data
+          this.templateLibrary = { ...this.templateLibrary, ...templates };
+          console.log('Templates loaded from local storage');
+        } else {
+          // No templates in local storage, use fallback data and save it
+          const fallbackTemplates = require('../utils/fallbackData').templates;
+          
+          fallbackTemplates.forEach(async template => {
+            await localStorageService.saveData('templates', template.id, template);
+          });
+          
+          console.log('Using default template library');
+        }
+      } catch (localError) {
+        console.error('Failed to load templates from local storage:', localError.message);
+        console.log('Using default template library');
+      }
+    }
   }
 
   /**

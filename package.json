@@ -11,7 +11,8 @@
     "start:win": "set NODE_ENV=production&& node src/server.js",
     "dev": "nodemon src/server.js",
     "seed": "node src/utils/seedData.js -i",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "init-db": "node src/scripts/initFirestore.js"
   },
   "keywords": [],
   "author": "",

@@ -1,0 +1,13 @@
+{
+  "id": "standard",
+  "name": "Standard Post",
+  "description": "Clean, professional layout for general content",
+  "platforms": [
+    "instagram",
+    "facebook",
+    "twitter",
+    "linkedin"
+  ],
+  "imageUrl": "/img/templates/standard.jpg",
+  "updatedAt": "2025-03-19T11:14:26.404Z"
+}

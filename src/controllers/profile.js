@@ -1,19 +1,38 @@
 const BusinessProfile = require('../models/BusinessProfile');
 const Industry = require('../models/Industry');
 const extractColors = require('../utils/colorExtractor');
+const localStorageService = require('../services/localStorageService');
 
 // @desc    Get all industries with niches
 // @route   GET /api/profile/industries
 // @access  Public
 exports.getIndustries = async (req, res) => {
   try {
-    const industries = await Industry.find();
+    let industries;
+    
+    try {
+      industries = await Industry.find();
+    } catch (dbError) {
+      console.warn('MongoDB query failed, using local storage fallback:', dbError.message);
+      industries = await localStorageService.getAllData('industries');
+      
+      // If no industries in local storage, use hardcoded fallback
+      if (!industries || industries.length === 0) {
+        industries = require('../utils/fallbackData').industries;
+        
+        // Save to local storage for future use
+        for (const industry of industries) {
+          await localStorageService.saveData('industries', industry.name.toLowerCase().replace(/\s+/g, '-'), industry);
+        }
+      }
+    }
     
     res.status(200).json({
       success: true,
       data: industries
     });
   } catch (error) {
+    console.error('getIndustries error:', error);
     res.status(500).json({
       success: false,
       error: error.message
@@ -39,9 +58,6 @@ exports.createProfile = async (req, res) => {
       contactDetails,
       socialPlatforms
     } = req.body;
-
-    // Check if profile already exists
-    let profile = await BusinessProfile.findOne({ user: req.user.id });
 
     const profileData = {
       user: req.user.id,
@@ -69,8 +85,17 @@ exports.createProfile = async (req, res) => {
       
       // Extract colors from logo if not provided
       if (!brandColors) {
-        const extractedColors = await extractColors(req.file.filename);
-        profileData.brandColors = extractedColors;
+        try {
+          const extractedColors = await extractColors(req.file.filename);
+          profileData.brandColors = extractedColors;
+        } catch (colorError) {
+          console.warn('Color extraction failed:', colorError.message);
+          profileData.brandColors = {
+            primary: '#4254f5',
+            secondary: '#271e80',
+            accent: '#e5297e'
+          };
+        }
       } else {
         profileData.brandColors = brandColors;
       }
@@ -78,16 +103,43 @@ exports.createProfile = async (req, res) => {
       profileData.brandColors = brandColors;
     }
 
-    if (profile) {
-      // Update
-      profile = await BusinessProfile.findOneAndUpdate(
-        { user: req.user.id },
-        { $set: profileData },
-        { new: true, runValidators: true }
-      );
-    } else {
-      // Create
-      profile = await BusinessProfile.create(profileData);
+    let profile;
+    
+    try {
+      // Check if profile already exists in MongoDB
+      profile = await BusinessProfile.findOne({ user: req.user.id });
+      
+      if (profile) {
+        // Update in MongoDB
+        profile = await BusinessProfile.findOneAndUpdate(
+          { user: req.user.id },
+          { $set: profileData },
+          { new: true, runValidators: true }
+        );
+      } else {
+        // Create in MongoDB
+        profile = await BusinessProfile.create(profileData);
+      }
+    } catch (dbError) {
+      console.warn('MongoDB operation failed, using local storage fallback:', dbError.message);
+      
+      // Try to get profile from local storage
+      const localProfile = await localStorageService.getData('business-profiles', req.user.id);
+      
+      if (localProfile) {
+        // Update in local storage
+        profile = await localStorageService.saveData('business-profiles', req.user.id, {
+          ...localProfile,
+          ...profileData,
+          updatedAt: new Date().toISOString()
+        });
+      } else {
+        // Create in local storage
+        profile = await localStorageService.saveData('business-profiles', req.user.id, {
+          ...profileData,
+          createdAt: new Date().toISOString()
+        });
+      }
     }
 
     res.status(200).json({
@@ -108,7 +160,14 @@ exports.createProfile = async (req, res) => {
 // @access  Private
 exports.getProfile = async (req, res) => {
   try {
-    const profile = await BusinessProfile.findOne({ user: req.user.id });
+    let profile;
+    
+    try {
+      profile = await BusinessProfile.findOne({ user: req.user.id });
+    } catch (dbError) {
+      console.warn('MongoDB query failed, using local storage fallback:', dbError.message);
+      profile = await localStorageService.getData('business-profiles', req.user.id);
+    }
 
     if (!profile) {
       return res.status(404).json({
@@ -122,6 +181,7 @@ exports.getProfile = async (req, res) => {
       data: profile
     });
   } catch (error) {
+    console.error('getProfile error:', error);
     res.status(500).json({
       success: false,
       error: error.message

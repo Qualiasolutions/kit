@@ -1,0 +1,13 @@
+{
+  "id": "promotional",
+  "name": "Promotional",
+  "description": "Eye-catching design for sales and promotions",
+  "platforms": [
+    "instagram",
+    "facebook",
+    "twitter",
+    "linkedin"
+  ],
+  "imageUrl": "/img/templates/promotional.jpg",
+  "updatedAt": "2025-03-19T11:14:26.410Z"
+}
