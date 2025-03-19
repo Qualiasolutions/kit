@@ -1,4 +1,4 @@
-const { auth, db } = require('../config/firebase');
+const { auth } = require('../config/firebase');
 const ErrorResponse = require('../utils/errorResponse');
 const asyncHandler = require('./async');
 const localStorageService = require('../services/localStorageService');
@@ -21,47 +21,41 @@ exports.protect = asyncHandler(async (req, res, next) => {
   }
 
   try {
-    // Verify Firebase token
-    const decodedToken = await auth.verifyIdToken(token);
+    // Verify JWT token
+    const decodedToken = await auth.verifyToken(token);
     
     try {
-      // Get user data from Firebase
-      const userDoc = await db.collection('users').doc(decodedToken.uid).get();
-      const userData = userDoc.data();
+      // Get user data
+      const user = await auth.getUser(decodedToken.id);
+      
+      if (!user) {
+        throw new Error('User not found');
+      }
       
       // Set user data on request
       req.user = {
-        id: decodedToken.uid,
-        email: decodedToken.email,
-        name: userData?.name || decodedToken.name || ''
+        id: user.id,
+        email: user.email,
+        name: user.name
       };
-    } catch (firebaseError) {
-      console.warn('Firebase data fetch failed, using local fallback:', firebaseError.message);
+    } catch (error) {
+      console.warn('User data fetch failed, creating from token data:', error.message);
       
-      // Try to get user from local storage
-      const localUser = await localStorageService.getData('users', decodedToken.uid);
+      // Create a basic user record from token if user is not found
+      req.user = {
+        id: decodedToken.id,
+        email: decodedToken.email,
+        name: decodedToken.name || ''
+      };
       
-      if (localUser) {
-        req.user = {
-          id: decodedToken.uid,
-          email: decodedToken.email,
-          name: localUser.name || decodedToken.name || ''
-        };
-      } else {
-        // Create a basic user record if not found locally
-        const newUser = {
-          id: decodedToken.uid,
-          email: decodedToken.email,
-          name: decodedToken.name || '',
+      // Try to save user to local storage
+      try {
+        await localStorageService.saveData('users', decodedToken.id, {
+          ...req.user,
           createdAt: new Date().toISOString()
-        };
-        
-        await localStorageService.saveData('users', decodedToken.uid, newUser);
-        req.user = {
-          id: decodedToken.uid,
-          email: decodedToken.email,
-          name: decodedToken.name || ''
-        };
+        });
+      } catch (saveError) {
+        console.error('Failed to save user to local storage:', saveError);
       }
     }
 

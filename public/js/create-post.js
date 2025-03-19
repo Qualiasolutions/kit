@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function() {
     loadBusinessProfile();
     
     // Initialize template selection
-  setupTemplateSelection();
+    setupTemplateSelection();
 
     // Initialize platform selection
     setupPlatformSelection();
@@ -122,7 +122,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!templateContainer) return;
     
     // Clear the container
-      templateContainer.innerHTML = '';
+    templateContainer.innerHTML = '';
     
     // Fetch templates from API
     fetch(TEMPLATES_ENDPOINT, {
@@ -232,15 +232,15 @@ document.addEventListener('DOMContentLoaded', function() {
           templateCard.querySelector('.template-card').classList.add('selected');
           
           // Store selected template
-        selectedTemplate = template;
+          selectedTemplate = template;
           
           // Update preview
           updateTemplatePreview(template);
           
           // Enable next button
-        const nextBtn = document.querySelector('#step1Content .next-step');
-        if (nextBtn) {
-          nextBtn.disabled = false;
+          const nextBtn = document.querySelector('#step1Content .next-step');
+          if (nextBtn) {
+            nextBtn.disabled = false;
           }
         });
         
@@ -415,9 +415,9 @@ document.addEventListener('DOMContentLoaded', function() {
           }
           
           // Update platform preview
-        updatePlatformPreview();
+          updatePlatformPreview();
+        });
       });
-    });
     }
   }
 
@@ -664,4 +664,347 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }, 5000);
   }
+
+  // Add AI Post Generation functionality
+  function initializeAIPostGeneration() {
+    const generatePostBtn = document.getElementById('generate-ai-post');
+    const topicInput = document.getElementById('post-topic');
+    const platformSelect = document.getElementById('platform-select');
+    const contentTypeSelect = document.getElementById('content-type-select');
+    const toneSelect = document.getElementById('tone-select');
+    const postContentTextarea = document.getElementById('post-content');
+    const postTitleInput = document.getElementById('post-title');
+    const hashtagsContainer = document.getElementById('hashtags-container');
+    const generateHashtagsBtn = document.getElementById('generate-hashtags');
+    const loadingIndicator = document.getElementById('ai-loading-indicator');
+    
+    if (!generatePostBtn) return; // Exit if elements don't exist
+    
+    // API base URL
+    const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+      ? '' // Empty for local development (relative path)
+      : 'https://kit-lime.vercel.app';
+      
+    // Generate Post with AI
+    generatePostBtn.addEventListener('click', async () => {
+      try {
+        // Validate inputs
+        if (!topicInput.value || !platformSelect.value || !contentTypeSelect.value) {
+          showAlert('Please provide a topic, platform, and content type', 'danger');
+          return;
+        }
+        
+        // Show loading indicator
+        loadingIndicator.classList.remove('d-none');
+        generatePostBtn.disabled = true;
+        
+        // Get token
+        const token = localStorage.getItem('token');
+        
+        // If in development mode without backend, generate mock content
+        if (localStorage.getItem('devMode') === 'true') {
+          setTimeout(() => {
+            generateMockAIContent(
+              topicInput.value, 
+              platformSelect.value, 
+              contentTypeSelect.value, 
+              toneSelect.value
+            );
+            
+            loadingIndicator.classList.add('d-none');
+            generatePostBtn.disabled = false;
+          }, 1500);
+          return;
+        }
+        
+        // Send request to API
+        const response = await fetch(`${API_URL}/api/posts/generate`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            topic: topicInput.value,
+            platform: platformSelect.value,
+            contentType: contentTypeSelect.value,
+            tone: toneSelect.value,
+            includeHashtags: true
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          // Populate the form with generated content
+          postTitleInput.value = data.data.title;
+          postContentTextarea.value = data.data.content;
+          
+          // Display hashtags
+          displayHashtags(data.data.hashtags);
+          
+          showAlert('Content generated successfully!', 'success');
+        } else {
+          showAlert(data.error || 'Failed to generate content', 'danger');
+        }
+      } catch (error) {
+        console.error('Error generating post:', error);
+        showAlert('Error generating content. Please try again.', 'danger');
+      } finally {
+        loadingIndicator.classList.add('d-none');
+        generatePostBtn.disabled = false;
+      }
+    });
+    
+    // Generate hashtags
+    if (generateHashtagsBtn) {
+      generateHashtagsBtn.addEventListener('click', async () => {
+        try {
+          // Validate content
+          if (!postContentTextarea.value) {
+            showAlert('Please write some content first', 'warning');
+            return;
+          }
+          
+          // Show loading
+          generateHashtagsBtn.disabled = true;
+          
+          // Get token
+          const token = localStorage.getItem('token');
+          
+          // If in development mode without backend, generate mock hashtags
+          if (localStorage.getItem('devMode') === 'true') {
+            setTimeout(() => {
+              const mockHashtags = generateMockHashtags(topicInput.value || 'social media');
+              displayHashtags(mockHashtags);
+              generateHashtagsBtn.disabled = false;
+            }, 1000);
+            return;
+          }
+          
+          // Send request to API
+          const response = await fetch(`${API_URL}/api/posts/hashtags`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              content: postContentTextarea.value,
+              count: 7
+            })
+          });
+          
+          const data = await response.json();
+          
+          if (response.ok) {
+            // Display hashtags
+            displayHashtags(data.data);
+          } else {
+            showAlert(data.error || 'Failed to generate hashtags', 'danger');
+          }
+        } catch (error) {
+          console.error('Error generating hashtags:', error);
+          showAlert('Error generating hashtags', 'danger');
+        } finally {
+          generateHashtagsBtn.disabled = false;
+        }
+      });
+    }
+    
+    // Helper function to display hashtags
+    function displayHashtags(hashtags) {
+      if (!hashtagsContainer) return;
+      
+      hashtagsContainer.innerHTML = '';
+      
+      hashtags.forEach(tag => {
+        const badge = document.createElement('span');
+        badge.className = 'badge bg-primary me-2 mb-2 p-2';
+        badge.textContent = tag;
+        badge.style.cursor = 'pointer';
+        
+        // Add click to copy functionality
+        badge.addEventListener('click', () => {
+          const existingContent = postContentTextarea.value;
+          
+          // Add the hashtag to the end of the content
+          if (!existingContent.includes(tag)) {
+            postContentTextarea.value = existingContent + (existingContent.endsWith(' ') ? '' : ' ') + tag;
+            badge.classList.add('bg-success');
+            setTimeout(() => badge.classList.remove('bg-success'), 1000);
+          }
+        });
+        
+        hashtagsContainer.appendChild(badge);
+      });
+    }
+    
+    // Helper function to generate mock AI content for dev mode
+    function generateMockAIContent(topic, platform, contentType, tone) {
+      // Templates based on content type
+      const titleTemplates = {
+        post: [
+          `${topic}: How to Boost Your Results`,
+          `5 Ways to Master ${topic}`,
+          `The Ultimate Guide to ${topic}`,
+          `Transform Your ${topic} Strategy Today`,
+          `Why ${topic} Matters for Your Business`
+        ],
+        story: [
+          `Behind the Scenes: ${topic}`,
+          `Quick Tips: ${topic}`,
+          `${topic} Spotlight`,
+          `Today's Insight: ${topic}`,
+          `${topic} Update`
+        ],
+        reel: [
+          `${topic} in 30 Seconds`,
+          `Watch This Before You Try ${topic}`,
+          `${topic} Hack You Need to Know`,
+          `This Changed My ${topic} Strategy`,
+          `${topic} Made Simple`
+        ],
+        carousel: [
+          `5 Slides on ${topic} You Need to See`,
+          `The Complete ${topic} Breakdown`,
+          `${topic}: Swipe to Learn More`,
+          `${topic} Tips & Tricks (Swipe)`,
+          `Your ${topic} Journey Starts Here`
+        ]
+      };
+      
+      const contentTemplates = {
+        post: [
+          `Looking to improve your ${topic}? You're not alone. Many businesses struggle with this crucial area.
+          
+          Here are 3 proven strategies:
+          1. Start with a clear goal in mind
+          2. Measure your results consistently
+          3. Adapt based on what the data tells you
+          
+          Want to learn more about how we can help with your ${topic} strategy? Drop a comment below or DM us!`,
+          
+          `Did you know that 76% of businesses are focusing more on ${topic} this year?
+          
+          There's a good reason why. When done right, it can transform your results and help you stand out from competitors.
+          
+          Here at [Your Business], we specialize in helping businesses just like yours master ${topic}.
+          
+          What's your biggest challenge with ${topic}? Let us know in the comments!`
+        ],
+        story: [
+          `Quick tip on ${topic}! Always start by understanding your audience's needs first.`,
+          
+          `Today we're working on a new ${topic} strategy for a client. Stay tuned for the results!`
+        ],
+        reel: [
+          `Here's what nobody tells you about ${topic}...
+          
+          The secret is consistency and strategic planning.
+          
+          Follow these steps:
+          1. Set clear, measurable goals
+          2. Create a content calendar
+          3. Analyze performance weekly
+          4. Adjust your strategy based on data
+          
+          Save this for later! And if you need help with your ${topic}, our team is here to support you.`,
+          
+          `Want to know how the pros handle ${topic}?
+          
+          It's not what you might think! 
+          
+          The key is focusing on value first, metrics second.
+          
+          Here's a quick breakdown:
+          - Start with your audience's problems
+          - Create solutions they can implement
+          - Build trust before selling
+          - Measure engagement, not just reach
+          
+          Tag someone who needs to see this!`
+        ],
+        carousel: [
+          `The Ultimate Guide to ${topic}
+          
+          Slide 1: Why ${topic} matters for your business
+          
+          Slide 2: Common mistakes to avoid
+          
+          Slide 3: Our proven 3-step framework
+          
+          Slide 4: Results you can expect
+          
+          Slide 5: How to get started today
+          
+          Save this post for reference! And if you need expert help with ${topic}, our team is ready to assist.`,
+          
+          `5 MYTHS ABOUT ${topic.toUpperCase()} DEBUNKED
+          
+          Myth #1: It's too expensive for small businesses
+          Reality: There are strategies for every budget
+          
+          Myth #2: Results take too long
+          Reality: You can see initial improvements in 30 days
+          
+          Myth #3: You need to be on every platform
+          Reality: Focus on 1-2 platforms where your audience is
+          
+          Myth #4: It's all about going viral
+          Reality: Consistent engagement beats viral one-hits
+          
+          Myth #5: It's too complicated
+          Reality: With the right guidance, anyone can succeed
+          
+          Which myth surprised you the most?`
+        ]
+      };
+      
+      // Select random templates
+      const contentType0 = contentType.toLowerCase();
+      const titleOptions = titleTemplates[contentType0] || titleTemplates.post;
+      const contentOptions = contentTemplates[contentType0] || contentTemplates.post;
+      
+      const randomTitle = titleOptions[Math.floor(Math.random() * titleOptions.length)];
+      const randomContent = contentOptions[Math.floor(Math.random() * contentOptions.length)];
+      
+      // Generate hashtags
+      const hashtags = generateMockHashtags(topic);
+      
+      // Populate the form
+      postTitleInput.value = randomTitle;
+      postContentTextarea.value = randomContent;
+      
+      // Display hashtags
+      displayHashtags(hashtags);
+    }
+    
+    // Generate mock hashtags for dev mode
+    function generateMockHashtags(topic) {
+      const topicTag = '#' + topic.toLowerCase().replace(/\s+/g, '');
+      
+      const commonHashtags = [
+        '#socialmedia', '#marketing', '#digitalmarketing', '#business',
+        '#contentcreation', '#socialmediamarketing', '#entrepreneur',
+        '#branding', '#marketingtips', '#contentcreator', '#smallbusiness',
+        '#instagram', '#facebook', '#linkedin', '#tiktok'
+      ];
+      
+      // Shuffle and select 6 random hashtags from common list
+      const shuffled = [...commonHashtags].sort(() => 0.5 - Math.random());
+      const selected = shuffled.slice(0, 6);
+      
+      // Add the topic tag at the beginning
+      return [topicTag, ...selected];
+    }
+  }
+
+  // Call after page load
+  document.addEventListener('DOMContentLoaded', function() {
+    // Call existing initialization functions
+    
+    // Initialize AI post generation functionality
+    initializeAIPostGeneration();
+  });
 }); 

@@ -409,11 +409,109 @@
                 </div>
               </div>
               <div class="card-body">
-                <p>Our AI will generate engaging content based on your business profile and selected template.</p>
+                <p>Let our AI generate engaging content based on your business profile.</p>
                 
-                <!-- Content Generation Container -->
-                <div id="generatedContentContainer" class="mt-3">
-                  <!-- Content will be populated here by JavaScript -->
+                <!-- AI Content Generation Form -->
+                <div class="row mb-4">
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label for="post-topic" class="form-label">Topic <span class="text-danger">*</span></label>
+                      <input type="text" class="form-control" id="post-topic" placeholder="e.g. Social Media Marketing">
+                      <div class="form-text">What should this post be about?</div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label for="platform-select" class="form-label">Platform <span class="text-danger">*</span></label>
+                      <select class="form-select" id="platform-select">
+                        <option value="">Select platform</option>
+                        <option value="Instagram">Instagram</option>
+                        <option value="Facebook">Facebook</option>
+                        <option value="Twitter">Twitter/X</option>
+                        <option value="LinkedIn">LinkedIn</option>
+                        <option value="TikTok">TikTok</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="row mb-4">
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label for="content-type-select" class="form-label">Content Type <span class="text-danger">*</span></label>
+                      <select class="form-select" id="content-type-select">
+                        <option value="">Select content type</option>
+                        <option value="post">Regular Post</option>
+                        <option value="carousel">Carousel</option>
+                        <option value="story">Story</option>
+                        <option value="reel">Reel/Short Video</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label for="tone-select" class="form-label">Tone</label>
+                      <select class="form-select" id="tone-select">
+                        <option value="professional">Professional</option>
+                        <option value="friendly">Friendly</option>
+                        <option value="casual">Casual</option>
+                        <option value="humorous">Humorous</option>
+                        <option value="inspirational">Inspirational</option>
+                        <option value="authoritative">Authoritative</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Generate Button -->
+                <div class="text-center mb-4">
+                  <button id="generate-ai-post" class="btn btn-primary">
+                    <i class="bi bi-stars me-2"></i> Generate Content
+                  </button>
+                  
+                  <!-- Loading Indicator (hidden by default) -->
+                  <div id="ai-loading-indicator" class="mt-3 d-none">
+                    <div class="spinner-border text-primary" role="status">
+                      <span class="visually-hidden">Generating content...</span>
+                    </div>
+                    <p class="mt-2">AI is crafting your content. This may take a moment...</p>
+                  </div>
+                </div>
+                
+                <!-- Content Result -->
+                <div class="card mb-4">
+                  <div class="card-header">
+                    <i class="bi bi-pencil-square me-2"></i> Content Editor
+                  </div>
+                  <div class="card-body">
+                    <div class="mb-3">
+                      <label for="post-title" class="form-label">Title</label>
+                      <input type="text" class="form-control" id="post-title" placeholder="Enter post title">
+                    </div>
+                    <div class="mb-3">
+                      <label for="post-content" class="form-label">Content</label>
+                      <textarea class="form-control" id="post-content" rows="6" placeholder="Your post content will appear here"></textarea>
+                    </div>
+                    
+                    <!-- Hashtags Section -->
+                    <div class="mb-3">
+                      <div class="d-flex justify-content-between align-items-center mb-2">
+                        <label class="form-label mb-0">Hashtags</label>
+                        <button id="generate-hashtags" class="btn btn-sm btn-outline-primary">
+                          <i class="bi bi-hash me-1"></i> Generate Hashtags
+                        </button>
+                      </div>
+                      <div id="hashtags-container" class="hashtags-container">
+                        <!-- Hashtags will be displayed here -->
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="card-footer">
+                <div class="d-flex justify-content-between">
+                  <button type="button" class="btn btn-outline-secondary prev-step">Back</button>
+                  <button type="button" class="btn btn-primary next-step">Continue</button>
                 </div>
               </div>
             </div>

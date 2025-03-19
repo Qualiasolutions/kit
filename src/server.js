@@ -2,37 +2,14 @@ const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const path = require('path');
-const { admin, db } = require('./config/firebase');
-const { seed } = require('./utils/seedData');
 const errorHandler = require('./middleware/error');
+const localStorageService = require('./services/localStorageService');
 
 // Load environment variables
 dotenv.config();
 
 // Initialize express
 const app = express();
-
-// Firebase authentication state
-let isFirebaseInitialized = false;
-let firebaseError = null;
-
-// Ensure Firebase is initialized
-const ensureFirebaseInitialized = async () => {
-  if (isFirebaseInitialized) return true;
-
-  try {
-    // Test Firebase connection by making a simple query
-    await db.collection('health').doc('status').get();
-    isFirebaseInitialized = true;
-    firebaseError = null;
-    console.log('Firebase connection successful');
-    return true;
-  } catch (error) {
-    console.error('Firebase initialization error:', error);
-    firebaseError = error;
-    return false;
-  }
-};
 
 // Middleware
 app.use(express.json());
@@ -46,43 +23,29 @@ app.use(express.static(path.join(__dirname, '../public')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/public/uploads', express.static(path.join(__dirname, '../public/uploads')));
 
-// Middleware to ensure Firebase is initialized for API routes
-app.use('/api', async (req, res, next) => {
-  // Skip Firebase check for certain endpoints that don't need Firebase
-  const skipFirebaseEndpoints = ['/api/health'];
-  if (skipFirebaseEndpoints.includes(req.path)) {
-    return next();
+// Ensure data directory exists for local storage
+app.use(async (req, res, next) => {
+  try {
+    // Check if the data directory exists
+    const dataDir = path.join(__dirname, '../data');
+    const fs = require('fs');
+    
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+    }
+    
+    next();
+  } catch (error) {
+    console.error('Error ensuring data directory exists:', error);
+    next();
   }
-
-  const firebaseSuccess = await ensureFirebaseInitialized();
-  if (!firebaseSuccess) {
-    console.error('Unable to connect to Firebase for API request:', req.path);
-    return res.status(500).json({
-      success: false,
-      error: 'Firebase connection failed. Please try again later.',
-      details: firebaseError ? firebaseError.message : 'Unknown error'
-    });
-  }
-  next();
 });
 
-// Add middleware for handling Firebase errors
-app.use((req, res, next) => {
-  req.firebase = {
-    initialized: !(!db || !admin),
-    error: global.firebaseInitError
-  };
-  next();
-});
-
-// Health check endpoint that includes Firebase status
+// Health check endpoint
 app.get('/api/health', (req, res) => {
   res.status(200).json({
     status: 'ok',
-    firebase: {
-      initialized: req.firebase.initialized,
-      error: req.firebase.error ? req.firebase.error.message : null
-    },
+    storage: 'local',
     environment: process.env.NODE_ENV
   });
 });
@@ -94,7 +57,6 @@ app.use('/api/branding', require('./routes/branding'));
 app.use('/api/posts', require('./routes/posts'));
 app.use('/api/media', require('./routes/media'));
 app.use('/api/ai', require('./routes/ai'));
-app.use('/api/ai-posts', require('./routes/aiPosts'));
 
 // Default route
 app.get('/', (req, res) => {
@@ -104,21 +66,101 @@ app.get('/', (req, res) => {
 // Seed database endpoint (admin only)
 app.get('/api/seed', async (req, res) => {
   try {
-    const firebaseSuccess = await ensureFirebaseInitialized();
-    if (!firebaseSuccess) {
-      return res.status(500).json({
-        success: false,
-        error: 'Firebase connection failed. Cannot seed database.',
-        details: firebaseError ? firebaseError.message : 'Unknown error'
-      });
-    }
-
     const secretKey = req.query.key;
     if (secretKey !== process.env.SEED_KEY && secretKey !== 'omu-secret-seed-key') {
       return res.status(401).json({ success: false, error: 'Unauthorized' });
     }
     
-    const result = await seed();
+    // Simple seed function to create test data
+    const seedData = async () => {
+      try {
+        // Create test admin user
+        const bcrypt = require('bcryptjs');
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash('admin123', salt);
+        
+        const adminUser = {
+          id: 'admin-user',
+          name: 'Admin User',
+          email: 'admin@example.com',
+          password: hashedPassword,
+          role: 'admin',
+          createdAt: new Date().toISOString()
+        };
+        
+        await localStorageService.saveData('users', adminUser.id, adminUser);
+        
+        // Create business profile for admin
+        const adminProfile = {
+          id: adminUser.id,
+          userId: adminUser.id,
+          businessName: 'Admin Business',
+          industry: 'Technology',
+          niche: 'Software Development',
+          brandColors: {
+            primary: '#4361ee',
+            secondary: '#3a0ca3',
+            accent: '#f72585'
+          },
+          logo: 'logo-placeholder.png',
+          businessVoice: 'Professional',
+          targetAudience: ['Small Businesses', 'Startups', 'Tech Enthusiasts'],
+          locationType: 'Global',
+          location: 'Worldwide',
+          website: 'https://adminbusiness.com',
+          socialPlatforms: ['Instagram', 'Facebook', 'LinkedIn', 'Twitter/X'],
+          createdAt: new Date().toISOString()
+        };
+        
+        await localStorageService.saveData('businessProfiles', adminProfile.id, adminProfile);
+        
+        // Create some sample posts
+        const samplePosts = [
+          {
+            id: 'post_1',
+            userId: adminUser.id,
+            title: 'Grow Your Business With Social Media',
+            content: 'Looking to take your business to the next level? Our social media strategies can help you connect with your audience and drive real results.',
+            hashtags: ['#socialmedia', '#business', '#growth', '#marketing'],
+            platform: 'Instagram',
+            contentType: 'post',
+            topic: 'Business Growth',
+            tone: 'professional',
+            isScheduled: false,
+            status: 'published',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          },
+          {
+            id: 'post_2',
+            userId: adminUser.id,
+            title: '5 Tips for Better Content',
+            content: 'Want to create content that stands out? Follow these 5 proven tips to engage your audience and boost your social media presence.',
+            hashtags: ['#contentcreation', '#socialmediatips', '#digitalmarketing'],
+            platform: 'Facebook',
+            contentType: 'carousel',
+            topic: 'Content Creation',
+            tone: 'friendly',
+            isScheduled: true,
+            scheduledDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+            status: 'scheduled',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          }
+        ];
+        
+        for (const post of samplePosts) {
+          await localStorageService.saveData('posts', post.id, post);
+        }
+        
+        return { success: true, message: 'Database seeded successfully' };
+      } catch (error) {
+        console.error('Error seeding database:', error);
+        return { success: false, error: error.message };
+      }
+    };
+    
+    const result = await seedData();
     return res.status(result.success ? 200 : 500).json(result);
   } catch (error) {
     return res.status(500).json({ success: false, error: error.message });
