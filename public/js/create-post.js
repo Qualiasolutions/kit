@@ -34,9 +34,9 @@ document.addEventListener('DOMContentLoaded', function() {
   // Initialize the app
   init();
 
-  function init() {
+  async function init() {
     // Load business profile
-    loadBusinessProfile();
+    await loadBusinessProfile();
     
     // Initialize template selection
     setupTemplateSelection();
@@ -46,6 +46,21 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Add navigation event listeners
     setupNavigation();
+    
+    // Set up AI post generation
+    initializeAIPostGeneration();
+    
+    // Parse URL parameters to check the content type
+    const urlParams = new URLSearchParams(window.location.search);
+    const contentType = urlParams.get('type') || localStorage.getItem('aiContentType');
+    
+    // Clear the localStorage value after reading
+    localStorage.removeItem('aiContentType');
+    
+    // If contentType is specified, set up the page accordingly
+    if (contentType) {
+      setupForContentType(contentType);
+    }
   }
 
   // Setup navigation between steps
@@ -667,57 +682,135 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Add AI Post Generation functionality
   function initializeAIPostGeneration() {
-    const generatePostBtn = document.getElementById('generate-ai-post');
-    const topicInput = document.getElementById('post-topic');
+    // Get elements
+    const generateButton = document.getElementById('generate-ai-post');
+    const generateHashtagsButton = document.getElementById('generate-hashtags');
+    const postTopicInput = document.getElementById('post-topic');
     const platformSelect = document.getElementById('platform-select');
     const contentTypeSelect = document.getElementById('content-type-select');
     const toneSelect = document.getElementById('tone-select');
-    const postContentTextarea = document.getElementById('post-content');
-    const postTitleInput = document.getElementById('post-title');
-    const hashtagsContainer = document.getElementById('hashtags-container');
-    const generateHashtagsBtn = document.getElementById('generate-hashtags');
     const loadingIndicator = document.getElementById('ai-loading-indicator');
+    const hashtagsContainer = document.getElementById('hashtags-container');
+    const postTitleInput = document.getElementById('post-title');
+    const postContentInput = document.getElementById('post-content');
     
-    if (!generatePostBtn) return; // Exit if elements don't exist
+    // Check if all elements exist
+    if (!generateButton || !postTopicInput || !platformSelect || !contentTypeSelect || !toneSelect) {
+      console.error('Missing required elements for AI post generation');
+      return;
+    }
     
-    // API base URL
-    const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-      ? '' // Empty for local development (relative path)
-      : 'https://kit-lime.vercel.app';
+    // Generate post button click handler
+    generateButton.addEventListener('click', async function() {
+      // Get values
+      const topic = postTopicInput.value.trim();
+      const platform = platformSelect.value;
+      const contentType = contentTypeSelect.value;
+      const tone = toneSelect.value;
       
-    // Generate Post with AI
-    generatePostBtn.addEventListener('click', async () => {
+      // Validate inputs
+      if (!topic) {
+        showAlert('Please enter a topic for your post', 'warning');
+        postTopicInput.focus();
+        return;
+      }
+      
+      if (!platform) {
+        showAlert('Please select a platform', 'warning');
+        platformSelect.focus();
+        return;
+      }
+      
+      if (!contentType) {
+        showAlert('Please select a content type', 'warning');
+        contentTypeSelect.focus();
+        return;
+      }
+      
+      // Show loading indicator
+      if (loadingIndicator) {
+        loadingIndicator.classList.remove('d-none');
+      }
+      
       try {
-        // Validate inputs
-        if (!topicInput.value || !platformSelect.value || !contentTypeSelect.value) {
-          showAlert('Please provide a topic, platform, and content type', 'danger');
+        // Determine which generator to use based on content type
+        let result;
+        
+        if (contentType === 'calendar') {
+          result = await generateContentCalendar(topic, platform, tone);
+        } else if (contentType === 'bio') {
+          result = await generateProfileBio(topic, platform, tone);
+        } else if (contentType === 'hashtags') {
+          // Generate hashtags directly
+          const hashtags = await generateHashtags(topic);
+          if (hashtagsContainer) {
+            displayHashtags(hashtags);
+          }
+          showAlert('Hashtags generated successfully', 'success');
+          return;
+        } else {
+          // Default case: generate regular post
+          result = await generateAIContent(topic, platform, contentType, tone);
+        }
+        
+        // Update UI with generated content
+        if (result) {
+          updateGeneratedContentUI(result);
+          showAlert('Content generated successfully', 'success');
+        }
+      } catch (error) {
+        console.error('Error generating content:', error);
+        showAlert('Error generating content. Please try again.', 'danger');
+        
+        // Fall back to mock content in case of error
+        const mockContent = generateMockAIContent(topic, platform, contentType, tone);
+        updateGeneratedContentUI(mockContent);
+      } finally {
+        // Hide loading indicator
+        if (loadingIndicator) {
+          loadingIndicator.classList.add('d-none');
+        }
+      }
+    });
+    
+    // Generate hashtags button click handler
+    if (generateHashtagsButton) {
+      generateHashtagsButton.addEventListener('click', async function() {
+        // Get content to generate hashtags for
+        const content = postContentInput.value.trim();
+        
+        if (!content) {
+          showAlert('Please generate or enter post content first', 'warning');
           return;
         }
         
-        // Show loading indicator
-        loadingIndicator.classList.remove('d-none');
-        generatePostBtn.disabled = true;
-        
+        try {
+          const hashtags = await generateHashtags(content);
+          displayHashtags(hashtags);
+          showAlert('Hashtags generated successfully', 'success');
+        } catch (error) {
+          console.error('Error generating hashtags:', error);
+          showAlert('Error generating hashtags. Using default suggestions.', 'warning');
+          
+          // Fall back to mock hashtags
+          const mockHashtags = generateMockHashtags(content);
+          displayHashtags(mockHashtags);
+        }
+      });
+    }
+    
+    // Helper function to generate AI content
+    async function generateAIContent(topic, platform, contentType, tone) {
+      try {
+        // API base URL
+        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+          ? '' // Empty for local development (relative path)
+          : 'https://kit-lime.vercel.app';
+          
         // Get token
         const token = localStorage.getItem('token');
         
-        // If in development mode without backend, generate mock content
-        if (localStorage.getItem('devMode') === 'true') {
-          setTimeout(() => {
-            generateMockAIContent(
-              topicInput.value, 
-              platformSelect.value, 
-              contentTypeSelect.value, 
-              toneSelect.value
-            );
-            
-            loadingIndicator.classList.add('d-none');
-            generatePostBtn.disabled = false;
-          }, 1500);
-          return;
-        }
-        
-        // Send request to API
+        // Call the API to generate content
         const response = await fetch(`${API_URL}/api/posts/generate`, {
           method: 'POST',
           headers: {
@@ -725,122 +818,253 @@ document.addEventListener('DOMContentLoaded', function() {
             'Authorization': `Bearer ${token}`
           },
           body: JSON.stringify({
-            topic: topicInput.value,
-            platform: platformSelect.value,
-            contentType: contentTypeSelect.value,
-            tone: toneSelect.value,
+            topic,
+            platform,
+            contentType,
+            tone,
             includeHashtags: true
           })
         });
         
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`);
+        }
+        
         const data = await response.json();
         
-        if (response.ok) {
-          // Populate the form with generated content
-          postTitleInput.value = data.data.title;
-          postContentTextarea.value = data.data.content;
-          
-          // Display hashtags
-          displayHashtags(data.data.hashtags);
-          
-          showAlert('Content generated successfully!', 'success');
-        } else {
-          showAlert(data.error || 'Failed to generate content', 'danger');
+        if (!data.success) {
+          throw new Error(data.error || 'Error generating content');
         }
+        
+        return data.data;
       } catch (error) {
-        console.error('Error generating post:', error);
-        showAlert('Error generating content. Please try again.', 'danger');
-      } finally {
-        loadingIndicator.classList.add('d-none');
-        generatePostBtn.disabled = false;
+        console.error('Error generating AI content:', error);
+        
+        // If in development mode or API is unavailable, use mock data
+        return generateMockAIContent(topic, platform, contentType, tone);
       }
-    });
+    }
     
-    // Generate hashtags
-    if (generateHashtagsBtn) {
-      generateHashtagsBtn.addEventListener('click', async () => {
-        try {
-          // Validate content
-          if (!postContentTextarea.value) {
-            showAlert('Please write some content first', 'warning');
-            return;
-          }
+    // Helper function to generate hashtags
+    async function generateHashtags(content) {
+      try {
+        // API base URL
+        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+          ? '' // Empty for local development (relative path)
+          : 'https://kit-lime.vercel.app';
           
-          // Show loading
-          generateHashtagsBtn.disabled = true;
-          
-          // Get token
-          const token = localStorage.getItem('token');
-          
-          // If in development mode without backend, generate mock hashtags
-          if (localStorage.getItem('devMode') === 'true') {
-            setTimeout(() => {
-              const mockHashtags = generateMockHashtags(topicInput.value || 'social media');
-              displayHashtags(mockHashtags);
-              generateHashtagsBtn.disabled = false;
-            }, 1000);
-            return;
-          }
-          
-          // Send request to API
-          const response = await fetch(`${API_URL}/api/posts/hashtags`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({
-              content: postContentTextarea.value,
-              count: 7
-            })
-          });
-          
-          const data = await response.json();
-          
-          if (response.ok) {
-            // Display hashtags
-            displayHashtags(data.data);
-          } else {
-            showAlert(data.error || 'Failed to generate hashtags', 'danger');
-          }
-        } catch (error) {
-          console.error('Error generating hashtags:', error);
-          showAlert('Error generating hashtags', 'danger');
-        } finally {
-          generateHashtagsBtn.disabled = false;
+        // Get token
+        const token = localStorage.getItem('token');
+        
+        // Call the API to generate hashtags
+        const response = await fetch(`${API_URL}/api/posts/hashtags`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            content,
+            count: 7
+          })
+        });
+        
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`);
         }
+        
+        const data = await response.json();
+        
+        if (!data.success) {
+          throw new Error(data.error || 'Error generating hashtags');
+        }
+        
+        return data.data;
+      } catch (error) {
+        console.error('Error generating hashtags:', error);
+        
+        // If in development mode or API is unavailable, use mock data
+        return generateMockHashtags(content);
+      }
+    }
+    
+    // Helper function to generate content calendar
+    async function generateContentCalendar(topic, platform, tone) {
+      try {
+        // API base URL
+        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+          ? '' // Empty for local development (relative path)
+          : 'https://kit-lime.vercel.app';
+          
+        // Get token
+        const token = localStorage.getItem('token');
+        
+        // Get current month and year
+        const date = new Date();
+        const month = date.toLocaleString('default', { month: 'long' });
+        const year = date.getFullYear();
+        
+        // Call the API to generate content calendar
+        const response = await fetch(`${API_URL}/api/posts/calendar`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            month,
+            year,
+            postsPerWeek: 3,
+            platforms: [platform]
+          })
+        });
+        
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (!data.success) {
+          throw new Error(data.error || 'Error generating content calendar');
+        }
+        
+        // Format the calendar as text for the content area
+        const calendarText = formatCalendarAsText(data.data);
+        
+        return {
+          title: `Content Calendar: ${month} ${year}`,
+          content: calendarText,
+          hashtags: []
+        };
+      } catch (error) {
+        console.error('Error generating content calendar:', error);
+        
+        // If in development mode or API is unavailable, use mock data
+        return {
+          title: `Content Calendar: ${new Date().toLocaleString('default', { month: 'long' })} ${new Date().getFullYear()}`,
+          content: `Week 1:\n- Monday: Share a customer testimonial\n- Wednesday: Industry tips and tricks\n- Friday: Behind-the-scenes content\n\nWeek 2:\n- Monday: Product showcase\n- Wednesday: How-to guide\n- Friday: User-generated content\n\nWeek 3:\n- Monday: Industry news roundup\n- Wednesday: Team member spotlight\n- Friday: Weekend promotion\n\nWeek 4:\n- Monday: Case study\n- Wednesday: FAQ session\n- Friday: Upcoming events or announcements`,
+          hashtags: []
+        };
+      }
+    }
+    
+    // Helper function to generate profile bio
+    async function generateProfileBio(topic, platform, tone) {
+      try {
+        // API base URL
+        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+          ? '' // Empty for local development (relative path)
+          : 'https://kit-lime.vercel.app';
+          
+        // Get token
+        const token = localStorage.getItem('token');
+        
+        // Call the API to generate bio
+        const response = await fetch(`${API_URL}/api/posts/bio`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            platform
+          })
+        });
+        
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (!data.success) {
+          throw new Error(data.error || 'Error generating bio');
+        }
+        
+        return {
+          title: `${platform} Profile Bio`,
+          content: data.data,
+          hashtags: []
+        };
+      } catch (error) {
+        console.error('Error generating profile bio:', error);
+        
+        // If in development mode or API is unavailable, use mock data
+        return {
+          title: `${platform} Profile Bio`,
+          content: `📈 Digital Marketing Expert | Helping businesses grow their online presence
+🚀 Specializing in social media strategy, content creation, and lead generation
+✨ Proven results for 50+ clients across various industries
+🏆 Award-winning marketer with 10+ years of experience
+💬 DM for collaboration or visit the link in bio!`,
+          hashtags: []
+        };
+      }
+    }
+    
+    // Helper function to format calendar as text
+    function formatCalendarAsText(calendar) {
+      if (!calendar || !calendar.posts || !Array.isArray(calendar.posts)) {
+        return 'No calendar data available.';
+      }
+      
+      // Group posts by week
+      const postsByWeek = {};
+      
+      calendar.posts.forEach(post => {
+        const date = new Date(post.date);
+        const weekNumber = Math.ceil(date.getDate() / 7);
+        
+        if (!postsByWeek[weekNumber]) {
+          postsByWeek[weekNumber] = [];
+        }
+        
+        const dayName = date.toLocaleString('en-US', { weekday: 'long' });
+        const formattedDate = date.toLocaleString('en-US', { month: 'short', day: 'numeric' });
+        
+        postsByWeek[weekNumber].push(
+          `- ${dayName} (${formattedDate}): ${post.platform} - ${post.contentType} - ${post.topic}\n  ${post.description}`
+        );
       });
+      
+      // Format the text
+      let calendarText = '';
+      
+      Object.keys(postsByWeek).sort().forEach(week => {
+        calendarText += `Week ${week}:\n${postsByWeek[week].join('\n\n')}\n\n`;
+      });
+      
+      return calendarText;
     }
     
     // Helper function to display hashtags
     function displayHashtags(hashtags) {
       if (!hashtagsContainer) return;
       
+      // Clear the container
       hashtagsContainer.innerHTML = '';
       
-      hashtags.forEach(tag => {
-        const badge = document.createElement('span');
-        badge.className = 'badge bg-primary me-2 mb-2 p-2';
-        badge.textContent = tag;
-        badge.style.cursor = 'pointer';
+      // Create elements for each hashtag
+      hashtags.forEach(hashtag => {
+        const tag = document.createElement('span');
+        tag.className = 'badge bg-light text-dark me-2 mb-2 p-2';
+        tag.textContent = hashtag;
         
-        // Add click to copy functionality
-        badge.addEventListener('click', () => {
-          const existingContent = postContentTextarea.value;
-          
-          // Add the hashtag to the end of the content
-          if (!existingContent.includes(tag)) {
-            postContentTextarea.value = existingContent + (existingContent.endsWith(' ') ? '' : ' ') + tag;
-            badge.classList.add('bg-success');
-            setTimeout(() => badge.classList.remove('bg-success'), 1000);
+        // Make it clickable to add to content
+        tag.style.cursor = 'pointer';
+        tag.addEventListener('click', function() {
+          if (postContentInput) {
+            // Add the hashtag to the end of the content
+            postContentInput.value = postContentInput.value.trim() + ' ' + hashtag;
           }
         });
         
-        hashtagsContainer.appendChild(badge);
+        hashtagsContainer.appendChild(tag);
       });
     }
     
-    // Helper function to generate mock AI content for dev mode
+    // Helper function to generate mock AI content
     function generateMockAIContent(topic, platform, contentType, tone) {
       // Templates based on content type
       const titleTemplates = {
@@ -974,13 +1198,13 @@ document.addEventListener('DOMContentLoaded', function() {
       
       // Populate the form
       postTitleInput.value = randomTitle;
-      postContentTextarea.value = randomContent;
+      postContentInput.value = randomContent;
       
       // Display hashtags
       displayHashtags(hashtags);
     }
     
-    // Generate mock hashtags for dev mode
+    // Helper function to generate mock hashtags
     function generateMockHashtags(topic) {
       const topicTag = '#' + topic.toLowerCase().replace(/\s+/g, '');
       
@@ -1000,11 +1224,124 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  // Call after page load
-  document.addEventListener('DOMContentLoaded', function() {
-    // Call existing initialization functions
+  // Set up the page for different content types
+  function setupForContentType(contentType) {
+    // Default to post type if not specified
+    if (!contentType) return;
     
-    // Initialize AI post generation functionality
-    initializeAIPostGeneration();
-  });
+    // Go directly to step 2 (Generate Content)
+    goToStep(2);
+    
+    // Get form elements
+    const platformSelect = document.getElementById('platform-select');
+    const contentTypeSelect = document.getElementById('content-type-select');
+    const toneSelect = document.getElementById('tone-select');
+    const generateButton = document.getElementById('generate-ai-post');
+    const hashtagsButton = document.getElementById('generate-hashtags');
+    const postTopicInput = document.getElementById('post-topic');
+    const postTitle = document.getElementById('post-title');
+    const postContent = document.getElementById('post-content');
+    
+    // Modify UI based on content type
+    switch(contentType.toLowerCase()) {
+      case 'calendar':
+        // Set up for content calendar generation
+        if (postTopicInput) {
+          postTopicInput.placeholder = 'Business goals for the month';
+          postTopicInput.value = 'Monthly content plan';
+        }
+        
+        if (contentTypeSelect) {
+          // Optionally add a "Calendar" option if it doesn't exist
+          if (!Array.from(contentTypeSelect.options).some(opt => opt.value === 'calendar')) {
+            const option = document.createElement('option');
+            option.value = 'calendar';
+            option.textContent = 'Content Calendar';
+            contentTypeSelect.appendChild(option);
+          }
+          contentTypeSelect.value = 'calendar';
+        }
+        
+        // Update labels and instructions
+        updateGenerationUI('Generate Content Calendar', 
+                          'Create a monthly content plan for your social media', 
+                          'Generating your content calendar...');
+        break;
+        
+      case 'bio':
+        // Set up for bio generation
+        if (postTopicInput) {
+          postTopicInput.placeholder = 'Key achievements or selling points';
+          postTopicInput.value = 'Professional bio';
+        }
+        
+        if (contentTypeSelect) {
+          // Optionally add a "Bio" option if it doesn't exist
+          if (!Array.from(contentTypeSelect.options).some(opt => opt.value === 'bio')) {
+            const option = document.createElement('option');
+            option.value = 'bio';
+            option.textContent = 'Profile Bio';
+            contentTypeSelect.appendChild(option);
+          }
+          contentTypeSelect.value = 'bio';
+        }
+        
+        // Update labels and instructions
+        updateGenerationUI('Generate Profile Bio', 
+                          'Create an engaging bio for your social profiles', 
+                          'Crafting your professional bio...');
+        break;
+        
+      case 'hashtags':
+        // Set up for hashtag generation
+        if (postTopicInput) {
+          postTopicInput.placeholder = 'Topic or keywords for your hashtags';
+          postTopicInput.value = 'Industry hashtags';
+        }
+        
+        if (contentTypeSelect) {
+          // Optionally add a "Hashtags" option if it doesn't exist
+          if (!Array.from(contentTypeSelect.options).some(opt => opt.value === 'hashtags')) {
+            const option = document.createElement('option');
+            option.value = 'hashtags';
+            option.textContent = 'Hashtag Set';
+            contentTypeSelect.appendChild(option);
+          }
+          contentTypeSelect.value = 'hashtags';
+        }
+        
+        // Update labels and instructions
+        updateGenerationUI('Generate Hashtags', 
+                          'Create optimized hashtags for maximum reach', 
+                          'Finding the best hashtags...');
+        break;
+        
+      default: // Regular post
+        break;
+    }
+  }
+  
+  // Update the UI for different generation types
+  function updateGenerationUI(buttonText, description, loadingText) {
+    // Get elements
+    const generateButton = document.getElementById('generate-ai-post');
+    const loadingIndicator = document.getElementById('ai-loading-indicator');
+    const contentSection = document.querySelector('#step2Content .card-body p:first-of-type');
+    
+    // Update elements if they exist
+    if (generateButton) {
+      generateButton.innerHTML = `<i class="bi bi-stars me-2"></i> ${buttonText}`;
+    }
+    
+    if (contentSection) {
+      contentSection.textContent = description;
+    }
+    
+    if (loadingIndicator) {
+      const loadingText = loadingIndicator.querySelector('p');
+      if (loadingText) {
+        loadingText.textContent = loadingText;
+      }
+    }
+  }
 }); 

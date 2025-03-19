@@ -7,7 +7,10 @@ const {
   deletePost,
   getScheduledPosts,
   updatePostStatus,
-  generatePost
+  generatePost,
+  generateHashtags,
+  generateContentCalendar,
+  generateBio
 } = require('../controllers/postController');
 
 const router = express.Router();
@@ -39,5 +42,10 @@ router.route('/:id')
 // Route for updating post status
 router.route('/:id/status')
   .put(updatePostStatus);
+
+// Post generation routes
+router.post('/hashtags', generateHashtags);
+router.post('/calendar', generateContentCalendar);
+router.post('/bio', generateBio);
 
 module.exports = router; 

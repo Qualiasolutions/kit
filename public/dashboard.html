@@ -192,6 +192,86 @@
       margin-right: 10px;
       border: 1px solid #dee2e6;
     }
+
+    .ai-feature-card {
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      transition: all 0.3s;
+    }
+
+    .ai-feature-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .ai-feature-card .card-icon {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      color: var(--primary);
+    }
+
+    .action-card {
+      height: 100%;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      border-radius: 16px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      text-decoration: none;
+      background-color: white;
+      transition: all 0.3s ease;
+    }
+
+    .action-card:hover {
+      transform: translateY(-7px);
+      box-shadow: var(--hover-shadow);
+    }
+
+    .action-card .icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      color: var(--primary);
+    }
+
+    .action-card h3 {
+      font-size: 1.25rem;
+      margin-bottom: 0.5rem;
+      color: var(--dark-text);
+    }
+
+    .action-card p {
+      color: #6c757d;
+      font-size: 0.9rem;
+    }
+
+    .ai-badge {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: linear-gradient(45deg, #9333ea, #6366f1);
+      color: white;
+      border-radius: 20px;
+      padding: 0.25rem 0.75rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      z-index: 2;
+      box-shadow: 0 2px 10px rgba(99, 102, 241, 0.3);
+      display: flex;
+      align-items: center;
+    }
+
+    .ai-badge i {
+      margin-right: 0.25rem;
+      font-size: 0.85rem;
+    }
   </style>
 </head>
 <body>
@@ -255,11 +335,11 @@
         <div class="row align-items-center">
           <div class="col-md-8">
             <h1 class="mb-2">Welcome, <span id="user-name-profile">User</span>!</h1>
-            <p class="lead mb-0">Manage your social media content with OmuMediaKit</p>
+            <p class="lead mb-0">Create engaging content with AI-powered tools</p>
           </div>
           <div class="col-md-4 text-md-end mt-3 mt-md-0">
             <a href="create-post.html" class="btn btn-light btn-lg">
-              <i class="bi bi-plus-lg me-2"></i> Create New Post
+              <i class="bi bi-stars me-2"></i> Create AI Content
             </a>
           </div>
         </div>
@@ -293,6 +373,58 @@
             <h3 id="published-count">0</h3>
             <p class="text-muted mb-0">Published</p>
           </div>
+        </div>
+      </div>
+
+      <!-- AI Content Generation Tools -->
+      <div class="row mb-4">
+        <div class="col-12 mb-3">
+          <h4><i class="bi bi-stars me-2 text-primary"></i>AI Content Creation Tools</h4>
+          <p class="text-muted">Create engaging content with our AI-powered tools tailored to your business</p>
+        </div>
+        
+        <div class="col-md-3 mb-4">
+          <a href="create-post.html" class="action-card shadow-sm">
+            <span class="ai-badge"><i class="bi bi-stars"></i>AI</span>
+            <div class="icon">
+              <i class="bi bi-pencil-square"></i>
+            </div>
+            <h3>Create Post</h3>
+            <p>Generate platform-specific content for your business</p>
+          </a>
+        </div>
+        
+        <div class="col-md-3 mb-4">
+          <a href="create-post.html?type=calendar" class="action-card shadow-sm">
+            <span class="ai-badge"><i class="bi bi-stars"></i>AI</span>
+            <div class="icon">
+              <i class="bi bi-calendar-week"></i>
+            </div>
+            <h3>Content Calendar</h3>
+            <p>Generate a monthly posting schedule</p>
+          </a>
+        </div>
+        
+        <div class="col-md-3 mb-4">
+          <a href="create-post.html?type=bio" class="action-card shadow-sm">
+            <span class="ai-badge"><i class="bi bi-stars"></i>AI</span>
+            <div class="icon">
+              <i class="bi bi-person-vcard"></i>
+            </div>
+            <h3>Profile Bio</h3>
+            <p>Create engaging social media bios</p>
+          </a>
+        </div>
+        
+        <div class="col-md-3 mb-4">
+          <a href="create-post.html?type=hashtags" class="action-card shadow-sm">
+            <span class="ai-badge"><i class="bi bi-stars"></i>AI</span>
+            <div class="icon">
+              <i class="bi bi-hash"></i>
+            </div>
+            <h3>Hashtag Generator</h3>
+            <p>Create optimized hashtags for maximum reach</p>
+          </a>
         </div>
       </div>
       
@@ -357,8 +489,10 @@
                 <div class="text-center py-5">
                   <i class="bi bi-calendar-x display-4 text-muted"></i>
                   <h5 class="mt-4">No Posts Scheduled</h5>
-                  <p class="text-muted">Get started by creating your first social media post.</p>
-                  <p class="text-muted small">Click the "Create New Post" button at the top of the page to begin.</p>
+                  <p class="text-muted">Get started by creating your first AI-powered social media post.</p>
+                  <a href="create-post.html" class="btn btn-primary mt-3">
+                    <i class="bi bi-stars me-2"></i> Create AI Content
+                  </a>
                 </div>
               </div>
               
