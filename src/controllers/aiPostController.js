@@ -5,6 +5,7 @@ const TemplateService = require('../services/templateService');
 const BusinessProfile = require('../models/BusinessProfile');
 const Post = require('../models/Post');
 const { cloudinary, removeBackground } = require('../config/cloudinary');
+const { db } = require('../config/firebase');
 
 // Initialize template service
 const templateService = new TemplateService();

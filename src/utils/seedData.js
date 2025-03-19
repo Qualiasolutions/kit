@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const Industry = require('../models/Industry');
+const { db } = require('../config/firebase');
 
 // Load env vars
 dotenv.config();
@@ -210,6 +211,104 @@ const industries = [
   }
 ];
 
+/**
+ * Seed the database with initial data
+ * @returns {Promise<Object>} Result of the seed operation
+ */
+const seed = async () => {
+  try {
+    console.log('🌱 Seeding database...');
+    
+    // Add template data
+    await seedTemplates();
+    
+    console.log('✅ Database seeded successfully');
+    return { success: true, message: 'Database seeded successfully' };
+  } catch (error) {
+    console.error('❌ Error seeding database:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+/**
+ * Seed templates collection
+ * @returns {Promise<void>}
+ */
+const seedTemplates = async () => {
+  try {
+    console.log('Creating templates collection if it does not exist...');
+    
+    // Define templates to seed
+    const templates = [
+      {
+        id: 'standard',
+        name: 'Standard Post',
+        description: 'Clean, professional layout for general content',
+        platforms: ['instagram', 'facebook', 'twitter', 'linkedin'],
+        imageUrl: '/img/templates/standard.jpg',
+        createdAt: new Date()
+      },
+      {
+        id: 'promotional',
+        name: 'Promotional',
+        description: 'Eye-catching design for sales and promotions',
+        platforms: ['instagram', 'facebook', 'twitter', 'linkedin'],
+        imageUrl: '/img/templates/promotional.jpg',
+        createdAt: new Date()
+      },
+      {
+        id: 'news',
+        name: 'News Update',
+        description: 'Formal layout for announcements and news',
+        platforms: ['instagram', 'facebook', 'twitter', 'linkedin'],
+        imageUrl: '/img/templates/news.jpg',
+        createdAt: new Date()
+      },
+      {
+        id: 'event',
+        name: 'Event Promotion',
+        description: 'Showcase upcoming events with style',
+        platforms: ['instagram', 'facebook', 'twitter'],
+        imageUrl: '/img/templates/event.jpg',
+        createdAt: new Date()
+      },
+      {
+        id: 'real_estate',
+        name: 'Real Estate',
+        description: 'Property showcase with details',
+        platforms: ['instagram', 'facebook'],
+        imageUrl: '/img/templates/standard.jpg',
+        createdAt: new Date()
+      },
+      {
+        id: 'food',
+        name: 'Food & Restaurant',
+        description: 'Highlight menu items and special offers',
+        platforms: ['instagram', 'facebook'],
+        imageUrl: '/img/templates/standard.jpg',
+        createdAt: new Date()
+      }
+    ];
+    
+    // Add templates to Firestore one by one
+    console.log(`Adding ${templates.length} templates...`);
+    
+    for (const template of templates) {
+      try {
+        await db.collection('templates').doc(template.id).set(template);
+        console.log(`Template ${template.id} added successfully`);
+      } catch (error) {
+        console.error(`Error adding template ${template.id}:`, error);
+      }
+    }
+    
+    console.log('Templates added successfully');
+  } catch (error) {
+    console.error('Error in seedTemplates:', error);
+    throw error;
+  }
+};
+
 // Export the seed function to be called from API
 exports.seed = async () => {
   try {
@@ -256,19 +355,27 @@ const deleteData = async () => {
 
 // Check if this file is being run directly
 if (require.main === module) {
-  // Check command line args
-  if (process.argv[2] === '-i') {
-    exports.seed().then(result => {
-      if (result.success) {
+  const args = process.argv.slice(2);
+  const interactive = args.includes('-i') || args.includes('--interactive');
+  
+  if (interactive) {
+    console.log('Starting interactive seed...');
+    seed()
+      .then(result => {
+        console.log(result.success ? '✅ Seed completed successfully' : '❌ Seed failed');
+        if (!result.success) {
+          console.error(result.error);
+          process.exit(1);
+        }
         process.exit(0);
-      } else {
+      })
+      .catch(err => {
+        console.error('Fatal error during seed:', err);
         process.exit(1);
-      }
-    });
-  } else if (process.argv[2] === '-d') {
-    deleteData();
+      });
   } else {
-    console.log('Please add proper command: -i (import) or -d (delete)');
-    process.exit();
+    console.log('Run with -i or --interactive flag for interactive mode');
   }
-} 
+}
+
+module.exports = { seed }; 

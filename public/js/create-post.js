@@ -39,8 +39,8 @@ document.addEventListener('DOMContentLoaded', function() {
     loadBusinessProfile();
     
     // Initialize template selection
-    setupTemplateSelection();
-    
+  setupTemplateSelection();
+
     // Initialize platform selection
     setupPlatformSelection();
     
@@ -122,7 +122,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!templateContainer) return;
     
     // Clear the container
-    templateContainer.innerHTML = '';
+      templateContainer.innerHTML = '';
     
     // Fetch templates from API
     fetch(TEMPLATES_ENDPOINT, {
@@ -200,52 +200,52 @@ document.addEventListener('DOMContentLoaded', function() {
   function fallbackToDefaultTemplates() {
     const templateContainer = document.querySelector('.template-container');
     if (!templateContainer) return;
-    
-    // Predefined templates
-    const templates = [
+      
+      // Predefined templates
+      const templates = [
       { id: 'standard', name: 'Standard Post', description: 'Clean, professional layout for general content', image: 'img/placeholder-template.jpg' },
       { id: 'promotional', name: 'Promotional', description: 'Eye-catching design for sales and promotions', image: 'img/placeholder-template.jpg' },
       { id: 'news', name: 'News Update', description: 'Formal layout for announcements and news', image: 'img/placeholder-template.jpg' },
       { id: 'event', name: 'Event Promotion', description: 'Showcase upcoming events with style', image: 'img/placeholder-template.jpg' }
-    ];
-    
-    // Create template cards
-    templates.forEach(template => {
-      const templateCard = document.createElement('div');
-      templateCard.className = 'col-md-3 mb-3';
-      templateCard.innerHTML = `
-        <div class="template-card" data-template-id="${template.id}">
-          <img src="${template.image}" alt="${template.name}" class="template-img mb-2">
-          <h6>${template.name}</h6>
-          <p class="small text-muted">${template.description}</p>
-        </div>
-      `;
+      ];
       
-      // Add click handler
-      templateCard.querySelector('.template-card').addEventListener('click', () => {
-        // Remove selected class from all templates
-        document.querySelectorAll('.template-card').forEach(card => {
-          card.classList.remove('selected');
-        });
+      // Create template cards
+      templates.forEach(template => {
+        const templateCard = document.createElement('div');
+        templateCard.className = 'col-md-3 mb-3';
+        templateCard.innerHTML = `
+          <div class="template-card" data-template-id="${template.id}">
+            <img src="${template.image}" alt="${template.name}" class="template-img mb-2">
+            <h6>${template.name}</h6>
+            <p class="small text-muted">${template.description}</p>
+          </div>
+        `;
         
-        // Add selected class to this template
-        templateCard.querySelector('.template-card').classList.add('selected');
-        
-        // Store selected template
+        // Add click handler
+        templateCard.querySelector('.template-card').addEventListener('click', () => {
+          // Remove selected class from all templates
+          document.querySelectorAll('.template-card').forEach(card => {
+            card.classList.remove('selected');
+          });
+          
+          // Add selected class to this template
+          templateCard.querySelector('.template-card').classList.add('selected');
+          
+          // Store selected template
         selectedTemplate = template;
-        
-        // Update preview
-        updateTemplatePreview(template);
-        
-        // Enable next button
+          
+          // Update preview
+          updateTemplatePreview(template);
+          
+          // Enable next button
         const nextBtn = document.querySelector('#step1Content .next-step');
         if (nextBtn) {
           nextBtn.disabled = false;
-        }
+          }
+        });
+        
+        templateContainer.appendChild(templateCard);
       });
-      
-      templateContainer.appendChild(templateCard);
-    });
   }
 
   // Update template preview
@@ -415,9 +415,9 @@ document.addEventListener('DOMContentLoaded', function() {
           }
           
           // Update platform preview
-          updatePlatformPreview();
-        });
+        updatePlatformPreview();
       });
+    });
     }
   }
 
@@ -569,9 +569,9 @@ document.addEventListener('DOMContentLoaded', function() {
   // Save post to database
   async function savePost() {
     if (!validateAllSteps()) {
-      return;
-    }
-    
+        return;
+      }
+      
     // Show loading state
     showAlert('Creating your post...', 'info');
     
@@ -615,9 +615,9 @@ document.addEventListener('DOMContentLoaded', function() {
         showAlert('Post created successfully!', 'success');
         
         // Redirect to dashboard after a short delay
-        setTimeout(() => {
-          window.location.href = 'dashboard.html';
-        }, 1500);
+      setTimeout(() => {
+        window.location.href = 'dashboard.html';
+      }, 1500);
       } else {
         showAlert('Failed to create post: ' + (data.error || 'Unknown error'), 'danger');
       }
@@ -664,4 +664,4 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }, 5000);
   }
-});
+}); 
