@@ -82,6 +82,7 @@ app.use('/api/branding', require('./routes/branding'));
 app.use('/api/posts', require('./routes/posts'));
 app.use('/api/media', require('./routes/media'));
 app.use('/api/ai', require('./routes/ai'));
+app.use('/api/ai-posts', require('./routes/aiPosts'));
 
 // Default route
 app.get('/', (req, res) => {

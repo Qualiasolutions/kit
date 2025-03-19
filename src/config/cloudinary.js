@@ -27,7 +27,23 @@ const upload = multer({
   }
 });
 
+// Helper function for background removal
+const removeBackground = async (publicId) => {
+  try {
+    const result = await cloudinary.uploader.explicit(publicId, {
+      type: 'upload',
+      background_removal: 'cloudinary_ai'
+    });
+    
+    return result;
+  } catch (error) {
+    console.error('Background removal error:', error);
+    throw error;
+  }
+};
+
 module.exports = {
   cloudinary,
-  upload
+  upload,
+  removeBackground
 }; 
