@@ -322,164 +322,195 @@
 <body>
   <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
     <div class="container">
-      <a class="navbar-brand d-flex align-items-center" href="dashboard.html">
-        <i class="bi bi-layers-half me-2"></i>
-        <span>OmuMediaKit</span>
+      <a class="navbar-brand" href="dashboard.html">
+        <i class="bi bi-droplet-fill me-2"></i>
+        OmuMediaKit
       </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item">
-            <a class="nav-link" href="dashboard.html">
-              <i class="bi bi-speedometer2 me-1"></i> Dashboard
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="profile-setup.html">
-              <i class="bi bi-building me-1"></i> Business Profile
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#" id="logout-link">
-              <i class="bi bi-box-arrow-right me-1"></i> Logout
-            </a>
-          </li>
-        </ul>
+      <div class="navbar-nav ms-auto">
+        <a class="nav-link" href="dashboard.html"><i class="bi bi-speedometer2 me-1"></i> Dashboard</a>
+        <a class="nav-link" href="profile.html"><i class="bi bi-building me-1"></i> Business Profile</a>
+        <a class="nav-link" href="#" id="logout-link"><i class="bi bi-box-arrow-right me-1"></i> Logout</a>
       </div>
     </div>
   </nav>
 
-  <div class="container py-5">
-    <div class="row mb-4">
-      <div class="col-md-12">
-        <h1>Create a Social Media Post</h1>
-        <p class="lead">Craft and schedule engaging content for your social media platforms.</p>
+  <div class="container my-5">
+    <div class="row">
+      <div class="col-12 mb-4">
+        <h1 class="mb-2">Create a Social Media Post</h1>
+        <p class="text-muted">Craft and schedule engaging content for your social media platforms.</p>
+        
+        <!-- Alert container for messages -->
+        <div class="alert-container mb-4"></div>
+        
+        <!-- Step Progress -->
+        <div class="row mb-4">
+          <div class="col-12">
+            <div class="steps d-flex flex-wrap">
+              <div class="step active" data-step="1">
+                <div class="step-number">1</div>
+                <div class="step-label">Choose Template</div>
+              </div>
+              <div class="step" data-step="2">
+                <div class="step-number">2</div>
+                <div class="step-label">Generate Content</div>
+              </div>
+              <div class="step" data-step="3">
+                <div class="step-number">3</div>
+                <div class="step-label">Customize</div>
+              </div>
+              <div class="step" data-step="4">
+                <div class="step-number">4</div>
+                <div class="step-label">Schedule</div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
     <div class="row">
       <div class="col-lg-8">
-        <!-- Steps Progress -->
-        <div class="step-progress mb-4">
-          <div class="step-item active" data-step="1">
-            <div class="step-number">1</div>
-            <div class="step-title">Choose Template</div>
-          </div>
-          <div class="step-item" data-step="2">
-            <div class="step-number">2</div>
-            <div class="step-title">Generate Content</div>
-          </div>
-          <div class="step-item" data-step="3">
-            <div class="step-number">3</div>
-            <div class="step-title">Customize</div>
-          </div>
-          <div class="step-item" data-step="4">
-            <div class="step-number">4</div>
-            <div class="step-title">Schedule</div>
-          </div>
-        </div>
-
-        <!-- Template Selection Tab -->
-        <div class="card mb-4 template-selection-card">
-          <div class="card-header">
-            <h5 class="mb-0">Select a Template</h5>
-          </div>
-          <div class="card-body">
-            <div class="alert-container mb-3"></div>
-            <p>Choose a content template that fits your brand's style and objectives.</p>
-
-            <!-- Loading Indicator -->
-            <div class="text-center my-5 loading-templates">
-              <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
+        <!-- Tab Content for Steps -->
+        <div class="tab-content">
+          <!-- Step 1: Choose Template -->
+          <div class="tab-pane fade show active" id="step1Content">
+            <div class="card mb-4">
+              <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                  <i class="bi bi-grid-3x3-gap me-2 text-primary"></i>
+                  <span>Select a Template</span>
+                </div>
               </div>
-              <p class="mt-3">Loading available templates...</p>
-            </div>
-
-            <!-- Template container will be populated by JavaScript -->
-            <div class="template-container row mt-4"></div>
-          </div>
-        </div>
-        
-        <!-- Step 2: Content Generation -->
-        <div class="tab-pane fade" id="step2Content">
-          <div class="card mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
-              <div>
-                <i class="bi bi-magic me-2 text-primary"></i>
-                <span>Generate Content</span>
-              </div>
-            </div>
-            <div class="card-body">
-              <div class="mb-4">
-                <p>Our AI will generate content based on your business profile and selected template.</p>
+              <div class="card-body">
+                <p>Choose a content template that fits your brand's style and objectives.</p>
                 
-                <div class="form-check form-switch mb-3">
-                  <input class="form-check-input" type="checkbox" id="use-ai" checked>
-                  <label class="form-check-label" for="use-ai">Use AI to generate content</label>
+                <!-- Loading Indicator -->
+                <div class="text-center my-5 loading-templates">
+                  <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                  </div>
+                  <p class="mt-3">Loading available templates...</p>
                 </div>
                 
-                <div id="ai-options">
-                  <div class="alert alert-info">
-                    <i class="bi bi-lightbulb me-2"></i>
-                    Content will be generated using our AI service based on your business profile and selected template.
+                <!-- Template container will be populated by JavaScript -->
+                <div class="template-container row mt-4"></div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Step 2: Generate Content -->
+          <div class="tab-pane fade" id="step2Content">
+            <div class="card mb-4">
+              <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                  <i class="bi bi-magic me-2 text-primary"></i>
+                  <span>Generate Content</span>
+                </div>
+              </div>
+              <div class="card-body">
+                <p>Our AI will generate engaging content based on your business profile and selected template.</p>
+                
+                <!-- Content Generation Container -->
+                <div id="generatedContentContainer" class="mt-3">
+                  <!-- Content will be populated here by JavaScript -->
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Step 3: Customize Content -->
+          <div class="tab-pane fade" id="step3Content">
+            <div class="card mb-4">
+              <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                  <i class="bi bi-image me-2 text-primary"></i>
+                  <span>Image & Background</span>
+                </div>
+              </div>
+              <div class="card-body">
+                <p>Upload an image or choose from our library. We'll automatically enhance and optimize it.</p>
+                
+                <!-- Image Upload -->
+                <div class="mb-4">
+                  <label class="form-label">Upload Image</label>
+                  <div class="input-group mb-3">
+                    <input type="file" class="form-control" id="imageUpload" accept="image/*">
+                    <button class="btn btn-outline-primary" type="button" id="uploadBtn">Upload</button>
                   </div>
                   
-                  <button id="generate-btn" class="btn btn-primary">
-                    <i class="bi bi-robot me-2"></i> Generate Content
-                  </button>
-                  
-                  <div id="generating-indicator" style="display: none;" class="text-center py-3">
-                    <div class="spinner-border text-primary" role="status">
-                      <span class="visually-hidden">Generating content...</span>
-                    </div>
-                    <p class="mt-3 text-muted">Generating your content with AI, please wait...</p>
+                  <div class="form-check mt-2">
+                    <input class="form-check-input" type="checkbox" id="removeBackground">
+                    <label class="form-check-label" for="removeBackground">
+                      Remove image background
+                    </label>
                   </div>
                 </div>
                 
-                <div id="manual-content" style="display: none;">
-                  <p class="text-muted">Enter your content manually below.</p>
+                <!-- Platform Selection -->
+                <div class="mb-4">
+                  <label class="form-label">Select Platforms</label>
+                  <div class="d-flex flex-wrap">
+                    <button class="platform-btn active" data-platform="instagram">
+                      <i class="bi bi-instagram me-1"></i> Instagram
+                    </button>
+                    <button class="platform-btn" data-platform="facebook">
+                      <i class="bi bi-facebook me-1"></i> Facebook
+                    </button>
+                    <button class="platform-btn" data-platform="twitter">
+                      <i class="bi bi-twitter me-1"></i> Twitter
+                    </button>
+                    <button class="platform-btn" data-platform="linkedin">
+                      <i class="bi bi-linkedin me-1"></i> LinkedIn
+                    </button>
+                  </div>
+                  <div class="selected-platforms mt-2">
+                    <span class="badge bg-primary me-1">Instagram</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Step 4: Schedule Post -->
+          <div class="tab-pane fade" id="step4Content">
+            <div class="card mb-4">
+              <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                  <i class="bi bi-calendar-event me-2 text-primary"></i>
+                  <span>Schedule Post</span>
+                </div>
+              </div>
+              <div class="card-body">
+                <p>Choose when to publish your post or save as a draft.</p>
+                
+                <!-- Schedule Options -->
+                <div class="mb-4">
+                  <div class="form-check mb-3">
+                    <input class="form-check-input" type="radio" name="scheduleOption" id="scheduleLater" value="schedule">
+                    <label class="form-check-label" for="scheduleLater">
+                      Schedule for later
+                    </label>
+                  </div>
+                  
+                  <div class="form-check mb-3">
+                    <input class="form-check-input" type="radio" name="scheduleOption" id="saveAsDraft" value="draft" checked>
+                    <label class="form-check-label" for="saveAsDraft">
+                      Save as draft
+                    </label>
+                  </div>
                 </div>
                 
-                <div class="mb-3 mt-4">
-                  <label for="generatedContent" class="form-label">Post Content</label>
-                  <textarea id="generatedContent" class="form-control" rows="6" placeholder="Your content will appear here..."></textarea>
+                <!-- Schedule Datetime -->
+                <div class="mb-4 schedule-datetime" style="display: none;">
+                  <label for="scheduledDate" class="form-label">Schedule Date & Time</label>
+                  <input type="datetime-local" class="form-control" id="scheduledDate">
+                  <p class="form-text text-muted mt-1">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Our AI will suggest the best posting time for maximum engagement.
+                  </p>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Step 3: Customize Content -->
-        <div class="tab-pane fade" id="step3Content">
-          <div class="card mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
-              <div>
-                <i class="bi bi-pencil-square me-2 text-primary"></i>
-                <span>Customize Content</span>
-              </div>
-            </div>
-            <div class="card-body">
-              <!-- Customization options will go here -->
-              <p>Customize your content before publishing</p>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Step 4: Schedule Post -->
-        <div class="tab-pane fade" id="step4Content">
-          <div class="card mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
-              <div>
-                <i class="bi bi-calendar-event me-2 text-primary"></i>
-                <span>Schedule Post</span>
-              </div>
-            </div>
-            <div class="card-body">
-              <!-- Scheduling options will go here -->
-              <p>Choose when to publish your post</p>
             </div>
           </div>
         </div>

@@ -10,16 +10,100 @@ document.addEventListener('DOMContentLoaded', function() {
     return;
   }
 
-  // Initialize the templates as soon as page loads
-  setupTemplateSelection();
+  // API Endpoints
+  const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000/api' : '/api';
+  const TEMPLATES_ENDPOINT = `${API_URL}/ai-posts/templates`;
+  const BRANDING_ENDPOINT = `${API_URL}/ai-posts/detect-branding`;
+  const CONTENT_ENDPOINT = `${API_URL}/ai-posts/generate-content`;
+  const PREVIEW_ENDPOINT = `${API_URL}/ai-posts/preview-template`;
+  const CREATE_POST_ENDPOINT = `${API_URL}/ai-posts/create`;
+  const PROCESS_IMAGE_ENDPOINT = `${API_URL}/ai-posts/process-image`;
 
-  // Next button event listener
-  const nextButton = document.querySelector('#nextStepBtn');
-  if (nextButton) {
-    nextButton.addEventListener('click', function() {
-      console.log('Next button clicked');
-      // For now, just redirect to dashboard
-      window.location.href = 'dashboard.html';
+  // Current step
+  let currentStep = 1;
+  
+  // Business profile data
+  let businessProfile = null;
+  
+  // Selected data
+  let selectedTemplate = null;
+  let selectedPlatforms = ['instagram'];
+  let generatedContent = null;
+  let uploadedImage = null;
+
+  // Initialize the app
+  init();
+
+  function init() {
+    // Load business profile
+    loadBusinessProfile();
+    
+    // Initialize template selection
+    setupTemplateSelection();
+    
+    // Initialize platform selection
+    setupPlatformSelection();
+    
+    // Add navigation event listeners
+    setupNavigation();
+  }
+
+  // Setup navigation between steps
+  function setupNavigation() {
+    // Get step navigation elements
+    const stepItems = document.querySelectorAll('.step');
+    const stepTabs = document.querySelectorAll('.tab-pane');
+    
+    // Add event listeners to step indicators
+    document.querySelectorAll('.step').forEach((step, index) => {
+      step.addEventListener('click', () => {
+        if (validatePreviousSteps(index + 1)) {
+          goToStep(index + 1);
+        }
+      });
+    });
+    
+    // Add next/previous buttons to each step
+    document.querySelectorAll('.card-body').forEach((cardBody, index) => {
+      if (!cardBody.querySelector('.step-navigation')) {
+        const navDiv = document.createElement('div');
+        navDiv.className = 'step-navigation d-flex justify-content-between mt-4';
+        
+        // Previous button (except for first step)
+        if (index > 0) {
+          const prevBtn = document.createElement('button');
+          prevBtn.className = 'btn btn-outline-primary prev-step';
+          prevBtn.textContent = 'Previous';
+          prevBtn.addEventListener('click', () => goToStep(currentStep - 1));
+          navDiv.appendChild(prevBtn);
+        } else {
+          // Empty div for spacing
+          const spacer = document.createElement('div');
+          navDiv.appendChild(spacer);
+        }
+        
+        // Next button (except for last step)
+        if (index < 3) {
+          const nextBtn = document.createElement('button');
+          nextBtn.className = 'btn btn-primary next-step';
+          nextBtn.textContent = 'Next';
+          nextBtn.addEventListener('click', () => {
+            if (validateStep(currentStep)) {
+              goToStep(currentStep + 1);
+            }
+          });
+          navDiv.appendChild(nextBtn);
+        } else {
+          // Create post button for last step
+          const createBtn = document.createElement('button');
+          createBtn.className = 'btn btn-success create-post-btn';
+          createBtn.textContent = 'Create Post';
+          createBtn.addEventListener('click', savePost);
+          navDiv.appendChild(createBtn);
+        }
+        
+        cardBody.appendChild(navDiv);
+      }
     });
   }
 
@@ -27,68 +111,141 @@ document.addEventListener('DOMContentLoaded', function() {
   function setupTemplateSelection() {
     console.log('Setting up template selection');
     
-    // Hide loading indicator
+    // Show loading indicator
     const loadingEl = document.querySelector('.loading-templates');
     if (loadingEl) {
-      loadingEl.style.display = 'none';
-      console.log('Loading indicator hidden');
+      loadingEl.style.display = 'block';
     }
     
-    // Clear the template container
+    // Get the template container
     const templateContainer = document.querySelector('.template-container');
-    if (templateContainer) {
-      console.log('Template container found');
-      templateContainer.innerHTML = '';
+    if (!templateContainer) return;
+    
+    // Clear the container
+    templateContainer.innerHTML = '';
+    
+    // Fetch templates from API
+    fetch(TEMPLATES_ENDPOINT, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Failed to fetch templates');
+      }
+      return response.json();
+    })
+    .then(data => {
+      // Hide loading indicator
+      if (loadingEl) {
+        loadingEl.style.display = 'none';
+      }
       
-      // Predefined templates
-      const templates = [
-        { id: 1, name: 'Standard Post', description: 'Clean, professional layout for general content', image: 'img/placeholder-template.jpg' },
-        { id: 2, name: 'Promotional', description: 'Eye-catching design for sales and promotions', image: 'img/placeholder-template.jpg' },
-        { id: 3, name: 'News Update', description: 'Formal layout for announcements and news', image: 'img/placeholder-template.jpg' },
-        { id: 4, name: 'Event Promotion', description: 'Showcase upcoming events with style', image: 'img/placeholder-template.jpg' }
-      ];
-      
-      // Create template cards
-      templates.forEach(template => {
-        const templateCard = document.createElement('div');
-        templateCard.className = 'col-md-3 mb-3';
-        templateCard.innerHTML = `
-          <div class="template-card" data-template-id="${template.id}">
-            <img src="${template.image}" alt="${template.name}" class="template-img mb-2">
-            <h6>${template.name}</h6>
-            <p class="small text-muted">${template.description}</p>
-          </div>
-        `;
-        
-        // Add click handler
-        templateCard.querySelector('.template-card').addEventListener('click', () => {
-          // Remove selected class from all templates
-          document.querySelectorAll('.template-card').forEach(card => {
-            card.classList.remove('selected');
+      if (data.success && data.data && data.data.length > 0) {
+        // Create template cards
+        data.data.forEach(template => {
+          const templateCard = document.createElement('div');
+          templateCard.className = 'col-md-3 mb-3';
+          templateCard.innerHTML = `
+            <div class="template-card" data-template-id="${template.id}">
+              <img src="img/templates/${template.id}.jpg" alt="${template.name}" class="template-img mb-2" onerror="this.src='img/placeholder-template.jpg'">
+              <h6>${template.name}</h6>
+              <p class="small text-muted">${template.description}</p>
+            </div>
+          `;
+          
+          // Add click handler
+          templateCard.querySelector('.template-card').addEventListener('click', () => {
+            // Remove selected class from all templates
+            document.querySelectorAll('.template-card').forEach(card => {
+              card.classList.remove('selected');
+            });
+            
+            // Add selected class to this template
+            templateCard.querySelector('.template-card').classList.add('selected');
+            
+            // Store selected template
+            selectedTemplate = template;
+            
+            // Update preview
+            updateTemplatePreview(template);
+            
+            // Enable next button
+            const nextBtn = document.querySelector('#step1Content .next-step');
+            if (nextBtn) {
+              nextBtn.disabled = false;
+            }
           });
           
-          // Add selected class to this template
-          templateCard.querySelector('.template-card').classList.add('selected');
-          
-          // Store selected template
-          localStorage.setItem('selectedTemplate', JSON.stringify(template));
-          
-          // Update preview
-          updateTemplatePreview(template);
-          
-          // Enable next button
-          if (nextButton) {
-            nextButton.disabled = false;
-          }
+          templateContainer.appendChild(templateCard);
+        });
+      } else {
+        // Fallback to predefined templates if API fails
+        fallbackToDefaultTemplates();
+      }
+    })
+    .catch(error => {
+      console.error('Error fetching templates:', error);
+      // Hide loading indicator
+      if (loadingEl) {
+        loadingEl.style.display = 'none';
+      }
+      // Fallback to predefined templates
+      fallbackToDefaultTemplates();
+    });
+  }
+
+  // Fallback to predefined templates if API fails
+  function fallbackToDefaultTemplates() {
+    const templateContainer = document.querySelector('.template-container');
+    if (!templateContainer) return;
+    
+    // Predefined templates
+    const templates = [
+      { id: 'standard', name: 'Standard Post', description: 'Clean, professional layout for general content', image: 'img/placeholder-template.jpg' },
+      { id: 'promotional', name: 'Promotional', description: 'Eye-catching design for sales and promotions', image: 'img/placeholder-template.jpg' },
+      { id: 'news', name: 'News Update', description: 'Formal layout for announcements and news', image: 'img/placeholder-template.jpg' },
+      { id: 'event', name: 'Event Promotion', description: 'Showcase upcoming events with style', image: 'img/placeholder-template.jpg' }
+    ];
+    
+    // Create template cards
+    templates.forEach(template => {
+      const templateCard = document.createElement('div');
+      templateCard.className = 'col-md-3 mb-3';
+      templateCard.innerHTML = `
+        <div class="template-card" data-template-id="${template.id}">
+          <img src="${template.image}" alt="${template.name}" class="template-img mb-2">
+          <h6>${template.name}</h6>
+          <p class="small text-muted">${template.description}</p>
+        </div>
+      `;
+      
+      // Add click handler
+      templateCard.querySelector('.template-card').addEventListener('click', () => {
+        // Remove selected class from all templates
+        document.querySelectorAll('.template-card').forEach(card => {
+          card.classList.remove('selected');
         });
         
-        templateContainer.appendChild(templateCard);
+        // Add selected class to this template
+        templateCard.querySelector('.template-card').classList.add('selected');
+        
+        // Store selected template
+        selectedTemplate = template;
+        
+        // Update preview
+        updateTemplatePreview(template);
+        
+        // Enable next button
+        const nextBtn = document.querySelector('#step1Content .next-step');
+        if (nextBtn) {
+          nextBtn.disabled = false;
+        }
       });
       
-      console.log('Added', templates.length, 'templates to container');
-    } else {
-      console.error('Template container not found!');
-    }
+      templateContainer.appendChild(templateCard);
+    });
   }
 
   // Update template preview
@@ -97,7 +254,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     const previewImage = document.querySelector('.preview-image');
     if (previewImage) {
-      previewImage.src = template.image;
+      previewImage.src = template.image || 'img/placeholder-template.jpg';
       previewImage.onerror = () => {
         previewImage.src = 'img/placeholder-template.jpg';
       };
@@ -114,368 +271,374 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  // API base URL - change this to your deployed API URL when needed
-  const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-    ? '' // Empty for local development (relative path)
-    : 'https://kit-lime.vercel.app'; // Updated with actual deployed URL
-
-  // Check if dev mode is enabled
-  const devMode = localStorage.getItem('devMode') === 'true';
-
-  // Initialize alert container
-  const alertContainer = document.querySelector('.alert-container') || createAlertContainer();
-
-  // Load business profile
-  loadBusinessProfile();
-
-  // Add event listener for Generate Content button
-  const generateBtn = document.getElementById('generate-content-btn');
-  if (generateBtn) {
-    generateBtn.addEventListener('click', generateContent);
+  // Validate current step
+  function validateStep(step) {
+    switch(step) {
+      case 1:
+        if (!selectedTemplate) {
+          showAlert('Please select a template to continue', 'warning');
+          return false;
+        }
+        return true;
+      case 2:
+        // Content generation step doesn't need validation for now
+        return true;
+      case 3:
+        // Customization step always valid
+        return true;
+      case 4:
+        // Schedule step always valid
+        return true;
+      default:
+        return false;
+    }
   }
 
-  // Add event listener for Save Post button
-  const savePostBtn = document.getElementById('save-post-btn');
-  if (savePostBtn) {
-    savePostBtn.addEventListener('click', savePost);
-  }
-
-  // Set up platform selection
-  setupPlatformSelection();
-
-  // Set default date to tomorrow at 9:00 AM for scheduling
-  const postDateInput = document.getElementById('post-date');
-  if (postDateInput) {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(9, 0, 0, 0);
-    postDateInput.value = tomorrow.toISOString().slice(0, 16);
-  }
-
-  // Previous step button
-  const prevStepBtn = document.querySelector('.prev-step');
-  if (prevStepBtn) {
-    prevStepBtn.addEventListener('click', function() {
-      window.history.back();
-    });
-  }
-
-  // Template selection
-  setupTemplateSelection();
-
-  // Back to Dashboard link
-  const backToDashboardLink = document.querySelector('[href="dashboard.html"]');
-  if (backToDashboardLink) {
-    backToDashboardLink.addEventListener('click', function(e) {
-      e.preventDefault();
-      window.location.href = 'dashboard.html';
-    });
-  }
-
-  // Logout event listener
-  const logoutLink = document.getElementById('logout-link');
-  if (logoutLink) {
-    logoutLink.addEventListener('click', function(e) {
-      e.preventDefault();
-      
-      // Clear localStorage
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      localStorage.removeItem('devMode');
-      localStorage.removeItem('businessProfile');
-      
-      // Redirect to login page
-      window.location.href = 'login.html';
-    });
-  }
-
-  // Next step button
-  const nextStepBtn = document.getElementById('next-step-btn');
-  if (nextStepBtn) {
-    nextStepBtn.addEventListener('click', function() {
-      // Get current step
-      const currentStepNumber = getCurrentStep();
-      
-      // Validate current step
-      if (!validateStep(currentStepNumber)) {
-        return;
+  // Validate all steps up to given step
+  function validatePreviousSteps(targetStep) {
+    for (let i = 1; i < targetStep; i++) {
+      if (!validateStep(i)) {
+        return false;
       }
-      
-      // Move to next step
-      goToStep(currentStepNumber + 1);
-    });
+    }
+    return true;
   }
 
-  // Create alert container if it doesn't exist
-  function createAlertContainer() {
-    const container = document.createElement('div');
-    container.className = 'alert-container';
-    document.body.prepend(container);
-    return container;
+  // Navigate to specific step
+  function goToStep(stepNumber) {
+    // Update current step
+    currentStep = stepNumber;
+    
+    // Update step indicators
+    document.querySelectorAll('.step').forEach((step, index) => {
+      if (index + 1 === currentStep) {
+        step.classList.add('active');
+      } else {
+        step.classList.remove('active');
+      }
+    });
+    
+    // Update tab content
+    document.querySelectorAll('.tab-pane').forEach((tab, index) => {
+      if (index + 1 === currentStep) {
+        tab.classList.add('show', 'active');
+      } else {
+        tab.classList.remove('show', 'active');
+      }
+    });
+    
+    // Special actions for specific steps
+    if (currentStep === 2) {
+      // Auto-generate content when entering step 2
+      generateContent();
+    }
   }
 
   // Load business profile
   async function loadBusinessProfile() {
     try {
-      // Check if we're in development mode
-      if (devMode) {
-        // Get mock profile from localStorage
-        const mockProfile = JSON.parse(localStorage.getItem('businessProfile'));
-        
-        if (mockProfile) {
-          // Update UI with profile data
-          updateBusinessProfileUI(mockProfile);
-        } else {
-          console.error('No business profile found in localStorage');
-          showAlert('Error loading business profile. Please complete your profile setup.', 'danger');
-        }
-        return;
-      }
-      
-      // If not in dev mode, fetch from server
-      const response = await fetch(`${API_URL}/api/profile`, {
+      const response = await fetch(BRANDING_ENDPOINT, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
       
-      if (response.status === 404) {
-        showAlert('Please complete your business profile before creating posts.', 'warning');
-        return;
+      if (!response.ok) {
+        throw new Error('Failed to load business profile');
       }
       
       const data = await response.json();
       
-      if (response.ok) {
-        updateBusinessProfileUI(data.data);
+      if (data.success && data.data) {
+        businessProfile = data.data;
+        updateBusinessProfileUI(businessProfile);
       } else {
-        console.error('Error loading profile:', data.error);
-        showAlert('Error loading profile. Please try again later.', 'danger');
+        showAlert('Failed to load business profile. Using default values.', 'warning');
       }
     } catch (error) {
-      console.error('Error loading profile:', error);
-      showAlert('Error loading profile. Please try again later.', 'danger');
+      console.error('Error loading business profile:', error);
+      showAlert('Error loading business profile', 'danger');
     }
   }
 
   // Update UI with business profile data
   function updateBusinessProfileUI(profile) {
-    // Store profile data for content generation
-    localStorage.setItem('currentBusinessProfile', JSON.stringify(profile));
-    
-    // Update business name in preview
+    // Update business name
     const businessNameElements = document.querySelectorAll('.business-name');
-    businessNameElements.forEach(element => {
-      if (element) element.textContent = profile.businessName || 'Your Business';
+    businessNameElements.forEach(el => {
+      el.textContent = profile.name || 'Your Business';
     });
     
     // Update business logo
-    const logoImg = document.querySelector('.business-logo img');
-    if (logoImg && profile.logo) {
-      if (devMode) {
-        logoImg.src = profile.logo;
-      } else {
-        logoImg.src = `${API_URL}/uploads/${profile.logo}`;
-      }
+    if (profile.logo) {
+      const logoElements = document.querySelectorAll('.business-logo');
+      logoElements.forEach(el => {
+        el.src = profile.logo;
+        el.onerror = function() {
+          this.src = 'img/logo.png';
+        };
+      });
     }
     
-    // Update business info in preview
-    const yourBusinessElement = document.getElementById('your-business');
-    if (yourBusinessElement) {
-      yourBusinessElement.textContent = profile.businessName || 'Your Business';
-    }
-    
-    // Update brand colors
-    if (profile.brandColors) {
-      document.documentElement.style.setProperty('--primary', profile.brandColors.primary || '#4361ee');
-      document.documentElement.style.setProperty('--primary-dark', profile.brandColors.secondary || '#3a0ca3');
-      document.documentElement.style.setProperty('--accent', profile.brandColors.accent || '#f72585');
+    // Apply brand colors
+    if (profile.primaryColor) {
+      document.documentElement.style.setProperty('--primary', profile.primaryColor);
+      document.documentElement.style.setProperty('--primary-dark', adjustColorBrightness(profile.primaryColor, -20));
     }
   }
 
-  // Function to set up platform selection
+  // Helper function to adjust color brightness
+  function adjustColorBrightness(color, amount) {
+    return '#' + color.replace(/^#/, '').replace(/../g, color => 
+      ('0' + Math.min(255, Math.max(0, parseInt(color, 16) + amount)).toString(16)).substr(-2)
+    );
+  }
+
+  // Setup platform selection
   function setupPlatformSelection() {
-    // Get all platform checkboxes
-    const platformCheckboxes = document.querySelectorAll('.platform-checkbox');
-    
-    // Add event listeners to update UI when platforms are selected
-    platformCheckboxes.forEach(checkbox => {
-      checkbox.addEventListener('change', function() {
-        updatePlatformPreview();
+    const platformButtons = document.querySelectorAll('.platform-btn');
+    if (platformButtons) {
+      platformButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+          const platform = this.dataset.platform;
+          
+          // Toggle active class
+          this.classList.toggle('active');
+          
+          // Update selected platforms array
+          if (this.classList.contains('active')) {
+            if (!selectedPlatforms.includes(platform)) {
+              selectedPlatforms.push(platform);
+            }
+          } else {
+            selectedPlatforms = selectedPlatforms.filter(p => p !== platform);
+          }
+          
+          // Update platform preview
+          updatePlatformPreview();
+        });
       });
-    });
+    }
   }
 
-  // Function to update platform preview
+  // Update platform preview based on selection
   function updatePlatformPreview() {
-    const platformIcons = document.getElementById('platform-icons');
-    if (!platformIcons) return;
-    
-    platformIcons.innerHTML = '';
-    
-    // Get all selected platforms
-    const selectedPlatforms = [];
-    document.querySelectorAll('.platform-checkbox:checked').forEach(checkbox => {
-      selectedPlatforms.push(checkbox.value);
-    });
-    
-    // Create icon for each selected platform
-    selectedPlatforms.forEach(platform => {
-      const icon = document.createElement('span');
-      icon.className = 'badge bg-primary me-1';
-      icon.innerHTML = `<i class="bi bi-${platform.toLowerCase()}"></i> ${platform}`;
-      platformIcons.appendChild(icon);
-    });
+    const platformPreview = document.querySelector('.selected-platforms');
+    if (platformPreview) {
+      if (selectedPlatforms.length > 0) {
+        platformPreview.innerHTML = selectedPlatforms.map(p => 
+          `<span class="badge bg-primary me-1">${p.charAt(0).toUpperCase() + p.slice(1)}</span>`
+        ).join('');
+      } else {
+        platformPreview.innerHTML = '<span class="text-muted">No platforms selected</span>';
+      }
+    }
   }
 
-  // Function to generate content
-  function generateContent() {
-    // Get selected parameters
-    const postType = document.getElementById('post-type')?.value;
-    const contentTopic = document.getElementById('content-topic')?.value;
-    const contentTone = document.getElementById('content-tone')?.value;
-    
-    if (!postType) {
-      showAlert('Please select a post type', 'warning');
+  // Generate content for the selected template
+  async function generateContent() {
+    if (!selectedTemplate) {
+      showAlert('Please select a template first', 'warning');
       return;
     }
     
-    // Get business profile data
-    let businessProfile;
+    // Show loading state
+    const contentContainer = document.querySelector('#generatedContentContainer');
+    if (contentContainer) {
+      contentContainer.innerHTML = `
+        <div class="text-center my-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <p class="mt-3">Generating content for ${selectedTemplate.name}...</p>
+        </div>
+      `;
+    }
+    
     try {
-      businessProfile = JSON.parse(localStorage.getItem('currentBusinessProfile')) || 
-                       JSON.parse(localStorage.getItem('businessProfile'));
-      if (!businessProfile) {
-        throw new Error('Business profile data not found');
+      // Call API to generate content
+      const response = await fetch(CONTENT_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          templateId: selectedTemplate.id
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to generate content');
+      }
+      
+      const data = await response.json();
+      
+      if (data.success && data.data) {
+        generatedContent = data.data;
+        
+        // Update UI with generated content
+        updateGeneratedContentUI(generatedContent);
+      } else {
+        // Fallback to mock content
+        fallbackToMockContent();
       }
     } catch (error) {
-      console.error('Error retrieving business profile:', error);
-      showAlert('Could not retrieve business profile data. Please try again.', 'danger');
+      console.error('Error generating content:', error);
+      // Fallback to mock content
+      fallbackToMockContent();
+    }
+  }
+
+  // Update UI with generated content
+  function updateGeneratedContentUI(content) {
+    const contentContainer = document.querySelector('#generatedContentContainer');
+    if (contentContainer) {
+      contentContainer.innerHTML = `
+        <div class="mb-3">
+          <label for="headline" class="form-label">Headline</label>
+          <input type="text" class="form-control" id="headline" value="${content.headline}">
+        </div>
+        <div class="mb-3">
+          <label for="mainText" class="form-label">Main Text</label>
+          <textarea class="form-control" id="mainText" rows="3">${content.mainText}</textarea>
+        </div>
+        <div class="mb-3">
+          <label for="callToAction" class="form-label">Call to Action</label>
+          <input type="text" class="form-control" id="callToAction" value="${content.callToAction}">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Hashtags</label>
+          <div class="hashtags-container">
+            ${content.tags.map(tag => `
+              <span class="badge bg-light text-dark p-2 me-1 mb-1">${tag}</span>
+            `).join('')}
+          </div>
+        </div>
+        <div class="mb-3">
+          <label for="imagePrompt" class="form-label">Image Description</label>
+          <textarea class="form-control" id="imagePrompt" rows="2">${content.imagePrompt}</textarea>
+        </div>
+        <div class="mt-4">
+          <button class="btn btn-outline-primary regenerate-btn">
+            <i class="bi bi-arrow-repeat me-1"></i> Regenerate
+          </button>
+        </div>
+      `;
+      
+      // Add event listener to regenerate button
+      const regenerateBtn = contentContainer.querySelector('.regenerate-btn');
+      if (regenerateBtn) {
+        regenerateBtn.addEventListener('click', generateContent);
+      }
+    }
+    
+    // Update preview with generated content
+    updatePreviewWithContent(content);
+  }
+  
+  // Update preview with generated content
+  function updatePreviewWithContent(content) {
+    const previewTitle = document.querySelector('.preview-title');
+    if (previewTitle) {
+      previewTitle.textContent = content.headline;
+    }
+    
+    const previewDescription = document.querySelector('.preview-description');
+    if (previewDescription) {
+      previewDescription.textContent = content.mainText.substring(0, 100) + '...';
+    }
+  }
+
+  // Fallback to mock content generation if API fails
+  function fallbackToMockContent() {
+    console.log('Falling back to mock content generation');
+    
+    const mockContent = {
+      headline: `Amazing ${selectedTemplate.name} for Your Business`,
+      mainText: "Showcase your products and services with this professionally designed template. Perfect for engaging your audience and driving conversions.",
+      callToAction: "Visit our website today!",
+      tags: ["business", "marketing", "professional", "design"],
+      imagePrompt: "Professional business image showing success and growth"
+    };
+    
+    generatedContent = mockContent;
+    updateGeneratedContentUI(mockContent);
+  }
+
+  // Save post to database
+  async function savePost() {
+    if (!validateAllSteps()) {
       return;
     }
     
-    // Show generating indicator
-    const generateBtn = document.getElementById('generate-content-btn');
-    generateBtn.disabled = true;
-    generateBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Generating...';
+    // Show loading state
+    showAlert('Creating your post...', 'info');
     
-    // In development mode, use mock generation with timeout
-    setTimeout(() => {
-      // Generate content based on parameters
-      const generatedContent = generateMockContent(businessProfile, postType, contentTopic, contentTone);
-      
-      // Update post content field
-      const postContentField = document.getElementById('post-content');
-      if (postContentField) {
-        postContentField.value = generatedContent;
-      }
-      
-      // Reset button
-      generateBtn.disabled = false;
-      generateBtn.innerHTML = '<i class="bi bi-magic"></i> Generate Content';
-      
-      // Show success message
-      showAlert('Content generated successfully!', 'success');
-    }, 1500);
-  }
-
-  // Function to generate mock content
-  function generateMockContent(business, postType, topic, tone) {
-    const businessName = business.businessName || 'our business';
-    const topicText = topic ? ` about ${topic}` : '';
-    const industry = business.industry || 'industry';
-    const niche = business.niche || 'niche';
+    // Get final content from form fields
+    const finalContent = {
+      headline: document.querySelector('#headline').value,
+      mainText: document.querySelector('#mainText').value,
+      callToAction: document.querySelector('#callToAction').value,
+      tags: Array.from(document.querySelectorAll('.hashtags-container .badge')).map(badge => badge.textContent.trim()),
+      imagePrompt: document.querySelector('#imagePrompt').value
+    };
     
-    let content = '';
+    // Get scheduled date if any
+    const scheduledDate = document.querySelector('#scheduledDate')?.value;
     
-    // Generate content based on tone
-    switch (tone) {
-      case 'professional':
-        content = `We're excited to share${topicText}. At ${businessName}, we strive to deliver excellence in everything we do as leaders in the ${industry}/${niche} space. #ProfessionalExcellence #${businessName.replace(/\s+/g, '')}`;
-        break;
-      case 'casual':
-        content = `Hey everyone! Check out what's new${topicText}. We'd love to hear your thoughts! #${businessName.replace(/\s+/g, '')} #StayConnected`;
-        break;
-      case 'friendly':
-        content = `Hi friends! We've got something special${topicText} that we can't wait to share with you. Let us know what you think! #${businessName.replace(/\s+/g, '')} #Community`;
-        break;
-      case 'humorous':
-        content = `Who else needs a laugh today?${topicText} 😂 Tag someone who needs to see this! #${businessName.replace(/\s+/g, '')} #LOL`;
-        break;
-      case 'inspirational':
-        content = `Every day is a new opportunity to grow and excel${topicText}. Join us on this journey to greatness in ${industry}! ✨ #${businessName.replace(/\s+/g, '')} #Inspiration`;
-        break;
-      default:
-        content = `Check out our latest update${topicText}! Don't forget to like and share. #${businessName.replace(/\s+/g, '')} #StayTuned`;
-    }
-    
-    // Add post type specific content
-    switch (postType) {
-      case 'image':
-        content += '\n\n[Image: Add a compelling visual that represents your brand or message]';
-        break;
-      case 'carousel':
-        content += '\n\n[Carousel: Add multiple images showing different aspects of your product/service]';
-        break;
-      case 'video':
-        content += '\n\n[Video: Add a short video clip that showcases your message]';
-        break;
-    }
-    
-    return content;
-  }
-
-  // Function to save post
-  function savePost() {
     try {
-      // Get post data
-      const postData = {
-        type: document.getElementById('post-type')?.value || 'text',
-        content: document.getElementById('post-content')?.value || '',
-        scheduledDate: document.getElementById('post-date')?.value || new Date().toISOString(),
-        platforms: []
-      };
-      
-      // Validate post data
-      if (!postData.content) {
-        showAlert('Please enter or generate post content', 'warning');
-        return;
-      }
-      
-      // Get selected platforms
-      document.querySelectorAll('.platform-checkbox:checked').forEach(checkbox => {
-        postData.platforms.push(checkbox.value);
+      // Call API to create post
+      const response = await fetch(CREATE_POST_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          templateId: selectedTemplate.id,
+          content: finalContent,
+          imageUrl: uploadedImage?.url,
+          platforms: selectedPlatforms,
+          scheduledDate,
+          status: scheduledDate ? 'scheduled' : 'draft'
+        })
       });
       
-      if (postData.platforms.length === 0) {
-        showAlert('Please select at least one platform', 'warning');
-        return;
+      if (!response.ok) {
+        throw new Error('Failed to create post');
       }
       
-      // In development mode, save to localStorage
-      const postsData = JSON.parse(localStorage.getItem('scheduledPosts') || '[]');
-      postsData.push({
-        id: 'post-' + Date.now(),
-        ...postData,
-        createdAt: new Date().toISOString()
-      });
+      const data = await response.json();
       
-      localStorage.setItem('scheduledPosts', JSON.stringify(postsData));
-      
-      // Show success message
-      showAlert('Post saved successfully!', 'success');
-      
-      // Redirect to dashboard
-      setTimeout(() => {
-        window.location.href = 'dashboard.html';
-      }, 1500);
+      if (data.success) {
+        showAlert('Post created successfully!', 'success');
+        
+        // Redirect to dashboard after a short delay
+        setTimeout(() => {
+          window.location.href = 'dashboard.html';
+        }, 1500);
+      } else {
+        showAlert('Failed to create post: ' + (data.error || 'Unknown error'), 'danger');
+      }
     } catch (error) {
-      console.error('Error saving post:', error);
-      showAlert('Error saving post. Please try again later.', 'danger');
+      console.error('Error creating post:', error);
+      showAlert('Error creating post: ' + error.message, 'danger');
     }
   }
 
-  // Function to show alerts
+  // Validate all steps
+  function validateAllSteps() {
+    for (let i = 1; i <= 4; i++) {
+      if (!validateStep(i)) {
+        goToStep(i);
+        return false;
+      }
+    }
+    return true;
+  }
+
+  // Create and show alerts
   function showAlert(message, type = 'info') {
     const alertContainer = document.querySelector('.alert-container');
     if (!alertContainer) return;
@@ -501,67 +664,4 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }, 5000);
   }
-
-  // Get current step
-  function getCurrentStep() {
-    const activeStep = document.querySelector('.step-item.active');
-    if (activeStep) {
-        return parseInt(activeStep.dataset.step || '1');
-    }
-    return 1;
-  }
-
-  // Validate current step
-  function validateStep(step) {
-    switch(step) {
-        case 1:
-            // Check if template is selected
-            const selectedTemplate = localStorage.getItem('selectedTemplate');
-            if (!selectedTemplate) {
-                alert('Please select a template to continue');
-                return false;
-            }
-            return true;
-        case 2:
-            // Check if content is generated
-            const generatedContent = document.querySelector('#generatedContent');
-            if (!generatedContent || !generatedContent.value.trim()) {
-                alert('Please generate content before proceeding');
-                return false;
-            }
-            return true;
-        case 3:
-            // Allow customization
-            return true;
-        default:
-            return true;
-    }
-  }
-
-  // Go to specified step
-  function goToStep(stepNumber) {
-    // Update step indicators
-    document.querySelectorAll('.step-item').forEach(step => {
-        const stepNum = parseInt(step.dataset.step || '1');
-        if (stepNum < stepNumber) {
-            step.classList.remove('active');
-            step.classList.add('completed');
-        } else if (stepNum === stepNumber) {
-            step.classList.add('active');
-            step.classList.remove('completed');
-        } else {
-            step.classList.remove('active', 'completed');
-        }
-    });
-    
-    // Show appropriate tab content
-    document.querySelectorAll('.tab-pane').forEach(tab => {
-        tab.classList.remove('show', 'active');
-    });
-    
-    const activeTab = document.querySelector(`#step${stepNumber}Content`);
-    if (activeTab) {
-        activeTab.classList.add('show', 'active');
-    }
-  }
-}); 
+});

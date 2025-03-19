@@ -88,14 +88,14 @@ footer {
 }
 
 .template-card:hover {
-  border-color: var(--primary);
+  border-color: var(--primary, #0d6efd);
   transform: translateY(-5px);
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
 .template-card.selected {
-  border-color: var(--primary);
-  background-color: rgba(0, 139, 123, 0.05);
+  border-color: var(--primary, #0d6efd);
+  background-color: rgba(13, 110, 253, 0.05);
 }
 
 .template-img {
@@ -110,6 +110,105 @@ footer {
   height: auto;
   border-radius: 8px;
   object-fit: cover;
+}
+
+/* Step navigation */
+.steps {
+  display: flex;
+  margin-bottom: 2rem;
+  position: relative;
+}
+
+.steps::before {
+  content: "";
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  right: 24px;
+  height: 2px;
+  background-color: #e0e0e0;
+  z-index: 0;
+}
+
+.step {
+  flex: 1;
+  text-align: center;
+  padding: 0 10px;
+  position: relative;
+  cursor: pointer;
+}
+
+.step-number {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: #e0e0e0;
+  color: #666;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 10px;
+  position: relative;
+  z-index: 1;
+  transition: all 0.3s ease;
+}
+
+.step.active .step-number {
+  background-color: var(--primary, #0d6efd);
+  color: white;
+}
+
+.step-label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #666;
+  transition: all 0.3s ease;
+}
+
+.step.active .step-label {
+  color: var(--primary, #0d6efd);
+  font-weight: 600;
+}
+
+/* Platform buttons */
+.platform-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  margin-right: 8px;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  border: 1px solid #dee2e6;
+  background-color: #f8f9fa;
+  color: #495057;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.platform-btn:hover {
+  background-color: #e9ecef;
+}
+
+.platform-btn.active {
+  background-color: var(--primary, #0d6efd);
+  color: white;
+  border-color: var(--primary, #0d6efd);
+}
+
+/* Hashtags styling */
+.hashtags-container .badge {
+  font-size: 0.9rem;
+  padding: 8px 12px;
+  margin-right: 5px;
+  margin-bottom: 5px;
+}
+
+/* Navigation buttons */
+.step-navigation {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
 }
 
 /* Loading indicators */
@@ -146,19 +245,6 @@ footer {
   align-items: center;
   position: relative;
   z-index: 2;
-}
-
-.step-number {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: #f0f0f0;
-  border: 2px solid #e0e0e0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  margin-bottom: 8px;
 }
 
 .step-item.active .step-number {
