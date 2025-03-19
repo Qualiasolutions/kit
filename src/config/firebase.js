@@ -1,5 +1,7 @@
 // Import Firebase Admin SDK
 const admin = require('firebase-admin');
+const fs = require('fs');
+const path = require('path');
 
 // Check if we are in development mode
 const isDev = process.env.NODE_ENV === 'development';
@@ -52,17 +54,58 @@ if (isDev) {
   // Production Firebase setup
   try {
     let serviceAccount;
+    
+    // Try to read from environment variable first
     if (process.env.FIREBASE_SERVICE_ACCOUNT) {
-      serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-    } else {
-      // Default to a local path if env var not available
-      serviceAccount = require('../../firebase-service-account.json');
+      try {
+        serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+      } catch (e) {
+        console.error('Error parsing FIREBASE_SERVICE_ACCOUNT env var:', e);
+      }
+    } 
+    
+    // If not available from env, read from file
+    if (!serviceAccount) {
+      try {
+        const serviceAccountPath = path.resolve(__dirname, '../../firebase-service-account.json');
+        if (fs.existsSync(serviceAccountPath)) {
+          console.log('📄 Reading Firebase service account from file');
+          serviceAccount = require(serviceAccountPath);
+        } else {
+          throw new Error('Service account file not found');
+        }
+      } catch (e) {
+        console.error('Error reading service account file:', e);
+      }
+    }
+    
+    // If still not available, create from env vars
+    if (!serviceAccount && process.env.FIREBASE_PROJECT_ID) {
+      console.log('🔑 Creating Firebase service account from environment variables');
+      serviceAccount = {
+        type: 'service_account',
+        project_id: process.env.FIREBASE_PROJECT_ID,
+        private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID || 'default-key-id',
+        private_key: process.env.FIREBASE_PRIVATE_KEY ? 
+                     process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n') : 
+                     undefined,
+        client_email: process.env.FIREBASE_CLIENT_EMAIL,
+        client_id: process.env.FIREBASE_CLIENT_ID,
+        auth_uri: "https://accounts.google.com/o/oauth2/auth",
+        token_uri: "https://oauth2.googleapis.com/token",
+        auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs",
+        client_x509_cert_url: process.env.FIREBASE_CLIENT_X509_CERT_URL
+      };
+    }
+    
+    if (!serviceAccount || !serviceAccount.private_key) {
+      throw new Error('Firebase service account is not properly configured');
     }
     
     // Initialize Firebase Admin
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount),
-      databaseURL: `https://${process.env.FIREBASE_PROJECT_ID || 'qaaaa-448c6'}.firebaseio.com`
+      databaseURL: `https://${serviceAccount.project_id}.firebaseio.com`
     });
     
     // Get auth and firestore
