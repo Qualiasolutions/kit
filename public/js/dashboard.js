@@ -223,11 +223,29 @@ function displayBusinessProfile(profile) {
   document.getElementById('business-industry-display').textContent = `${industry} / ${niche}`;
   
   // Display business logo
-  if (profile.logoUrl) {
-    document.getElementById('business-logo').src = profile.logoUrl;
-  } else if (profile.logo && profile.logo !== 'no-logo.png') {
-    // Check if we have a logo from a different property
-    document.getElementById('business-logo').src = profile.logo;
+  const businessLogo = document.getElementById('business-logo');
+  if (profile.logo) {
+    // Handle different logo URL formats
+    if (profile.logo.startsWith('http') || profile.logo.startsWith('data:')) {
+      // Direct URL (Cloudinary or data URL)
+      businessLogo.src = profile.logo;
+    } else if (profile.logo === 'no-logo.png') {
+      // Default placeholder
+      businessLogo.src = 'img/placeholder-logo.png';
+    } else {
+      // Local server path - construct complete URL
+      const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+        ? '' // Empty for local development (relative path)
+        : 'https://kit-lime.vercel.app';
+      businessLogo.src = `${API_URL}/uploads/${profile.logo}`;
+    }
+    businessLogo.alt = `${profile.businessName || 'Business'} Logo`;
+    businessLogo.classList.remove('placeholder-logo');
+  } else {
+    // No logo defined, use placeholder
+    businessLogo.src = 'img/placeholder-logo.png';
+    businessLogo.alt = 'Business Logo';
+    businessLogo.classList.add('placeholder-logo');
   }
   
   // Display brand colors
@@ -248,8 +266,6 @@ function displayBusinessProfile(profile) {
     document.documentElement.style.setProperty('--primary', profile.brandColors.primary || '#007bff');
     document.documentElement.style.setProperty('--primary-dark', adjustColor(profile.brandColors.primary || '#007bff', -20));
     document.documentElement.style.setProperty('--primary-light', adjustColor(profile.brandColors.primary || '#007bff', 20));
-    document.documentElement.style.setProperty('--secondary', profile.brandColors.secondary || '#6c757d');
-    document.documentElement.style.setProperty('--accent', profile.brandColors.accent || '#28a745');
   }
 }
 

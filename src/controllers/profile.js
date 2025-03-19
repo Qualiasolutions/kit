@@ -59,7 +59,13 @@ exports.createProfile = async (req, res) => {
 
     // Add logo if uploaded
     if (req.file) {
-      profileData.logo = req.file.filename;
+      // Store the full URL if using Cloudinary
+      if (req.file.path && req.file.path.includes('cloudinary')) {
+        profileData.logo = req.file.path;
+      } else {
+        // For local storage, store the filename
+        profileData.logo = req.file.filename;
+      }
       
       // Extract colors from logo if not provided
       if (!brandColors) {
@@ -89,6 +95,7 @@ exports.createProfile = async (req, res) => {
       data: profile
     });
   } catch (error) {
+    console.error('Profile creation error:', error);
     res.status(500).json({
       success: false,
       error: error.message

@@ -44,6 +44,7 @@ app.use(cors({
 // Set static folder
 app.use(express.static(path.join(__dirname, '../public')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/public/uploads', express.static(path.join(__dirname, '../public/uploads')));
 
 // Middleware to ensure Firebase is initialized for API routes
 app.use('/api', async (req, res, next) => {
@@ -65,13 +66,24 @@ app.use('/api', async (req, res, next) => {
   next();
 });
 
-// Health check endpoint
+// Add middleware for handling Firebase errors
+app.use((req, res, next) => {
+  req.firebase = {
+    initialized: !(!db || !admin),
+    error: global.firebaseInitError
+  };
+  next();
+});
+
+// Health check endpoint that includes Firebase status
 app.get('/api/health', (req, res) => {
-  res.json({
+  res.status(200).json({
     status: 'ok',
-    version: process.env.npm_package_version || '1.0.0',
-    environment: process.env.NODE_ENV || 'development',
-    firebaseConnected: isFirebaseInitialized
+    firebase: {
+      initialized: req.firebase.initialized,
+      error: req.firebase.error ? req.firebase.error.message : null
+    },
+    environment: process.env.NODE_ENV
   });
 });
 

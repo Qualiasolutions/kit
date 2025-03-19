@@ -15,7 +15,11 @@ const storage = new CloudinaryStorage({
   params: {
     folder: 'omumediakit',
     allowed_formats: ['jpg', 'jpeg', 'png', 'gif'],
-    transformation: [{ width: 1000, height: 1000, crop: 'limit' }]
+    transformation: [{ width: 1000, height: 1000, crop: 'limit' }],
+    // Ensure public URLs are returned
+    resource_type: 'auto',
+    use_filename: true,
+    unique_filename: true,
   }
 });
 

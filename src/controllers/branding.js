@@ -1,5 +1,8 @@
 const BusinessProfile = require('../models/BusinessProfile');
 const extractColors = require('../utils/colorExtractor');
+const { cloudinary } = require('../config/cloudinary');
+const path = require('path');
+const fs = require('fs');
 
 // @desc    Extract colors from logo
 // @route   POST /api/branding/extract-colors
@@ -33,36 +36,45 @@ exports.extractColorsFromLogo = async (req, res) => {
 exports.updateBrandColors = async (req, res) => {
   try {
     const { primary, secondary, accent } = req.body;
-
-    if (!primary || !secondary || !accent) {
+    
+    // Basic validation
+    if (!primary && !secondary && !accent) {
       return res.status(400).json({
         success: false,
-        error: 'Please provide all color values'
+        error: 'At least one color must be provided'
       });
     }
-
+    
+    // Find profile
     const profile = await BusinessProfile.findOne({ user: req.user.id });
-
+    
     if (!profile) {
       return res.status(404).json({
         success: false,
-        error: 'No profile found for this user'
+        error: 'No business profile found'
       });
     }
-
-    profile.brandColors = {
-      primary,
-      secondary,
-      accent
-    };
-
-    await profile.save();
-
+    
+    // Update colors
+    const updateData = { brandColors: { ...profile.brandColors } };
+    
+    if (primary) updateData.brandColors.primary = primary;
+    if (secondary) updateData.brandColors.secondary = secondary;
+    if (accent) updateData.brandColors.accent = accent;
+    
+    // Update profile
+    const updatedProfile = await BusinessProfile.findOneAndUpdate(
+      { user: req.user.id },
+      { $set: updateData },
+      { new: true }
+    );
+    
     res.status(200).json({
       success: true,
-      data: profile.brandColors
+      data: updatedProfile
     });
   } catch (error) {
+    console.error('Error updating brand colors:', error);
     res.status(500).json({
       success: false,
       error: error.message
@@ -108,6 +120,66 @@ exports.updateBusinessVoice = async (req, res) => {
       data: profile.businessVoice
     });
   } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+};
+
+// @desc    Update logo
+// @route   PUT /api/branding/logo
+// @access  Private
+exports.updateLogo = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        error: 'No file uploaded'
+      });
+    }
+    
+    // Find profile
+    const profile = await BusinessProfile.findOne({ user: req.user.id });
+    
+    if (!profile) {
+      return res.status(404).json({
+        success: false,
+        error: 'No business profile found'
+      });
+    }
+    
+    // Check if we need to delete previous logo
+    if (profile.logo && 
+        profile.logo !== 'no-logo.png' && 
+        profile.logo.includes('cloudinary')) {
+      try {
+        // Extract public_id
+        const publicId = profile.logo.split('/').pop().split('.')[0];
+        await cloudinary.uploader.destroy(publicId);
+      } catch (err) {
+        console.error('Error deleting previous logo:', err);
+      }
+    }
+    
+    // Create update object with new logo path
+    const updateData = { 
+      logo: req.file.path || req.file.filename
+    };
+    
+    // Update profile
+    const updatedProfile = await BusinessProfile.findOneAndUpdate(
+      { user: req.user.id },
+      { $set: updateData },
+      { new: true }
+    );
+    
+    res.status(200).json({
+      success: true,
+      data: updatedProfile
+    });
+  } catch (error) {
+    console.error('Error updating logo:', error);
     res.status(500).json({
       success: false,
       error: error.message
