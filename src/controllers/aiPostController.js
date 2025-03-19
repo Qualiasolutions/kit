@@ -276,58 +276,47 @@ exports.createPost = asyncHandler(async (req, res, next) => {
 // @route   POST /api/posts/generate
 // @access  Private
 exports.generatePost = asyncHandler(async (req, res, next) => {
-  const { 
-    contentType, 
-    topic, 
-    tone, 
-    platform, 
-    includeHashtags = true
-  } = req.body;
+  const { topic, platform, contentType, tone, includeHashtags } = req.body;
   
-  // Validate input
-  if (!contentType || !topic || !platform) {
-    return next(new ErrorResponse('Please provide content type, topic, and platform', 400));
+  // Validate required fields
+  if (!topic || !platform || !contentType) {
+    return res.status(400).json({
+      success: false,
+      error: 'Missing required fields: topic, platform, and contentType are required'
+    });
   }
   
   try {
-    // Get business profile for the user
-    const businessProfile = await localStorageService.getData('businessProfiles', req.user.id);
-    
-    if (!businessProfile) {
-      return next(new ErrorResponse('Business profile not found. Please complete your profile setup first.', 404));
-    }
-    
-    // Generate post with AI
-    const generatedPost = await aiService.generatePost(businessProfile, {
-      contentType,
+    // Generate content using AI service
+    const generatedContent = await aiService.generatePostContent({
       topic,
-      tone,
       platform,
-      includeHashtags
+      contentType,
+      tone: tone || 'professional',
+      includeHashtags: includeHashtags !== false // Default to true
     });
     
-    // Save the generated post
-    const postId = `post_${Date.now()}`;
-    const post = {
-      id: postId,
-      userId: req.user.id,
-      ...generatedPost,
-      isScheduled: false,
-      scheduledDate: null,
-      status: 'draft',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-    
-    await localStorageService.saveData('posts', postId, post);
-    
-    res.status(200).json({
+    // Return generated content
+    return res.status(200).json({
       success: true,
-      data: post
+      data: generatedContent
     });
   } catch (error) {
-    console.error('Error generating post:', error);
-    return next(new ErrorResponse('Error generating post content', 500));
+    console.error('Error in generatePost controller:', error);
+    
+    // Return a fallback if AI generation fails
+    const fallbackContent = aiService.generateFallbackContent({
+      topic: req.body.topic || 'your business',
+      platform: req.body.platform || 'social media',
+      contentType: req.body.contentType || 'post',
+      tone: req.body.tone || 'professional'
+    });
+    
+    return res.status(200).json({
+      success: true,
+      data: fallbackContent,
+      warning: 'Used fallback content generation due to an error'
+    });
   }
 });
 
@@ -335,34 +324,36 @@ exports.generatePost = asyncHandler(async (req, res, next) => {
 // @route   POST /api/posts/hashtags
 // @access  Private
 exports.generateHashtags = asyncHandler(async (req, res, next) => {
-  const { content, count = 5 } = req.body;
+  const { content, count } = req.body;
   
+  // Validate required fields
   if (!content) {
-    return next(new ErrorResponse('Please provide post content', 400));
+    return res.status(400).json({
+      success: false,
+      error: 'Missing required field: content is required'
+    });
   }
   
   try {
-    // Get business profile for the user
-    const businessProfile = await localStorageService.getData('businessProfiles', req.user.id);
+    // Generate hashtags using AI service
+    const hashtags = await aiService.generateHashtags(content, count || 7);
     
-    if (!businessProfile) {
-      return next(new ErrorResponse('Business profile not found', 404));
-    }
-    
-    // Generate hashtags
-    const hashtags = await aiService.generateHashtags(
-      content, 
-      businessProfile.industry, 
-      count
-    );
-    
-    res.status(200).json({
+    // Return generated hashtags
+    return res.status(200).json({
       success: true,
       data: hashtags
     });
   } catch (error) {
-    console.error('Error generating hashtags:', error);
-    return next(new ErrorResponse('Error generating hashtags', 500));
+    console.error('Error in generateHashtags controller:', error);
+    
+    // Return generic hashtags if AI generation fails
+    const fallbackHashtags = ['#socialmedia', '#marketing', '#digital', '#business', '#growth', '#success', '#trending'];
+    
+    return res.status(200).json({
+      success: true,
+      data: fallbackHashtags,
+      warning: 'Used fallback hashtags due to an error'
+    });
   }
 });
 
@@ -370,53 +361,46 @@ exports.generateHashtags = asyncHandler(async (req, res, next) => {
 // @route   POST /api/posts/calendar
 // @access  Private
 exports.generateContentCalendar = asyncHandler(async (req, res, next) => {
-  const { 
-    month, 
-    year, 
-    postsPerWeek = 3, 
-    platforms = ['Instagram', 'Facebook'] 
-  } = req.body;
+  const { month, year, postsPerWeek, platforms } = req.body;
   
-  if (!month || !year) {
-    return next(new ErrorResponse('Please provide month and year', 400));
+  // Set defaults for missing values
+  const currentDate = new Date();
+  const calendarMonth = month || currentDate.toLocaleString('default', { month: 'long' });
+  const calendarYear = year || currentDate.getFullYear();
+  
+  // Validate required fields
+  if (!platforms || !Array.isArray(platforms) || platforms.length === 0) {
+    return res.status(400).json({
+      success: false,
+      error: 'Missing required field: platforms (array) is required'
+    });
   }
   
   try {
-    // Get business profile for the user
-    const businessProfile = await localStorageService.getData('businessProfiles', req.user.id);
+    // Generate calendar using AI service
+    const calendar = await aiService.generateContentCalendar({
+      month: calendarMonth,
+      year: calendarYear,
+      postsPerWeek: postsPerWeek || 3,
+      platforms
+    });
     
-    if (!businessProfile) {
-      return next(new ErrorResponse('Business profile not found', 404));
-    }
-    
-    // Generate calendar
-    const calendar = await aiService.generateContentCalendar(
-      businessProfile, 
-      { month, year, postsPerWeek, platforms }
-    );
-    
-    // Save the calendar
-    const calendarId = `calendar_${month}_${year}_${Date.now()}`;
-    const calendarData = {
-      id: calendarId,
-      userId: req.user.id,
-      month,
-      year,
-      platforms,
-      postsPerWeek,
-      posts: calendar,
-      createdAt: new Date().toISOString()
-    };
-    
-    await localStorageService.saveData('calendars', calendarId, calendarData);
-    
-    res.status(200).json({
+    // Return generated calendar
+    return res.status(200).json({
       success: true,
-      data: calendarData
+      data: calendar
     });
   } catch (error) {
-    console.error('Error generating content calendar:', error);
-    return next(new ErrorResponse('Error generating content calendar', 500));
+    console.error('Error in generateContentCalendar controller:', error);
+    
+    // Return a basic calendar if AI generation fails
+    const fallbackCalendar = generateFallbackCalendar(req.body);
+    
+    return res.status(200).json({
+      success: true,
+      data: fallbackCalendar,
+      warning: 'Used fallback calendar due to an error'
+    });
   }
 });
 
@@ -439,7 +423,10 @@ exports.generateBio = asyncHandler(async (req, res, next) => {
     }
     
     // Generate bio
-    const bio = await aiService.generateBio(businessProfile, platform);
+    const bio = await aiService.generateProfileBio({
+      platform,
+      businessType: businessProfile.industry || 'general'
+    });
     
     res.status(200).json({
       success: true,
@@ -578,4 +565,54 @@ exports.deletePost = asyncHandler(async (req, res, next) => {
     console.error('Error deleting post:', error);
     return next(new ErrorResponse('Error deleting post', 500));
   }
-}); 
+});
+
+/**
+ * Generate a fallback content calendar
+ * @private
+ * @param {Object} options - Calendar options
+ * @returns {Object} - Fallback content calendar
+ */
+function generateFallbackCalendar(options) {
+  const { month, year, postsPerWeek, platforms } = options;
+  
+  // Set defaults
+  const currentDate = new Date();
+  const calendarMonth = month || currentDate.toLocaleString('default', { month: 'long' });
+  const calendarYear = year || currentDate.getFullYear();
+  const posts = [];
+  
+  // Basic content topics
+  const topics = [
+    'Company update',
+    'Product showcase',
+    'Customer testimonial',
+    'Industry news',
+    'Tips and tricks',
+    'Behind the scenes',
+    'Special offer',
+    'Team spotlight',
+    'FAQ',
+    'How-to guide'
+  ];
+  
+  // Create a few sample posts
+  for (let i = 0; i < (postsPerWeek || 3); i++) {
+    const platform = platforms[Math.floor(Math.random() * platforms.length)];
+    const topic = topics[Math.floor(Math.random() * topics.length)];
+    
+    posts.push({
+      date: `${calendarYear}-${currentDate.getMonth() + 1}-${i * 7 + 1}`,
+      platform,
+      contentType: 'post',
+      topic,
+      description: `Create a post about ${topic} for your audience on ${platform}`
+    });
+  }
+  
+  return {
+    month: calendarMonth,
+    year: calendarYear,
+    posts
+  };
+} 

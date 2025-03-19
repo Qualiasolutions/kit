@@ -12,6 +12,7 @@ const {
   generateContentCalendar,
   generateBio
 } = require('../controllers/postController');
+const aiPostController = require('../controllers/aiPostController');
 
 const router = express.Router();
 
@@ -27,7 +28,7 @@ router.route('/')
   .post(createPost);
 
 // Route for generating posts with AI
-router.post('/generate', generatePost);
+router.post('/generate', aiPostController.generatePost);
 
 // Route for scheduled posts
 router.route('/scheduled')
@@ -44,8 +45,8 @@ router.route('/:id/status')
   .put(updatePostStatus);
 
 // Post generation routes
-router.post('/hashtags', generateHashtags);
-router.post('/calendar', generateContentCalendar);
-router.post('/bio', generateBio);
+router.post('/hashtags', aiPostController.generateHashtags);
+router.post('/calendar', aiPostController.generateContentCalendar);
+router.post('/bio', aiPostController.generateProfileBio);
 
 module.exports = router; 
