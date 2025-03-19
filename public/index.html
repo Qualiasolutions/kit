@@ -5,79 +5,596 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>OmuMediaKit - SMMA Software</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <!-- 1. Navigation Bar -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-white fixed-top shadow-sm">
     <div class="container">
-      <a class="navbar-brand" href="#">OmuMediaKit</a>
+      <a class="navbar-brand fw-bold" href="#">OmuMediaKit</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto">
+        <ul class="navbar-nav mx-auto">
           <li class="nav-item">
-            <a class="nav-link active" href="index.html">Home</a>
+            <a class="nav-link" href="#features">Features</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="login.html">Login</a>
+            <a class="nav-link" href="#use-cases">Use Cases</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="register.html">Register</a>
+            <a class="nav-link" href="#resources">Resources</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#pricing">Pricing</a>
           </li>
         </ul>
+        <div class="d-flex">
+          <a href="login.html" class="btn btn-outline-primary me-2">Login</a>
+          <a href="register.html" class="btn btn-primary">Get Started</a>
+        </div>
       </div>
     </div>
   </nav>
 
-  <header class="bg-light py-5">
-    <div class="container px-5">
-      <div class="row gx-5 justify-content-center">
+  <!-- 2. Hero Section -->
+  <header class="hero-section py-5 mt-5">
+    <div class="container px-4 px-lg-5 my-5">
+      <div class="row gx-5 align-items-center">
         <div class="col-lg-6">
-          <div class="text-center my-5">
-            <h1 class="display-5 fw-bolder text-dark mb-2">Simplify Your Social Media Management</h1>
-            <p class="lead text-muted mb-4">OmuMediaKit automates branding, post creation, and scheduling for your business</p>
-            <div class="d-grid gap-3 d-sm-flex justify-content-sm-center">
-              <a class="btn btn-primary btn-lg px-4 me-sm-3" href="register.html">Get Started</a>
-              <a class="btn btn-outline-dark btn-lg px-4" href="login.html">Login</a>
+          <div class="mb-5">
+            <h1 class="display-4 fw-bold mb-3">AI-Powered Social Media Automation for Businesses</h1>
+            <p class="lead mb-4">Create, schedule, and grow your business on social media effortlessly. No experience required.</p>
+            <div class="d-grid gap-3 d-sm-flex">
+              <a class="btn btn-primary btn-lg px-4" href="register.html">Start Automating Now</a>
+              <a class="btn btn-outline-dark btn-lg px-4" href="#how-it-works">See How It Works</a>
             </div>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="dashboard-preview shadow-lg rounded-4 overflow-hidden">
+            <img src="img/dashboard-preview.jpg" class="img-fluid" alt="Dashboard Preview">
           </div>
         </div>
       </div>
     </div>
   </header>
 
-  <section class="py-5 border-bottom">
-    <div class="container px-5 my-5">
-      <div class="row gx-5">
-        <div class="col-lg-4 mb-5 mb-lg-0">
-          <div class="feature bg-primary bg-gradient text-white rounded-3 mb-3 p-4">
-            <i class="bi bi-collection"></i>
+  <!-- 3. Features Section -->
+  <section id="features" class="py-5 bg-light">
+    <div class="container px-4 px-lg-5 my-5">
+      <div class="text-center mb-5">
+        <h2 class="fw-bold">Everything You Need to Automate & Scale Your Social Media</h2>
+      </div>
+      
+      <div class="row gx-5 gy-4">
+        <div class="col-md-6 col-lg-4">
+          <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body p-4">
+              <div class="feature-icon bg-primary bg-gradient text-white rounded-circle mb-3">
+                <i class="fas fa-robot"></i>
+              </div>
+              <h3 class="h5 fw-bold">AI-Generated Social Media Content</h3>
+              <p class="card-text">Automatically create captions, hashtags, and post descriptions.</p>
+            </div>
           </div>
-          <h2 class="h4 fw-bolder">Automated Branding</h2>
-          <p>Our AI analyzes your business and creates a consistent brand identity across all platforms.</p>
         </div>
-        <div class="col-lg-4 mb-5 mb-lg-0">
-          <div class="feature bg-primary bg-gradient text-white rounded-3 mb-3 p-4">
-            <i class="bi bi-building"></i>
+        
+        <div class="col-md-6 col-lg-4">
+          <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body p-4">
+              <div class="feature-icon bg-primary bg-gradient text-white rounded-circle mb-3">
+                <i class="fas fa-paint-brush"></i>
+              </div>
+              <h3 class="h5 fw-bold">Custom Templates & Styles</h3>
+              <p class="card-text">Choose from industry-specific post templates. Adjust fonts, colors, and branding in one click.</p>
+            </div>
           </div>
-          <h2 class="h4 fw-bolder">Content Creation</h2>
-          <p>Generate engaging posts tailored to your industry, niche, and target audience.</p>
         </div>
-        <div class="col-lg-4">
-          <div class="feature bg-primary bg-gradient text-white rounded-3 mb-3 p-4">
-            <i class="bi bi-toggles2"></i>
+        
+        <div class="col-md-6 col-lg-4">
+          <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body p-4">
+              <div class="feature-icon bg-primary bg-gradient text-white rounded-circle mb-3">
+                <i class="fas fa-image"></i>
+              </div>
+              <h3 class="h5 fw-bold">AI Image & Background Editing</h3>
+              <p class="card-text">Upload images & let AI remove backgrounds, optimize lighting, and adjust layouts.</p>
+            </div>
           </div>
-          <h2 class="h4 fw-bolder">Smart Scheduling</h2>
-          <p>Automatically schedule posts at optimal times for maximum engagement.</p>
+        </div>
+        
+        <div class="col-md-6 col-lg-4">
+          <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body p-4">
+              <div class="feature-icon bg-primary bg-gradient text-white rounded-circle mb-3">
+                <i class="fas fa-store"></i>
+              </div>
+              <h3 class="h5 fw-bold">Business-Specific Post Features</h3>
+              <p class="card-text">Add dynamic info for car dealerships, real estate, restaurants, and more.</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-4">
+          <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body p-4">
+              <div class="feature-icon bg-primary bg-gradient text-white rounded-circle mb-3">
+                <i class="fas fa-search"></i>
+              </div>
+              <h3 class="h5 fw-bold">SEO Optimization for Social Media</h3>
+              <p class="card-text">AI auto-generates hashtags & descriptions based on search trends.</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-4">
+          <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body p-4">
+              <div class="feature-icon bg-primary bg-gradient text-white rounded-circle mb-3">
+                <i class="fas fa-mobile-alt"></i>
+              </div>
+              <h3 class="h5 fw-bold">Auto-Resizing & Repurposing</h3>
+              <p class="card-text">One-click adjustment for Instagram, Facebook, TikTok, LinkedIn, and more.</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-4">
+          <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body p-4">
+              <div class="feature-icon bg-primary bg-gradient text-white rounded-circle mb-3">
+                <i class="fas fa-hashtag"></i>
+              </div>
+              <h3 class="h5 fw-bold">Trending Sounds & Hashtags</h3>
+              <p class="card-text">AI detects the latest viral trends and suggests effective content strategies.</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-4">
+          <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body p-4">
+              <div class="feature-icon bg-primary bg-gradient text-white rounded-circle mb-3">
+                <i class="fas fa-calendar-alt"></i>
+              </div>
+              <h3 class="h5 fw-bold">Automated Monthly Content Planner</h3>
+              <p class="card-text">AI creates a personalized content calendar based on the business's goals.</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-4">
+          <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body p-4">
+              <div class="feature-icon bg-primary bg-gradient text-white rounded-circle mb-3">
+                <i class="fas fa-clock"></i>
+              </div>
+              <h3 class="h5 fw-bold">Post Automation & Scheduling</h3>
+              <p class="card-text">AI automatically schedules and posts based on the best engagement times.</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </section>
 
-  <footer class="py-4 bg-dark">
-    <div class="container">
-      <p class="m-0 text-center text-white">Copyright &copy; OmuMediaKit 2025</p>
+  <!-- 4. Workflow Section -->
+  <section id="workflow" class="py-5">
+    <div class="container px-4 px-lg-5 my-5">
+      <div class="text-center mb-5">
+        <h2 class="fw-bold">Effortless Social Media Management in Just a Few Clicks</h2>
+      </div>
+      
+      <div class="steps mb-5">
+        <div class="step active">
+          <div class="step-number">1</div>
+          <div class="step-label">Set Up Your Business Profile</div>
+        </div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <div class="step-label">Choose a Template & Features</div>
+        </div>
+        <div class="step">
+          <div class="step-number">3</div>
+          <div class="step-label">Generate & Schedule Content</div>
+        </div>
+        <div class="step">
+          <div class="step-number">4</div>
+          <div class="step-label">Automate & Grow</div>
+        </div>
+      </div>
+      
+      <div class="row gx-5 gy-4">
+        <div class="col-md-6">
+          <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+              <h3 class="h5 fw-bold mb-3">1. Set Up Your Business Profile</h3>
+              <p class="mb-3">Upload your logo, brand colors, and niche. Our AI will analyze your business to create a personalized social media strategy.</p>
+              <img src="img/profile-setup.jpg" class="img-fluid rounded" alt="Profile Setup">
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-6">
+          <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+              <h3 class="h5 fw-bold mb-3">2. Choose a Template & Features</h3>
+              <p class="mb-3">Select from AI-recommended styles or customize your own. Our templates are designed to maximize engagement.</p>
+              <img src="img/template-selection.jpg" class="img-fluid rounded" alt="Template Selection">
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-6">
+          <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+              <h3 class="h5 fw-bold mb-3">3. Generate & Schedule Content</h3>
+              <p class="mb-3">AI creates posts, captions, and hashtags. Drag & drop to schedule posts at optimal times for your audience.</p>
+              <img src="img/content-creation.jpg" class="img-fluid rounded" alt="Content Creation">
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-6">
+          <div class="card border-0 shadow-sm">
+            <div class="card-body p-4">
+              <h3 class="h5 fw-bold mb-3">4. Automate & Grow</h3>
+              <p class="mb-3">AI auto-posts content based on engagement trends. Monitor performance and scale your social media presence.</p>
+              <img src="img/automation.jpg" class="img-fluid rounded" alt="Automation">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. How It Works Section -->
+  <section id="how-it-works" class="py-5 bg-light">
+    <div class="container px-4 px-lg-5 my-5">
+      <div class="text-center mb-5">
+        <h2 class="fw-bold">Create and Automate Your Social Media in 3 Simple Steps</h2>
+      </div>
+      
+      <div class="row gx-5 gy-4 align-items-center">
+        <div class="col-md-6">
+          <h3 class="fw-bold mb-3">1. Pick Your Content Type</h3>
+          <p class="mb-4">AI suggests stories, carousels, reels, static posts, etc. based on what performs best for your industry.</p>
+          <h3 class="fw-bold mb-3">2. Customize & Optimize</h3>
+          <p class="mb-4">AI autofills text, hashtags, and layouts. Adjust to match your brand voice with a few clicks.</p>
+          <h3 class="fw-bold mb-3">3. Schedule & Automate</h3>
+          <p class="mb-4">AI posts at optimal engagement times. Set it and forget it with intelligent automation.</p>
+        </div>
+        <div class="col-md-6">
+          <div class="card border-0 shadow">
+            <img src="img/dashboard-view.jpg" class="img-fluid rounded" alt="Dashboard View">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. Client Generator Feature -->
+  <section id="client-generator" class="py-5">
+    <div class="container px-4 px-lg-5 my-5">
+      <div class="row gx-5 align-items-center">
+        <div class="col-md-6">
+          <div class="card border-0 shadow mb-4 mb-md-0">
+            <img src="img/client-generator.jpg" class="img-fluid rounded" alt="Client Generator">
+          </div>
+        </div>
+        <div class="col-md-6">
+          <h2 class="fw-bold mb-3">Find & Convert Clients Instantly</h2>
+          <p class="mb-4">Enter a country, city, and niche. Our AI generates a list of businesses with detailed social media insights.</p>
+          <ul class="list-unstyled mb-4">
+            <li class="mb-2"><i class="fas fa-check text-primary me-2"></i> Social media accounts with engagement metrics</li>
+            <li class="mb-2"><i class="fas fa-check text-primary me-2"></i> Activity level analysis (Active, Low, Inactive)</li>
+            <li class="mb-2"><i class="fas fa-check text-primary me-2"></i> Website & ad insights</li>
+            <li class="mb-2"><i class="fas fa-check text-primary me-2"></i> Contact information for outreach</li>
+          </ul>
+          <a href="register.html" class="btn btn-primary">Try Client Generator</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. Inspiration Finder -->
+  <section id="inspiration-finder" class="py-5 bg-light">
+    <div class="container px-4 px-lg-5 my-5">
+      <div class="row gx-5 align-items-center">
+        <div class="col-md-6 order-md-2">
+          <div class="card border-0 shadow mb-4 mb-md-0">
+            <img src="img/inspiration-finder.jpg" class="img-fluid rounded" alt="Inspiration Finder">
+          </div>
+        </div>
+        <div class="col-md-6 order-md-1">
+          <h2 class="fw-bold mb-3">Find the Best-Performing Social Media Accounts in Your Industry</h2>
+          <p class="mb-4">AI finds top-performing business accounts in any niche. "Like" an account, and our AI automatically creates similar templates.</p>
+          <a href="register.html" class="btn btn-primary">Discover Top Performers</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8. Pricing Plans -->
+  <section id="pricing" class="py-5">
+    <div class="container px-4 px-lg-5 my-5">
+      <div class="text-center mb-5">
+        <h2 class="fw-bold">Pricing Plans</h2>
+        <p class="lead">Choose the plan that fits your business needs</p>
+      </div>
+      
+      <div class="row gx-5 gy-4 justify-content-center">
+        <div class="col-md-4">
+          <div class="card h-100 border-0 shadow-sm">
+            <div class="card-header bg-white text-center border-0 pt-4">
+              <h3 class="fw-bold">Basic Plan</h3>
+              <div class="pricing my-3">
+                <span class="display-5 fw-bold">$29</span>
+                <span class="text-muted">/month</span>
+              </div>
+            </div>
+            <div class="card-body">
+              <ul class="list-unstyled mb-4">
+                <li class="mb-2"><i class="fas fa-check text-primary me-2"></i> AI-generated content</li>
+                <li class="mb-2"><i class="fas fa-check text-primary me-2"></i> Basic templates</li>
+                <li class="mb-2"><i class="fas fa-check text-primary me-2"></i> Hashtag suggestions</li>
+                <li class="mb-2"><i class="fas fa-check text-primary me-2"></i> 10 posts per month</li>
+                <li class="mb-2"><i class="fas fa-check text-primary me-2"></i> 1 social platform</li>
+              </ul>
+            </div>
+            <div class="card-footer bg-white text-center border-0 pb-4">
+              <a href="register.html" class="btn btn-outline-primary btn-lg w-100">Get Started</a>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-4">
+          <div class="card h-100 border-0 shadow">
+            <div class="card-header bg-primary text-white text-center border-0 pt-4">
+              <h3 class="fw-bold">Pro Plan</h3>
+              <div class="pricing my-3">
+                <span class="display-5 fw-bold">$79</span>
+                <span>/month</span>
+              </div>
+            </div>
+            <div class="card-body">
+              <ul class="list-unstyled mb-4">
+                <li class="mb-2"><i class="fas fa-check text-primary me-2"></i> Everything in Basic</li>
+                <li class="mb-2"><i class="fas fa-check text-primary me-2"></i> Content planning</li>
+                <li class="mb-2"><i class="fas fa-check text-primary me-2"></i> Scheduling & automation</li>
+                <li class="mb-2"><i class="fas fa-check text-primary me-2"></i> 30 posts per month</li>
+                <li class="mb-2"><i class="fas fa-check text-primary me-2"></i> 3 social platforms</li>
+                <li class="mb-2"><i class="fas fa-check text-primary me-2"></i> Analytics dashboard</li>
+              </ul>
+            </div>
+            <div class="card-footer bg-white text-center border-0 pb-4">
+              <a href="register.html" class="btn btn-primary btn-lg w-100">Get Started</a>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-4">
+          <div class="card h-100 border-0 shadow-sm">
+            <div class="card-header bg-white text-center border-0 pt-4">
+              <h3 class="fw-bold">Enterprise</h3>
+              <div class="pricing my-3">
+                <span class="display-5 fw-bold">$199</span>
+                <span class="text-muted">/month</span>
+              </div>
+            </div>
+            <div class="card-body">
+              <ul class="list-unstyled mb-4">
+                <li class="mb-2"><i class="fas fa-check text-primary me-2"></i> Everything in Pro</li>
+                <li class="mb-2"><i class="fas fa-check text-primary me-2"></i> Full automation</li>
+                <li class="mb-2"><i class="fas fa-check text-primary me-2"></i> Custom branding</li>
+                <li class="mb-2"><i class="fas fa-check text-primary me-2"></i> Unlimited posts</li>
+                <li class="mb-2"><i class="fas fa-check text-primary me-2"></i> All social platforms</li>
+                <li class="mb-2"><i class="fas fa-check text-primary me-2"></i> Priority support</li>
+                <li class="mb-2"><i class="fas fa-check text-primary me-2"></i> Client generator tool</li>
+              </ul>
+            </div>
+            <div class="card-footer bg-white text-center border-0 pb-4">
+              <a href="register.html" class="btn btn-outline-primary btn-lg w-100">Get Started</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9. Testimonials Section -->
+  <section id="testimonials" class="py-5 bg-light">
+    <div class="container px-4 px-lg-5 my-5">
+      <div class="text-center mb-5">
+        <h2 class="fw-bold">Why Businesses Love Our AI-Powered Social Media Automation</h2>
+      </div>
+      
+      <div class="row gx-5 gy-4">
+        <div class="col-md-4">
+          <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body p-4">
+              <div class="d-flex align-items-center mb-4">
+                <img src="img/testimonial-1.jpg" class="rounded-circle me-3" width="60" alt="Testimonial">
+                <div>
+                  <h5 class="fw-bold mb-0">Sarah Johnson</h5>
+                  <p class="text-muted mb-0">Marketing Director</p>
+                </div>
+              </div>
+              <p class="mb-0">"OmuMediaKit has completely transformed our social media strategy. We've saved 20+ hours per week and increased engagement by 78% in just two months."</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-4">
+          <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body p-4">
+              <div class="d-flex align-items-center mb-4">
+                <img src="img/testimonial-2.jpg" class="rounded-circle me-3" width="60" alt="Testimonial">
+                <div>
+                  <h5 class="fw-bold mb-0">Michael Chen</h5>
+                  <p class="text-muted mb-0">Small Business Owner</p>
+                </div>
+              </div>
+              <p class="mb-0">"As a small business owner, I never had time for social media. Now the AI handles everything, and we're getting new customers directly from Instagram and TikTok."</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-md-4">
+          <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body p-4">
+              <div class="d-flex align-items-center mb-4">
+                <img src="img/testimonial-3.jpg" class="rounded-circle me-3" width="60" alt="Testimonial">
+                <div>
+                  <h5 class="fw-bold mb-0">Jessica Williams</h5>
+                  <p class="text-muted mb-0">Agency Founder</p>
+                </div>
+              </div>
+              <p class="mb-0">"We've been able to take on twice as many clients without expanding our team. The client generator tool alone has been worth the investment."</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10. FAQ Section -->
+  <section id="faq" class="py-5">
+    <div class="container px-4 px-lg-5 my-5">
+      <div class="text-center mb-5">
+        <h2 class="fw-bold">Frequently Asked Questions</h2>
+      </div>
+      
+      <div class="row justify-content-center">
+        <div class="col-lg-8">
+          <div class="accordion" id="faqAccordion">
+            <div class="accordion-item border-0 mb-3 shadow-sm">
+              <h3 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                  How does AI create social media posts?
+                </button>
+              </h3>
+              <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                  Our AI analyzes thousands of high-performing posts in your niche, then uses that data to generate content specifically tailored to your business. It considers factors like your branding, target audience, and business goals to create posts that drive engagement.
+                </div>
+              </div>
+            </div>
+            
+            <div class="accordion-item border-0 mb-3 shadow-sm">
+              <h3 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                  Can I customize the generated content?
+                </button>
+              </h3>
+              <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                  Absolutely! You have full control to edit any text, images, or design elements the AI creates. The more you customize, the better the AI learns your preferences for future content generation.
+                </div>
+              </div>
+            </div>
+            
+            <div class="accordion-item border-0 mb-3 shadow-sm">
+              <h3 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                  How does post automation work?
+                </button>
+              </h3>
+              <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                  Our system connects securely to your social media accounts. Once connected, you can set up posting schedules, and the AI will automatically publish content at optimal times for maximum engagement based on your audience's activity patterns.
+                </div>
+              </div>
+            </div>
+            
+            <div class="accordion-item border-0 mb-3 shadow-sm">
+              <h3 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
+                  Can I manage multiple client accounts?
+                </button>
+              </h3>
+              <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                  Yes! Our Pro and Enterprise plans support multiple client accounts with easy switching between them. Each client gets their own content calendar, performance analytics, and custom settings.
+                </div>
+              </div>
+            </div>
+            
+            <div class="accordion-item border-0 mb-3 shadow-sm">
+              <h3 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq5">
+                  Is there a free trial?
+                </button>
+              </h3>
+              <div id="faq5" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                <div class="accordion-body">
+                  We offer a 7-day free trial with full access to all features. No credit card required to get started, and you can cancel anytime during the trial period.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 11. Footer -->
+  <footer class="py-5 bg-dark text-white">
+    <div class="container px-4 px-lg-5">
+      <div class="row gx-5 gy-4">
+        <div class="col-lg-3 col-md-6">
+          <h5 class="fw-bold mb-3">Features</h5>
+          <ul class="list-unstyled">
+            <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none">AI Templates</a></li>
+            <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none">Auto-Scheduling</a></li>
+            <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none">Hashtag Generator</a></li>
+            <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none">Content Planner</a></li>
+            <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none">Client Generator</a></li>
+          </ul>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+          <h5 class="fw-bold mb-3">Company</h5>
+          <ul class="list-unstyled">
+            <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none">About</a></li>
+            <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none">Blog</a></li>
+            <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none">Careers</a></li>
+            <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none">Contact</a></li>
+          </ul>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+          <h5 class="fw-bold mb-3">Support</h5>
+          <ul class="list-unstyled">
+            <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none">Help Center</a></li>
+            <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none">FAQ</a></li>
+            <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none">Tutorials</a></li>
+            <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none">Community</a></li>
+          </ul>
+        </div>
+        
+        <div class="col-lg-3 col-md-6">
+          <h5 class="fw-bold mb-3">Legal</h5>
+          <ul class="list-unstyled">
+            <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none">Privacy Policy</a></li>
+            <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none">Terms of Service</a></li>
+            <li class="mb-2"><a href="#" class="text-white-50 text-decoration-none">GDPR</a></li>
+          </ul>
+          <div class="mt-4">
+            <a href="#" class="text-white me-2"><i class="fab fa-facebook-f"></i></a>
+            <a href="#" class="text-white me-2"><i class="fab fa-twitter"></i></a>
+            <a href="#" class="text-white me-2"><i class="fab fa-instagram"></i></a>
+            <a href="#" class="text-white"><i class="fab fa-linkedin-in"></i></a>
+          </div>
+        </div>
+      </div>
+      <hr class="my-4">
+      <div class="text-center">
+        <p class="mb-0">© 2023 OmuMediaKit. All rights reserved.</p>
+      </div>
     </div>
   </footer>
 
