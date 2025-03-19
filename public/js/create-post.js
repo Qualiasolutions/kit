@@ -61,6 +61,9 @@ document.addEventListener('DOMContentLoaded', function() {
     if (contentType) {
       setupForContentType(contentType);
     }
+
+    // Load templates
+    await loadTemplates();
   }
 
   // Setup navigation between steps
@@ -1343,5 +1346,152 @@ document.addEventListener('DOMContentLoaded', function() {
         loadingText.textContent = loadingText;
       }
     }
+  }
+
+  /**
+   * Load available templates from the API
+   */
+  async function loadTemplates() {
+    const templateContainer = document.getElementById('templateContainer');
+    if (!templateContainer) return;
+    
+    // Clear existing templates
+    templateContainer.innerHTML = '<div class="text-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div><p class="mt-3">Loading templates...</p></div>';
+    
+    try {
+      // Fetch templates from API
+      const response = await fetch('/api/templates');
+      
+      if (!response.ok) {
+        throw new Error('Failed to load templates');
+      }
+      
+      const data = await response.json();
+      const templates = data.data;
+      
+      // Clear loading indicator
+      templateContainer.innerHTML = '';
+      
+      if (templates.length === 0) {
+        templateContainer.innerHTML = '<div class="alert alert-info">No templates available.</div>';
+        return;
+      }
+      
+      // Create template cards
+      templates.forEach(template => {
+        const templateCard = document.createElement('div');
+        templateCard.className = 'col-md-4 mb-4';
+        templateCard.innerHTML = `
+          <div class="card template-card h-100" data-template-id="${template.id}">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h5 class="card-title mb-0">${template.name}</h5>
+            </div>
+            <div class="card-body">
+              <p class="card-text">${template.description}</p>
+              <div class="template-preview mb-3">
+                <img src="${template.preview || 'img/placeholder-template.png'}" alt="${template.name}" class="img-fluid">
+              </div>
+              <div class="d-grid">
+                <button class="btn btn-primary select-template" data-template-id="${template.id}">Use Template</button>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        templateContainer.appendChild(templateCard);
+        
+        // Add event listener to the button
+        const selectButton = templateCard.querySelector('.select-template');
+        selectButton.addEventListener('click', () => selectTemplate(template.id));
+      });
+    } catch (error) {
+      console.error('Error loading templates:', error);
+      templateContainer.innerHTML = '<div class="alert alert-danger">Failed to load templates. Please try again later.</div>';
+      
+      // If in development mode, add mock templates
+      if (localStorage.getItem('devMode') === 'true') {
+        createMockTemplates();
+      }
+    }
+  }
+
+  /**
+   * Create mock templates for development mode
+   */
+  function createMockTemplates() {
+    const templateContainer = document.getElementById('templateContainer');
+    if (!templateContainer) return;
+    
+    // Mock templates
+    const mockTemplates = [
+      {
+        id: 'standard_post',
+        name: 'Standard Post',
+        description: 'A simple post with text and image',
+        preview: 'img/placeholder-template.png'
+      },
+      {
+        id: 'carousel_post',
+        name: 'Carousel Post',
+        description: 'Multiple slides with images and text',
+        preview: 'img/placeholder-template.png'
+      },
+      {
+        id: 'story_post',
+        name: 'Story/Reel',
+        description: 'Vertical format for stories and reels',
+        preview: 'img/placeholder-template.png'
+      }
+    ];
+    
+    // Clear container
+    templateContainer.innerHTML = '';
+    
+    // Create template cards
+    mockTemplates.forEach(template => {
+      const templateCard = document.createElement('div');
+      templateCard.className = 'col-md-4 mb-4';
+      templateCard.innerHTML = `
+        <div class="card template-card h-100" data-template-id="${template.id}">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">${template.name}</h5>
+            <span class="badge bg-info">Mock</span>
+          </div>
+          <div class="card-body">
+            <p class="card-text">${template.description}</p>
+            <div class="template-preview mb-3">
+              <img src="${template.preview}" alt="${template.name}" class="img-fluid">
+            </div>
+            <div class="d-grid">
+              <button class="btn btn-primary select-template" data-template-id="${template.id}">Use Template</button>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      templateContainer.appendChild(templateCard);
+      
+      // Add event listener to the button
+      const selectButton = templateCard.querySelector('.select-template');
+      selectButton.addEventListener('click', () => selectTemplate(template.id));
+    });
+  }
+
+  /**
+   * Select a template and move to the next step
+   * @param {string} templateId - ID of the selected template
+   */
+  function selectTemplate(templateId) {
+    // Store the selected template ID
+    localStorage.setItem('selectedTemplateId', templateId);
+    
+    // Hide the alert if it's visible
+    const alert = document.querySelector('.alert-warning');
+    if (alert) {
+      alert.style.display = 'none';
+    }
+    
+    // Move to the next step
+    goToStep(2);
   }
 }); 

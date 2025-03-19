@@ -50,11 +50,20 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Route files
+const auth = require('./routes/auth');
+const posts = require('./routes/posts');
+const profile = require('./routes/profile');
+const templates = require('./routes/templates');
+
+// Mount routers
+app.use('/api/auth', auth);
+app.use('/api/posts', posts);
+app.use('/api/profile', profile);
+app.use('/api/templates', templates);
+
 // Define routes
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/profile', require('./routes/profile'));
 app.use('/api/branding', require('./routes/branding'));
-app.use('/api/posts', require('./routes/posts'));
 app.use('/api/media', require('./routes/media'));
 app.use('/api/ai', require('./routes/ai'));
 

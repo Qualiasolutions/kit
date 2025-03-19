@@ -1,0 +1,140 @@
+[
+  {
+    "id": "default_post",
+    "name": "Standard Post",
+    "description": "General-purpose post with image and text for any platform",
+    "platform": "all",
+    "preview": "/img/templates/standard-post.png",
+    "structure": {
+      "title": true,
+      "content": true,
+      "image": true,
+      "cta": true,
+      "hashtags": true
+    }
+  },
+  {
+    "id": "carousel_post",
+    "name": "Carousel / Slides",
+    "description": "Multi-image post with captions for Instagram/LinkedIn",
+    "platform": "instagram,linkedin",
+    "preview": "/img/templates/carousel-post.png",
+    "structure": {
+      "title": true,
+      "slides": [
+        {
+          "image": true,
+          "caption": true
+        }
+      ],
+      "content": true,
+      "hashtags": true
+    }
+  },
+  {
+    "id": "quote_post",
+    "name": "Quote / Testimonial",
+    "description": "Highlight a customer review or inspirational quote",
+    "platform": "all",
+    "preview": "/img/templates/quote-post.png",
+    "structure": {
+      "quote": true,
+      "attribution": true,
+      "background": true,
+      "hashtags": true
+    }
+  },
+  {
+    "id": "story_post",
+    "name": "Story / Reel",
+    "description": "Vertical format for Instagram/Facebook stories and reels",
+    "platform": "instagram,facebook",
+    "preview": "/img/templates/story-post.png",
+    "structure": {
+      "background": true,
+      "headline": true,
+      "content": true,
+      "stickers": true
+    }
+  },
+  {
+    "id": "promo_post",
+    "name": "Promotion / Offer",
+    "description": "Highlight a sale, discount or special offer",
+    "platform": "all",
+    "preview": "/img/templates/promo-post.png",
+    "structure": {
+      "title": true,
+      "offer": true,
+      "details": true,
+      "image": true,
+      "expiration": true,
+      "cta": true
+    }
+  },
+  {
+    "id": "tips_post",
+    "name": "Tips & Tricks",
+    "description": "Share valuable tips related to your industry",
+    "platform": "all",
+    "preview": "/img/templates/tips-post.png",
+    "structure": {
+      "title": true,
+      "introduction": true,
+      "tips": [
+        {
+          "number": true,
+          "title": true,
+          "content": true
+        }
+      ],
+      "conclusion": true,
+      "hashtags": true
+    }
+  },
+  {
+    "id": "product_post",
+    "name": "Product Showcase",
+    "description": "Highlight a product with features and benefits",
+    "platform": "all",
+    "preview": "/img/templates/product-post.png",
+    "structure": {
+      "title": true,
+      "product_name": true,
+      "images": true,
+      "description": true,
+      "features": [
+        {
+          "icon": true,
+          "title": true,
+          "description": true
+        }
+      ],
+      "price": true,
+      "cta": true,
+      "hashtags": true
+    }
+  },
+  {
+    "id": "event_post",
+    "name": "Event Announcement",
+    "description": "Promote an upcoming event or webinar",
+    "platform": "all",
+    "preview": "/img/templates/event-post.png",
+    "structure": {
+      "title": true,
+      "date": true,
+      "time": true,
+      "location": true,
+      "description": true,
+      "speakers": [
+        {
+          "name": true,
+          "title": true
+        }
+      ],
+      "registration": true,
+      "image": true
+    }
+  }
+] 
