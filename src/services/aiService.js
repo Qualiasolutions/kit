@@ -2,9 +2,15 @@ const axios = require('axios');
 const OpenAI = require('openai');
 require('dotenv').config();
 
-// Initialize OpenAI client
+// Initialize OpenAI client with API key from environment variables
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
+});
+
+// Log OpenAI configuration for debugging
+console.log('OpenAI API configuration:', {
+  keyProvided: !!process.env.OPENAI_API_KEY,
+  keyLength: process.env.OPENAI_API_KEY ? process.env.OPENAI_API_KEY.length : 0
 });
 
 /**
@@ -27,6 +33,11 @@ async function generatePostContent(params) {
     ${includeHashtags ? 'Include 5-7 relevant hashtags at the end.' : ''}
     Format the response as a JSON with title and content fields.`;
     
+    console.log('Generating post content with parameters:', {
+      topic, platform, contentType, tone,
+      apiKeyAvailable: !!process.env.OPENAI_API_KEY
+    });
+    
     // Call OpenAI API
     const response = await openai.chat.completions.create({
       model: "gpt-4",
@@ -48,6 +59,7 @@ async function generatePostContent(params) {
     
     // Parse response
     const result = JSON.parse(response.choices[0].message.content);
+    console.log('Generated content successfully');
     
     // Extract hashtags if they exist in the content
     let content = result.content;
@@ -79,7 +91,13 @@ async function generatePostContent(params) {
       generatedBy: 'ai'
     };
   } catch (error) {
-    console.error('Error generating post content:', error);
+    console.error('Error generating post content:', error.message);
+    if (error.response) {
+      console.error('OpenAI API error details:', {
+        status: error.response.status,
+        data: error.response.data
+      });
+    }
     throw new Error('Failed to generate content. Please try again.');
   }
 }
