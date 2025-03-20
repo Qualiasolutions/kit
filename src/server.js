@@ -1,22 +1,25 @@
 const express = require('express');
+const path = require('path');
 const dotenv = require('dotenv');
 const cors = require('cors');
-const path = require('path');
+const morgan = require('morgan');
 const errorHandler = require('./middleware/error');
 const localStorageService = require('./services/localStorageService');
 
 // Load environment variables
 dotenv.config();
 
-// Initialize express
+// Initialize express app
 const app = express();
 
 // Middleware
+app.use(cors());
 app.use(express.json());
-app.use(cors({
-  origin: ['http://localhost:5000', 'https://kit-lime.vercel.app', 'https://omu-media-kit.vercel.app', 'https://omumediakit.vercel.app', 'https://*.vercel.app'],
-  credentials: true
-}));
+
+// Logger middleware
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
+}
 
 // Set static folder
 app.use(express.static(path.join(__dirname, '../public')));
@@ -187,24 +190,22 @@ app.use('/api/*', (req, res) => {
 // Error handler middleware
 app.use(errorHandler);
 
-// Serve static assets in production
-if (process.env.NODE_ENV === 'production') {
-  // Serve any static files
-  app.use(express.static(path.join(__dirname, '../public')));
+// Handle SPA routing - send all requests to index.html
+app.get('*', (req, res) => {
+  res.sendFile(path.resolve(__dirname, '../public/index.html'));
+});
 
-  // Handle SPA routing - for any routes not caught by the express routes, serve the index.html
-  app.get('*', (req, res) => {
-    res.sendFile(path.resolve(__dirname, '../public', 'index.html'));
-  });
-}
+// Set port
+const PORT = process.env.PORT || 3000;
 
-// In local development environment, start the server
-if (process.env.NODE_ENV !== 'production') {
-  const PORT = process.env.PORT || 5000;
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
-}
+// Start server
+const server = app.listen(PORT, () => {
+  console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+});
 
-// Export the Express app for serverless deployment
-module.exports = app; 
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (err) => {
+  console.error('UNHANDLED REJECTION:', err);
+});
+
+module.exports = server; 

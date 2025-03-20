@@ -46,6 +46,7 @@
       box-shadow: var(--card-shadow);
       transition: all 0.3s ease;
       overflow: hidden;
+      margin-bottom: 1.5rem;
     }
     
     .card:hover {
@@ -89,572 +90,522 @@
       transform: translateY(-2px);
     }
     
-    .template-card {
-      cursor: pointer;
-      border-radius: 12px;
-      overflow: hidden;
-      position: relative;
-      height: 200px;
-      transition: all 0.3s ease;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
-      margin-bottom: 1.5rem;
-    }
-    
-    .template-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
-    }
-    
-    .template-card.selected {
-      border: 3px solid var(--primary);
-      transform: scale(1.05);
-    }
-    
-    .template-image {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    
-    .template-overlay {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
-      padding: 1rem;
-      color: white;
-    }
-    
-    .template-title {
-      font-weight: 600;
-      margin-bottom: 0.25rem;
-      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-    }
-    
-    .platform-btn {
-      border-radius: 8px;
-      transition: all 0.3s;
-      margin-right: 0.5rem;
-      margin-bottom: 0.5rem;
-      border: 1px solid #e0e0e0;
-      background-color: white;
-    }
-    
-    .platform-btn.active {
-      background-color: var(--primary);
-      color: white;
-      border-color: var(--primary);
-    }
-    
-    .platform-btn:hover:not(.active) {
-      background-color: #f5f5f5;
-      transform: translateY(-2px);
-    }
-    
-    .platform-icon {
-      font-size: 1.2rem;
-      margin-right: 0.5rem;
-    }
-    
-    .preview-card {
-      border-radius: 16px;
-      overflow: hidden;
-      background-color: white;
-      box-shadow: var(--card-shadow);
-    }
-    
-    .preview-header {
-      padding: 1rem;
-      border-bottom: 1px solid #f0f0f0;
-      display: flex;
-      align-items: center;
-    }
-    
-    .preview-content {
-      padding: 1.5rem;
-    }
-    
-    .caption-preview {
-      font-size: 0.9rem;
-      color: #444;
-      white-space: pre-line;
-    }
-    
-    .preview-image-container {
-      position: relative;
-      overflow: hidden;
-      border-radius: 8px;
-      margin-bottom: 1rem;
-      background-color: #f5f5f5;
-      aspect-ratio: 1 / 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    .preview-image {
-      max-width: 100%;
-      max-height: 100%;
-      object-fit: contain;
-    }
-    
-    .form-control, .form-select {
-      border-radius: 8px;
-      padding: 0.75rem 1rem;
-      border-color: #ddd;
-    }
-    
-    .form-control:focus, .form-select:focus {
-      box-shadow: 0 0 0 0.25rem rgba(0, 139, 123, 0.25);
-      border-color: var(--primary);
-    }
-    
-    .form-label {
-      font-weight: 500;
-      margin-bottom: 0.5rem;
-    }
-    
-    .tab-buttons {
-      display: flex;
-      border-radius: 12px;
-      overflow: hidden;
-      margin-bottom: 2rem;
-      border: 1px solid #e0e0e0;
-      background-color: white;
-    }
-    
-    .tab-btn {
-      flex: 1;
-      text-align: center;
-      padding: 1rem;
-      background-color: white;
-      border: none;
-      cursor: pointer;
-      transition: all 0.3s;
-      font-weight: 500;
-    }
-    
-    .tab-btn.active {
-      background-color: var(--primary);
-      color: white;
-    }
-    
-    .tab-btn:hover:not(.active) {
-      background-color: #f8f8f8;
-    }
-    
-    .tab-content {
-      display: none;
-    }
-    
-    .tab-content.active {
-      display: block;
-    }
-    
-    .step-indicator {
-      display: flex;
-      margin-bottom: 2rem;
-    }
-    
     .step {
-      flex: 1;
-      text-align: center;
-      position: relative;
-    }
-    
-    .step-number {
-      width: 35px;
-      height: 35px;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
       background-color: #e0e0e0;
-      color: #666;
+      color: #757575;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin: 0 auto 0.5rem;
       font-weight: 600;
-      position: relative;
-      z-index: 2;
+      margin: 0 auto 0.5rem auto;
     }
     
-    .step.active .step-number {
-      background-color: var(--primary);
-      color: white;
-    }
-    
-    .step.completed .step-number {
+    .step.active {
       background-color: var(--primary);
       color: white;
     }
     
     .step-title {
       font-size: 0.9rem;
-      color: #666;
+      text-align: center;
+      color: #757575;
+    }
+    
+    .step-item.active .step-title {
+      color: var(--primary);
       font-weight: 500;
     }
     
-    .step.active .step-title {
-      color: var(--primary);
-      font-weight: 600;
+    .hashtags-container .badge {
+      cursor: pointer;
+      padding: 8px 12px;
+      margin-right: 8px;
+      margin-bottom: 8px;
+      font-weight: 500;
+      font-size: 0.9rem;
     }
     
-    .step::after {
-      content: '';
-      position: absolute;
-      top: 17px;
-      left: 50%;
-      width: 100%;
-      height: 2px;
-      background-color: #e0e0e0;
-      z-index: 1;
+    .preview-card {
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
     
-    .step:last-child::after {
+    .preview-card-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      align-items: center;
+    }
+    
+    .preview-card-body {
+      padding: 16px;
+    }
+    
+    .platform-tag {
+      font-size: 0.8rem;
+      padding: 4px 8px;
+      border-radius: 4px;
+      margin-right: 4px;
+    }
+    
+    .tab-pane {
       display: none;
     }
     
-    .step.completed::after {
-      background-color: var(--primary);
+    .tab-pane.active {
+      display: block;
+    }
+    
+    .loading-spinner {
+      width: 3rem;
+      height: 3rem;
     }
   </style>
 </head>
 <body>
-  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <!-- Navigation Bar -->
+  <nav class="navbar navbar-expand-lg navbar-light bg-white">
     <div class="container">
-      <a class="navbar-brand" href="dashboard.html">
-        <i class="bi bi-droplet-fill me-2"></i>
-        OmuMediaKit
+      <a class="navbar-brand fw-bold" href="index.html">
+        <img src="img/logo.png" alt="OmuMediaKit" height="40">
       </a>
-      <div class="navbar-nav ms-auto">
-        <a class="nav-link" href="dashboard.html"><i class="bi bi-speedometer2 me-1"></i> Dashboard</a>
-        <a class="nav-link" href="profile.html"><i class="bi bi-building me-1"></i> Business Profile</a>
-        <a class="nav-link" href="#" id="logout-link"><i class="bi bi-box-arrow-right me-1"></i> Logout</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="dashboard.html">Dashboard</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="business-profile.html">Business Profile</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" id="logout-btn">Logout</a>
+          </li>
+        </ul>
       </div>
     </div>
   </nav>
 
-  <div class="container my-5">
-    <div class="row">
-      <div class="col-12 mb-4">
-        <h1 class="mb-2">Create a Social Media Post</h1>
-        <p class="text-muted">Craft and schedule engaging content for your social media platforms.</p>
-        
-        <!-- Alert container for messages -->
-        <div class="alert-container mb-4"></div>
-        
-        <!-- Step Progress -->
-        <div class="row mb-4">
-          <div class="col-12">
-            <div class="steps d-flex flex-wrap">
-              <div class="step active" data-step="1">
-                <div class="step-number">1</div>
-                <div class="step-label">Choose Template</div>
-              </div>
-              <div class="step" data-step="2">
-                <div class="step-number">2</div>
-                <div class="step-label">Generate Content</div>
-              </div>
-              <div class="step" data-step="3">
-                <div class="step-number">3</div>
-                <div class="step-label">Customize</div>
-              </div>
-              <div class="step" data-step="4">
-                <div class="step-number">4</div>
-                <div class="step-label">Schedule</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="row">
-      <div class="col-lg-8">
-        <!-- Tab Content for Steps -->
-        <div class="tab-content">
-          <!-- Step 1: Choose Template -->
-          <div class="tab-pane fade show active" id="step1Content">
-            <div class="card mb-4">
-              <div class="card-header d-flex justify-content-between align-items-center">
-                <div>
-                  <i class="bi bi-grid-3x3-gap me-2 text-primary"></i>
-                  <span>Select a Template</span>
-                </div>
-              </div>
-              <div class="card-body">
-                <p>Choose a content template that fits your brand's style and objectives.</p>
-                
-                <!-- Loading Indicator -->
-                <div class="text-center my-5 loading-templates">
-                  <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                  </div>
-                  <p class="mt-3">Loading available templates...</p>
-                </div>
-                
-                <!-- Template container will be populated by JavaScript -->
-                <div id="templateContainer" class="row mt-4">
-                  <!-- Templates will be dynamically loaded here -->
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <!-- Step 2: Generate Content -->
-          <div class="tab-pane fade" id="step2Content">
-            <div class="card mb-4">
-              <div class="card-header d-flex justify-content-between align-items-center">
-                <div>
-                  <i class="bi bi-magic me-2 text-primary"></i>
-                  <span>Generate Content</span>
-                </div>
-              </div>
-              <div class="card-body">
-                <p>Let our AI generate engaging content based on your business profile.</p>
-                
-                <!-- AI Content Generation Form -->
-                <div class="row mb-4">
-                  <div class="col-md-6">
-                    <div class="mb-3">
-                      <label for="post-topic" class="form-label">Topic <span class="text-danger">*</span></label>
-                      <input type="text" class="form-control" id="post-topic" placeholder="e.g. Social Media Marketing">
-                      <div class="form-text">What should this post be about?</div>
-                    </div>
-                  </div>
-                  <div class="col-md-6">
-                    <div class="mb-3">
-                      <label for="platform-select" class="form-label">Platform <span class="text-danger">*</span></label>
-                      <select class="form-select" id="platform-select">
-                        <option value="">Select platform</option>
-                        <option value="Instagram">Instagram</option>
-                        <option value="Facebook">Facebook</option>
-                        <option value="Twitter">Twitter/X</option>
-                        <option value="LinkedIn">LinkedIn</option>
-                        <option value="TikTok">TikTok</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-                
-                <div class="row mb-4">
-                  <div class="col-md-6">
-                    <div class="mb-3">
-                      <label for="content-type-select" class="form-label">Content Type <span class="text-danger">*</span></label>
-                      <select class="form-select" id="content-type-select">
-                        <option value="">Select content type</option>
-                        <option value="post">Regular Post</option>
-                        <option value="carousel">Carousel</option>
-                        <option value="story">Story</option>
-                        <option value="reel">Reel/Short Video</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div class="col-md-6">
-                    <div class="mb-3">
-                      <label for="tone-select" class="form-label">Tone</label>
-                      <select class="form-select" id="tone-select">
-                        <option value="professional">Professional</option>
-                        <option value="friendly">Friendly</option>
-                        <option value="casual">Casual</option>
-                        <option value="humorous">Humorous</option>
-                        <option value="inspirational">Inspirational</option>
-                        <option value="authoritative">Authoritative</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-                
-                <!-- Generate Button -->
-                <div class="text-center mb-4">
-                  <button id="generate-ai-post" class="btn btn-primary">
-                    <i class="bi bi-stars me-2"></i> Generate Content
-                  </button>
-                  
-                  <!-- Loading Indicator (hidden by default) -->
-                  <div id="ai-loading-indicator" class="mt-3 d-none">
-                    <div class="spinner-border text-primary" role="status">
-                      <span class="visually-hidden">Generating content...</span>
-                    </div>
-                    <p class="mt-2">AI is crafting your content. This may take a moment...</p>
-                  </div>
-                </div>
-                
-                <!-- Content Result -->
-                <div class="card mb-4">
-                  <div class="card-header">
-                    <i class="bi bi-pencil-square me-2"></i> Content Editor
-                  </div>
-                  <div class="card-body">
-                    <div class="mb-3">
-                      <label for="post-title" class="form-label">Title</label>
-                      <input type="text" class="form-control" id="post-title" placeholder="Enter post title">
-                    </div>
-                    <div class="mb-3">
-                      <label for="post-content" class="form-label">Content</label>
-                      <textarea class="form-control" id="post-content" rows="6" placeholder="Your post content will appear here"></textarea>
-                    </div>
-                    
-                    <!-- Hashtags Section -->
-                    <div class="mb-3">
-                      <div class="d-flex justify-content-between align-items-center mb-2">
-                        <label class="form-label mb-0">Hashtags</label>
-                        <button id="generate-hashtags" class="btn btn-sm btn-outline-primary">
-                          <i class="bi bi-hash me-1"></i> Generate Hashtags
-                        </button>
-                      </div>
-                      <div id="hashtags-container" class="hashtags-container">
-                        <!-- Hashtags will be displayed here -->
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="card-footer">
-                <div class="d-flex justify-content-between">
-                  <button type="button" class="btn btn-outline-secondary prev-step">Back</button>
-                  <button type="button" class="btn btn-primary next-step">Continue</button>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <!-- Step 3: Customize Content -->
-          <div class="tab-pane fade" id="step3Content">
-            <div class="card mb-4">
-              <div class="card-header d-flex justify-content-between align-items-center">
-                <div>
-                  <i class="bi bi-image me-2 text-primary"></i>
-                  <span>Image & Background</span>
-                </div>
-              </div>
-              <div class="card-body">
-                <p>Upload an image or choose from our library. We'll automatically enhance and optimize it.</p>
-                
-                <!-- Image Upload -->
-                <div class="mb-4">
-                  <label class="form-label">Upload Image</label>
-                  <div class="input-group mb-3">
-                    <input type="file" class="form-control" id="imageUpload" accept="image/*">
-                    <button class="btn btn-outline-primary" type="button" id="uploadBtn">Upload</button>
-                  </div>
-                  
-                  <div class="form-check mt-2">
-                    <input class="form-check-input" type="checkbox" id="removeBackground">
-                    <label class="form-check-label" for="removeBackground">
-                      Remove image background
-                    </label>
-                  </div>
-                </div>
-                
-                <!-- Platform Selection -->
-                <div class="mb-4">
-                  <label class="form-label">Select Platforms</label>
-                  <div class="d-flex flex-wrap">
-                    <button class="platform-btn active" data-platform="instagram">
-                      <i class="bi bi-instagram me-1"></i> Instagram
-                    </button>
-                    <button class="platform-btn" data-platform="facebook">
-                      <i class="bi bi-facebook me-1"></i> Facebook
-                    </button>
-                    <button class="platform-btn" data-platform="twitter">
-                      <i class="bi bi-twitter me-1"></i> Twitter
-                    </button>
-                    <button class="platform-btn" data-platform="linkedin">
-                      <i class="bi bi-linkedin me-1"></i> LinkedIn
-                    </button>
-                  </div>
-                  <div class="selected-platforms mt-2">
-                    <span class="badge bg-primary me-1">Instagram</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <!-- Step 4: Schedule Post -->
-          <div class="tab-pane fade" id="step4Content">
-            <div class="card mb-4">
-              <div class="card-header d-flex justify-content-between align-items-center">
-                <div>
-                  <i class="bi bi-calendar-event me-2 text-primary"></i>
-                  <span>Schedule Post</span>
-                </div>
-              </div>
-              <div class="card-body">
-                <p>Choose when to publish your post or save as a draft.</p>
-                
-                <!-- Schedule Options -->
-                <div class="mb-4">
-                  <div class="form-check mb-3">
-                    <input class="form-check-input" type="radio" name="scheduleOption" id="scheduleLater" value="schedule">
-                    <label class="form-check-label" for="scheduleLater">
-                      Schedule for later
-                    </label>
-                  </div>
-                  
-                  <div class="form-check mb-3">
-                    <input class="form-check-input" type="radio" name="scheduleOption" id="saveAsDraft" value="draft" checked>
-                    <label class="form-check-label" for="saveAsDraft">
-                      Save as draft
-                    </label>
-                  </div>
-                </div>
-                
-                <!-- Schedule Datetime -->
-                <div class="mb-4 schedule-datetime" style="display: none;">
-                  <label for="scheduledDate" class="form-label">Schedule Date & Time</label>
-                  <input type="datetime-local" class="form-control" id="scheduledDate">
-                  <p class="form-text text-muted mt-1">
-                    <i class="bi bi-info-circle me-1"></i>
-                    Our AI will suggest the best posting time for maximum engagement.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
+  <!-- Main Content -->
+  <main class="page-content py-5">
+    <div class="container">
+      <div class="alert-container mb-4"></div>
+      
+      <div class="row mb-4">
+        <div class="col-12">
+          <h1 class="fw-bold mb-2">Create a Social Media Post</h1>
+          <p class="text-muted">Craft and schedule engaging content for your social media platforms.</p>
         </div>
       </div>
       
-      <div class="col-lg-4">
-        <!-- Preview Card -->
-        <div class="card sticky-top" style="top: 20px;">
-          <div class="card-header bg-light">
-            <h5 class="mb-0">
-              <i class="bi bi-eye me-2"></i>
-              Post Preview
-            </h5>
+      <!-- Steps Progress -->
+      <div class="row mb-5">
+        <div class="col-12">
+          <div class="steps-progress">
+            <div class="row justify-content-center">
+              <div class="col-3 col-md-2 step-item active">
+                <div class="step active">1</div>
+                <div class="step-title">Choose Template</div>
+              </div>
+              <div class="col-3 col-md-2 step-item">
+                <div class="step">2</div>
+                <div class="step-title">Generate Content</div>
+              </div>
+              <div class="col-3 col-md-2 step-item">
+                <div class="step">3</div>
+                <div class="step-title">Customize</div>
+              </div>
+              <div class="col-3 col-md-2 step-item">
+                <div class="step">4</div>
+                <div class="step-title">Schedule</div>
+              </div>
+            </div>
+            <div class="progress mt-3" style="height: 5px;">
+              <div class="progress-bar bg-primary" role="progressbar" style="width: 25%"></div>
+            </div>
           </div>
-          <div class="card-body">
-            <!-- Business Logo -->
-            <div class="d-flex align-items-center mb-3">
-              <img src="img/logo.png" alt="Business Logo" class="business-logo me-2" style="width: 32px; height: 32px; border-radius: 50%;">
-              <div class="business-name fw-bold">Your Business</div>
+        </div>
+      </div>
+
+      <!-- Step Content -->
+      <div class="tab-content">
+        <!-- Step 1: Choose Template -->
+        <div class="tab-pane fade show active" id="step1Content">
+          <div class="row">
+            <div class="col-md-8">
+              <div class="card">
+                <div class="card-header">
+                  <h5 class="mb-0">Select a Template</h5>
+                </div>
+                <div class="card-body">
+                  <p class="text-muted mb-4">Choose a template that best fits your content needs.</p>
+                  
+                  <div class="row" id="templateContainer">
+                    <!-- Templates will be loaded here -->
+                    <div class="text-center py-5">
+                      <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                      </div>
+                      <p class="mt-3">Loading templates...</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
             
-            <!-- Preview Image -->
-            <div class="mb-3">
-              <img src="img/placeholder-template.jpg" alt="Preview" class="preview-image img-fluid rounded mb-2">
-              <h6 class="preview-title">Select a template</h6>
-              <p class="preview-description small text-muted">Your content will appear here</p>
+            <div class="col-md-4">
+              <div class="card preview-card">
+                <div class="card-header">
+                  <h5 class="mb-0">Preview</h5>
+                </div>
+                <div class="card-body text-center">
+                  <div id="templatePreview">
+                    <img src="img/placeholder-template.jpg" alt="Template Preview" class="preview-image img-fluid mb-3">
+                    <h5 class="preview-title">Select a template</h5>
+                    <p class="preview-description text-muted">Template description will appear here</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="row mt-4">
+            <div class="col-12 d-flex justify-content-end">
+              <button class="btn btn-primary next-step" disabled>Next: Generate Content</button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 2: Generate Content -->
+        <div class="tab-pane fade" id="step2Content">
+          <div class="row">
+            <div class="col-md-8">
+              <div class="card">
+                <div class="card-header">
+                  <h5 class="mb-0">Generate Content</h5>
+                </div>
+                <div class="card-body">
+                  <p class="text-muted mb-4">Our AI will generate engaging content based on your business profile.</p>
+                  
+                  <form id="generate-content-form">
+                    <div class="mb-3">
+                      <label for="post-topic" class="form-label">What's your post about?</label>
+                      <input type="text" class="form-control" id="post-topic" placeholder="e.g., New product launch, tips for customers, seasonal promotion">
+                    </div>
+                    
+                    <div class="row">
+                      <div class="col-md-4 mb-3">
+                        <label for="platform-select" class="form-label">Platform</label>
+                        <select class="form-select" id="platform-select">
+                          <option value="" disabled selected>Select platform</option>
+                          <option value="instagram">Instagram</option>
+                          <option value="facebook">Facebook</option>
+                          <option value="twitter">Twitter/X</option>
+                          <option value="linkedin">LinkedIn</option>
+                          <option value="tiktok">TikTok</option>
+                        </select>
+                      </div>
+                      
+                      <div class="col-md-4 mb-3">
+                        <label for="content-type-select" class="form-label">Content Type</label>
+                        <select class="form-select" id="content-type-select">
+                          <option value="" disabled selected>Select type</option>
+                          <option value="post">Regular Post</option>
+                          <option value="carousel">Carousel</option>
+                          <option value="story">Story</option>
+                          <option value="reel">Reel/Short Video</option>
+                        </select>
+                      </div>
+                      
+                      <div class="col-md-4 mb-3">
+                        <label for="tone-select" class="form-label">Tone</label>
+                        <select class="form-select" id="tone-select">
+                          <option value="" disabled selected>Select tone</option>
+                          <option value="professional">Professional</option>
+                          <option value="friendly">Friendly</option>
+                          <option value="casual">Casual</option>
+                          <option value="humorous">Humorous</option>
+                          <option value="inspirational">Inspirational</option>
+                          <option value="authoritative">Authoritative</option>
+                        </select>
+                      </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                      <button type="button" id="generate-ai-post" class="btn btn-primary">
+                        <i class="bi bi-magic me-2"></i> Generate Content
+                      </button>
+                    </div>
+
+                    <div id="ai-loading-indicator" class="text-center my-4 d-none">
+                      <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                      </div>
+                      <p class="mt-2">Generating content with AI...</p>
+                    </div>
+                  </form>
+                  
+                  <div id="generatedContentContainer" class="mt-4">
+                    <!-- Generated content will appear here -->
+                  </div>
+                </div>
+              </div>
             </div>
             
-            <div class="alert alert-info small">
-              <i class="bi bi-info-circle me-1"></i>
-              Final appearance may vary by platform. This is a general preview.
+            <div class="col-md-4">
+              <div class="card">
+                <div class="card-header">
+                  <h5 class="mb-0">Editor</h5>
+                </div>
+                <div class="card-body">
+                  <div class="mb-3">
+                    <label for="post-title" class="form-label">Post Title</label>
+                    <input type="text" class="form-control" id="post-title" placeholder="Enter post title">
+                  </div>
+                  
+                  <div class="mb-3">
+                    <label for="post-content" class="form-label">Post Content</label>
+                    <textarea class="form-control" id="post-content" rows="6" placeholder="Enter post content"></textarea>
+                  </div>
+                  
+                  <div class="mb-3">
+                    <label class="form-label d-flex justify-content-between align-items-center">
+                      <span>Hashtags</span>
+                      <button id="generate-hashtags" class="btn btn-sm btn-outline-primary">Generate Hashtags</button>
+                    </label>
+                    <div id="hashtags-container" class="hashtags-container">
+                      <!-- Hashtags will appear here -->
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="row mt-4">
+            <div class="col-12 d-flex justify-content-between">
+              <button class="btn btn-outline-primary prev-step">Previous</button>
+              <button class="btn btn-primary next-step">Next: Customize</button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 3: Customize -->
+        <div class="tab-pane fade" id="step3Content">
+          <div class="row">
+            <div class="col-md-8">
+              <div class="card">
+                <div class="card-header">
+                  <h5 class="mb-0">Customize Your Post</h5>
+                </div>
+                <div class="card-body">
+                  <p class="text-muted mb-4">Add visuals and fine-tune your content.</p>
+                  
+                  <div class="mb-4">
+                    <label class="form-label">Upload Image</label>
+                    <div class="input-group mb-3">
+                      <input type="file" class="form-control" id="image-upload" accept="image/*">
+                      <button class="btn btn-outline-secondary" type="button" id="upload-image-btn">Upload</button>
+                    </div>
+                    <div class="form-text">Recommended size: 1080x1080px (1:1 ratio) for regular posts.</div>
+                  </div>
+                  
+                  <div class="mb-4">
+                    <label class="form-label">Target Platforms</label>
+                    <div class="d-flex flex-wrap">
+                      <button class="btn platform-btn active" data-platform="instagram">
+                        <i class="bi bi-instagram platform-icon"></i>Instagram
+                      </button>
+                      <button class="btn platform-btn" data-platform="facebook">
+                        <i class="bi bi-facebook platform-icon"></i>Facebook
+                      </button>
+                      <button class="btn platform-btn" data-platform="twitter">
+                        <i class="bi bi-twitter platform-icon"></i>Twitter/X
+                      </button>
+                      <button class="btn platform-btn" data-platform="linkedin">
+                        <i class="bi bi-linkedin platform-icon"></i>LinkedIn
+                      </button>
+                    </div>
+                    <div class="mt-2">
+                      <span class="text-muted">Selected: </span>
+                      <div class="selected-platforms d-inline-block">
+                        <span class="badge bg-primary me-1">Instagram</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-4">
+              <div class="card preview-card">
+                <div class="card-header">
+                  <h5 class="mb-0">Post Preview</h5>
+                </div>
+                <div class="card-body">
+                  <div class="preview-card mb-3">
+                    <div class="preview-card-header">
+                      <img src="img/business-logo.png" alt="Business Logo" width="32" height="32" class="rounded-circle me-2 business-logo">
+                      <div>
+                        <div class="fw-bold business-name">Your Business</div>
+                        <div class="text-muted" style="font-size: 0.8rem;">Just now</div>
+                      </div>
+                    </div>
+                    <div class="preview-image-container">
+                      <img src="img/placeholder-image.jpg" alt="Post Preview" class="preview-image img-fluid" id="preview-image">
+                    </div>
+                    <div class="preview-card-body">
+                      <p class="caption-preview" id="preview-caption">Your post content will appear here...</p>
+                      <div class="text-muted" id="preview-hashtags" style="font-size: 0.85rem;">
+                        #yourbusiness #socialmedia
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="row mt-4">
+            <div class="col-12 d-flex justify-content-between">
+              <button class="btn btn-outline-primary prev-step">Previous</button>
+              <button class="btn btn-primary next-step">Next: Schedule</button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Step 4: Schedule -->
+        <div class="tab-pane fade" id="step4Content">
+          <div class="row">
+            <div class="col-md-8">
+              <div class="card">
+                <div class="card-header">
+                  <h5 class="mb-0">Schedule Your Post</h5>
+                </div>
+                <div class="card-body">
+                  <p class="text-muted mb-4">Choose when to publish your content.</p>
+                  
+                  <div class="mb-4">
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" type="radio" name="publish-option" id="publish-now" value="now" checked>
+                      <label class="form-check-label" for="publish-now">Publish now</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                      <input class="form-check-input" type="radio" name="publish-option" id="publish-schedule" value="schedule">
+                      <label class="form-check-label" for="publish-schedule">Schedule for later</label>
+                    </div>
+                  </div>
+                  
+                  <div id="schedule-options" class="mb-4 d-none">
+                    <div class="row">
+                      <div class="col-md-6 mb-3">
+                        <label for="schedule-date" class="form-label">Date</label>
+                        <input type="date" class="form-control" id="schedule-date">
+                      </div>
+                      <div class="col-md-6 mb-3">
+                        <label for="schedule-time" class="form-label">Time</label>
+                        <input type="time" class="form-control" id="schedule-time">
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div class="mb-3">
+                    <label for="post-status" class="form-label">Post Status</label>
+                    <select class="form-select" id="post-status">
+                      <option value="published">Published</option>
+                      <option value="draft" selected>Draft</option>
+                      <option value="scheduled">Scheduled</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="card mt-4">
+                <div class="card-header">
+                  <h5 class="mb-0">Post Summary</h5>
+                </div>
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <p><strong>Post Title:</strong> <span id="summary-title">Your Post Title</span></p>
+                      <p><strong>Platforms:</strong> <span id="summary-platforms">Instagram</span></p>
+                      <p><strong>Status:</strong> <span id="summary-status">Draft</span></p>
+                      <p><strong>Schedule:</strong> <span id="summary-schedule">Not scheduled</span></p>
+                    </div>
+                    <div class="col-md-6">
+                      <p><strong>Content Type:</strong> <span id="summary-type">Regular Post</span></p>
+                      <p><strong>Template:</strong> <span id="summary-template">Standard</span></p>
+                      <p><strong>Created On:</strong> <span id="summary-created">[Current Date]</span></p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-4">
+              <div class="card">
+                <div class="card-header">
+                  <h5 class="mb-0">Publishing Tips</h5>
+                </div>
+                <div class="card-body">
+                  <div class="mb-3">
+                    <h6><i class="bi bi-clock me-2"></i>Best Times to Post</h6>
+                    <ul class="text-muted">
+                      <li>Instagram: Weekdays between 11am-1pm</li>
+                      <li>Facebook: Weekdays between 1pm-3pm</li>
+                      <li>Twitter: Weekdays between 9am-11am</li>
+                      <li>LinkedIn: Tuesdays, Wednesdays, and Thursdays</li>
+                    </ul>
+                  </div>
+                  
+                  <div class="mb-3">
+                    <h6><i class="bi bi-lightbulb me-2"></i>Quick Tips</h6>
+                    <ul class="text-muted">
+                      <li>Use 5-10 relevant hashtags for Instagram</li>
+                      <li>Keep Facebook posts under 80 characters for more engagement</li>
+                      <li>Include a clear call-to-action</li>
+                      <li>Post consistently to build audience engagement</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="row mt-4">
+            <div class="col-12 d-flex justify-content-between">
+              <button class="btn btn-outline-primary prev-step">Previous</button>
+              <button class="btn btn-success" id="create-post-btn">Create Post</button>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
+  </main>
 
-  <footer class="py-4 bg-dark mt-auto">
+  <!-- Footer -->
+  <footer class="bg-dark text-white py-4 mt-5">
     <div class="container">
-      <p class="m-0 text-center text-white">Copyright &copy; OmuMediaKit 2025</p>
+      <div class="row">
+        <div class="col-md-6">
+          <p class="mb-0">© OmuMediaKit 2024. All rights reserved.</p>
+        </div>
+        <div class="col-md-6 text-md-end">
+          <a href="#" class="text-white me-3">Terms</a>
+          <a href="#" class="text-white me-3">Privacy</a>
+          <a href="#" class="text-white">Support</a>
+        </div>
+      </div>
     </div>
   </footer>
 
+  <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
   <script src="js/create-post.js"></script>
 </body>
