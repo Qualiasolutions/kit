@@ -10,14 +10,15 @@ document.addEventListener('DOMContentLoaded', function() {
     return;
   }
 
-  // API Endpoints
-  const API_URL = window.location.hostname === 'localhost' ? 'http://localhost:5000/api' : '/api';
-  const TEMPLATES_ENDPOINT = `${API_URL}/ai-posts/templates`;
-  const BRANDING_ENDPOINT = `${API_URL}/ai-posts/detect-branding`;
-  const CONTENT_ENDPOINT = `${API_URL}/ai-posts/generate-content`;
-  const PREVIEW_ENDPOINT = `${API_URL}/ai-posts/preview-template`;
-  const CREATE_POST_ENDPOINT = `${API_URL}/ai-posts/create`;
-  const PROCESS_IMAGE_ENDPOINT = `${API_URL}/ai-posts/process-image`;
+  // API Endpoints - Use relative paths for all environments
+  const API_URL = '/api';
+  const TEMPLATES_ENDPOINT = `${API_URL}/templates`;
+  const BUSINESS_PROFILE_ENDPOINT = `${API_URL}/profile`;
+  const POSTS_GENERATE_ENDPOINT = `${API_URL}/posts/generate`;
+  const POSTS_HASHTAGS_ENDPOINT = `${API_URL}/posts/hashtags`;
+  const POSTS_CALENDAR_ENDPOINT = `${API_URL}/posts/calendar`;
+  const POSTS_BIO_ENDPOINT = `${API_URL}/posts/bio`;
+  const POSTS_ENDPOINT = `${API_URL}/posts`;
 
   // Current step
   let currentStep = 1;
@@ -355,7 +356,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Load business profile
   async function loadBusinessProfile() {
     try {
-      const response = await fetch(BRANDING_ENDPOINT, {
+      const response = await fetch(BUSINESS_PROFILE_ENDPOINT, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -475,7 +476,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     try {
       // Call API to generate content
-      const response = await fetch(CONTENT_ENDPOINT, {
+      const response = await fetch(POSTS_GENERATE_ENDPOINT, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -607,7 +608,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     try {
       // Call API to create post
-      const response = await fetch(CREATE_POST_ENDPOINT, {
+      const response = await fetch(POSTS_ENDPOINT, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -805,16 +806,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Helper function to generate AI content
     async function generateAIContent(topic, platform, contentType, tone) {
       try {
-        // API base URL
-        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-          ? '' // Empty for local development (relative path)
-          : 'https://kit-lime.vercel.app';
-          
         // Get token
         const token = localStorage.getItem('token');
         
         // Call the API to generate content
-        const response = await fetch(`${API_URL}/api/posts/generate`, {
+        const response = await fetch(POSTS_GENERATE_ENDPOINT, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -851,16 +847,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Helper function to generate hashtags
     async function generateHashtags(content) {
       try {
-        // API base URL
-        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-          ? '' // Empty for local development (relative path)
-          : 'https://kit-lime.vercel.app';
-          
         // Get token
         const token = localStorage.getItem('token');
         
         // Call the API to generate hashtags
-        const response = await fetch(`${API_URL}/api/posts/hashtags`, {
+        const response = await fetch(POSTS_HASHTAGS_ENDPOINT, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -894,11 +885,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Helper function to generate content calendar
     async function generateContentCalendar(topic, platform, tone) {
       try {
-        // API base URL
-        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-          ? '' // Empty for local development (relative path)
-          : 'https://kit-lime.vercel.app';
-          
         // Get token
         const token = localStorage.getItem('token');
         
@@ -908,7 +894,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const year = date.getFullYear();
         
         // Call the API to generate content calendar
-        const response = await fetch(`${API_URL}/api/posts/calendar`, {
+        const response = await fetch(POSTS_CALENDAR_ENDPOINT, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -932,39 +918,23 @@ document.addEventListener('DOMContentLoaded', function() {
           throw new Error(data.error || 'Error generating content calendar');
         }
         
-        // Format the calendar as text for the content area
-        const calendarText = formatCalendarAsText(data.data);
-        
-        return {
-          title: `Content Calendar: ${month} ${year}`,
-          content: calendarText,
-          hashtags: []
-        };
+        return data.data;
       } catch (error) {
         console.error('Error generating content calendar:', error);
         
         // If in development mode or API is unavailable, use mock data
-        return {
-          title: `Content Calendar: ${new Date().toLocaleString('default', { month: 'long' })} ${new Date().getFullYear()}`,
-          content: `Week 1:\n- Monday: Share a customer testimonial\n- Wednesday: Industry tips and tricks\n- Friday: Behind-the-scenes content\n\nWeek 2:\n- Monday: Product showcase\n- Wednesday: How-to guide\n- Friday: User-generated content\n\nWeek 3:\n- Monday: Industry news roundup\n- Wednesday: Team member spotlight\n- Friday: Weekend promotion\n\nWeek 4:\n- Monday: Case study\n- Wednesday: FAQ session\n- Friday: Upcoming events or announcements`,
-          hashtags: []
-        };
+        return generateMockContentCalendar(topic, platform);
       }
     }
     
     // Helper function to generate profile bio
     async function generateProfileBio(topic, platform, tone) {
       try {
-        // API base URL
-        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-          ? '' // Empty for local development (relative path)
-          : 'https://kit-lime.vercel.app';
-          
         // Get token
         const token = localStorage.getItem('token');
         
         // Call the API to generate bio
-        const response = await fetch(`${API_URL}/api/posts/bio`, {
+        const response = await fetch(POSTS_BIO_ENDPOINT, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -1004,41 +974,6 @@ document.addEventListener('DOMContentLoaded', function() {
           hashtags: []
         };
       }
-    }
-    
-    // Helper function to format calendar as text
-    function formatCalendarAsText(calendar) {
-      if (!calendar || !calendar.posts || !Array.isArray(calendar.posts)) {
-        return 'No calendar data available.';
-      }
-      
-      // Group posts by week
-      const postsByWeek = {};
-      
-      calendar.posts.forEach(post => {
-        const date = new Date(post.date);
-        const weekNumber = Math.ceil(date.getDate() / 7);
-        
-        if (!postsByWeek[weekNumber]) {
-          postsByWeek[weekNumber] = [];
-        }
-        
-        const dayName = date.toLocaleString('en-US', { weekday: 'long' });
-        const formattedDate = date.toLocaleString('en-US', { month: 'short', day: 'numeric' });
-        
-        postsByWeek[weekNumber].push(
-          `- ${dayName} (${formattedDate}): ${post.platform} - ${post.contentType} - ${post.topic}\n  ${post.description}`
-        );
-      });
-      
-      // Format the text
-      let calendarText = '';
-      
-      Object.keys(postsByWeek).sort().forEach(week => {
-        calendarText += `Week ${week}:\n${postsByWeek[week].join('\n\n')}\n\n`;
-      });
-      
-      return calendarText;
     }
     
     // Helper function to display hashtags
@@ -1352,66 +1287,44 @@ document.addEventListener('DOMContentLoaded', function() {
    * Load available templates from the API
    */
   async function loadTemplates() {
-    const templateContainer = document.getElementById('templateContainer');
-    if (!templateContainer) return;
-    
-    // Clear existing templates
-    templateContainer.innerHTML = '<div class="text-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div><p class="mt-3">Loading templates...</p></div>';
-    
     try {
+      // Show loading state
+      const templateContainer = document.querySelector('#templateContainer');
+      if (templateContainer) {
+        templateContainer.innerHTML = `
+          <div class="text-center my-5">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-3">Loading templates...</p>
+          </div>
+        `;
+      }
+      
       // Fetch templates from API
-      const response = await fetch('/api/templates');
+      const response = await fetch(TEMPLATES_ENDPOINT, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       
       if (!response.ok) {
         throw new Error('Failed to load templates');
       }
       
       const data = await response.json();
-      const templates = data.data;
       
-      // Clear loading indicator
-      templateContainer.innerHTML = '';
-      
-      if (templates.length === 0) {
-        templateContainer.innerHTML = '<div class="alert alert-info">No templates available.</div>';
-        return;
+      if (data.success && data.data) {
+        renderTemplates(data.data);
+      } else {
+        throw new Error('No templates found');
       }
-      
-      // Create template cards
-      templates.forEach(template => {
-        const templateCard = document.createElement('div');
-        templateCard.className = 'col-md-4 mb-4';
-        templateCard.innerHTML = `
-          <div class="card template-card h-100" data-template-id="${template.id}">
-            <div class="card-header d-flex justify-content-between align-items-center">
-              <h5 class="card-title mb-0">${template.name}</h5>
-            </div>
-            <div class="card-body">
-              <p class="card-text">${template.description}</p>
-              <div class="template-preview mb-3">
-                <img src="${template.preview || 'img/placeholder-template.png'}" alt="${template.name}" class="img-fluid">
-              </div>
-              <div class="d-grid">
-                <button class="btn btn-primary select-template" data-template-id="${template.id}">Use Template</button>
-              </div>
-            </div>
-          </div>
-        `;
-        
-        templateContainer.appendChild(templateCard);
-        
-        // Add event listener to the button
-        const selectButton = templateCard.querySelector('.select-template');
-        selectButton.addEventListener('click', () => selectTemplate(template.id));
-      });
     } catch (error) {
       console.error('Error loading templates:', error);
-      templateContainer.innerHTML = '<div class="alert alert-danger">Failed to load templates. Please try again later.</div>';
+      showAlert('Error loading templates. Using default templates.', 'warning');
       
-      // If in development mode, add mock templates
-      if (localStorage.getItem('devMode') === 'true') {
-        createMockTemplates();
-      }
+      // Fallback to default templates
+      renderTemplates(getFallbackTemplates());
     }
   }
 

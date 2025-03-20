@@ -1,12 +1,13 @@
-// Local Authentication Service
+// Local Authentication and Storage Service
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const fs = require('fs');
 const path = require('path');
 const localStorageService = require('../services/localStorageService');
 
-// JWT secret key - in a real app, store this in environment variables
-const JWT_SECRET = process.env.JWT_SECRET || 'your-jwt-secret-key-change-this-in-production';
+// JWT secret key from environment variables
+const JWT_SECRET = process.env.JWT_SECRET || '
+JWT_SECRET=';
 const JWT_EXPIRE = process.env.JWT_EXPIRE || '7d';
 
 // Authentication service
@@ -51,33 +52,54 @@ const auth = {
   },
   
   /**
-   * Get user by email
+   * Login user with email/password
    * @param {string} email - User email
-   * @returns {Promise<Object|null>} User data or null if not found
+   * @param {string} password - User password
+   * @returns {Promise<Object>} User data and token
    */
-  async getUserByEmail(email) {
-    const users = await localStorageService.findData('users', 
-      user => user.email === email);
+  async login(email, password) {
+    // Find user by email
+    const users = await localStorageService.findData('users', user => user.email === email);
     
     if (users.length === 0) {
-      return null;
+      throw new Error('Invalid credentials');
     }
     
+    const user = users[0];
+    
+    // Check password
+    const isMatch = await bcrypt.compare(password, user.password);
+    
+    if (!isMatch) {
+      throw new Error('Invalid credentials');
+    }
+    
+    // Create token
+    const token = await this.createToken(user.id);
+    
     // Don't return the password
-    const { password, ...userWithoutPassword } = users[0];
-    return userWithoutPassword;
+    const { password: pass, ...userWithoutPassword } = user;
+    
+    return {
+      user: userWithoutPassword,
+      token
+    };
   },
   
   /**
-   * Get user by ID
-   * @param {string} uid - User ID
-   * @returns {Promise<Object|null>} User data or null if not found
+   * Get a user by ID
+   * @param {string} userId - User ID
+   * @returns {Promise<Object>} User data
    */
-  async getUser(uid) {
-    const user = await localStorageService.getData('users', uid);
+  async getUser(userId) {
+    if (!userId) {
+      throw new Error('User ID is required');
+    }
+    
+    const user = await localStorageService.getData('users', userId);
     
     if (!user) {
-      return null;
+      throw new Error('User not found');
     }
     
     // Don't return the password
@@ -119,42 +141,6 @@ const auth = {
       }
       throw error;
     }
-  },
-  
-  /**
-   * Login with email and password
-   * @param {string} email - User email
-   * @param {string} password - User password
-   * @returns {Promise<Object>} User data and token
-   */
-  async login(email, password) {
-    // Get all users and find by email
-    const users = await localStorageService.findData('users', 
-      user => user.email === email);
-    
-    if (users.length === 0) {
-      throw new Error('Invalid credentials');
-    }
-    
-    const user = users[0];
-    
-    // Check password
-    const isMatch = await bcrypt.compare(password, user.password);
-    
-    if (!isMatch) {
-      throw new Error('Invalid credentials');
-    }
-    
-    // Create token
-    const token = await this.createToken(user.id);
-    
-    // Don't return the password
-    const { password: pwd, ...userWithoutPassword } = user;
-    
-    return {
-      user: userWithoutPassword,
-      token
-    };
   }
 };
 
@@ -228,19 +214,23 @@ const db = {
       },
       
       /**
-       * Get all documents in collection
-       * @returns {Promise<Array>} Array of document snapshots
+       * Get all documents from collection
+       * @returns {Promise<Array>} Array of documents
        */
       async get() {
         const data = await localStorageService.getAllData(collectionName);
         
         return {
-          docs: data.map(item => ({
-            id: item.id,
-            data: () => item
-          })),
           empty: data.length === 0,
-          size: data.length
+          size: data.length,
+          docs: data.map(doc => ({
+            id: doc.id,
+            data: () => doc,
+            exists: true
+          })),
+          forEach(callback) {
+            this.docs.forEach(callback);
+          }
         };
       },
       
@@ -258,48 +248,12 @@ const db = {
         });
         
         return this.doc(id);
-      },
-      
-      /**
-       * Query collection (basic implementation)
-       * @param {Function} filterFn - Filter function
-       * @returns {Promise<Array>} Filtered documents
-       */
-      async where(field, operator, value) {
-        const data = await localStorageService.getAllData(collectionName);
-        
-        // Simple filtering implementation
-        const filtered = data.filter(item => {
-          if (operator === '==') return item[field] === value;
-          if (operator === '!=') return item[field] !== value;
-          if (operator === '>') return item[field] > value;
-          if (operator === '<') return item[field] < value;
-          if (operator === '>=') return item[field] >= value;
-          if (operator === '<=') return item[field] <= value;
-          if (operator === 'in') return value.includes(item[field]);
-          return false;
-        });
-        
-        return {
-          docs: filtered.map(item => ({
-            id: item.id,
-            data: () => item
-          })),
-          empty: filtered.length === 0,
-          size: filtered.length
-        };
       }
     };
   }
 };
 
-// For compatibility with the rest of the application
-const GoogleAuthProvider = 'google.com';
-const admin = { auth, firestore: db };
-
 module.exports = { 
-  admin, 
   auth, 
-  db, 
-  GoogleAuthProvider
+  db
 }; 

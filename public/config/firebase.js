@@ -4,7 +4,7 @@ class AuthService {
     // API base URL
     this.API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
       ? '' // Empty for local development (relative path)
-      : 'https://kit-lime.vercel.app';
+      : '';
       
     // Local cached user
     this._currentUser = null;
@@ -24,16 +24,6 @@ class AuthService {
         localStorage.removeItem('user');
       }
     }
-  }
-  
-  // Get the current auth instance
-  getAuth() {
-    return this;
-  }
-  
-  // Get the current user
-  get currentUser() {
-    return this._currentUser;
   }
   
   // Register with email/password
@@ -99,34 +89,26 @@ class AuthService {
     };
   }
   
-  // Sign in with Google (popup flow)
-  async signInWithPopup(provider) {
-    // This is a mock implementation without actual Google OAuth
-    // In a real app, you would integrate with Google OAuth client libraries
-    
-    const mockGoogleUser = {
-      uid: 'google-' + Date.now(),
-      email: 'google-user@example.com',
-      displayName: 'Google User',
-      photoURL: 'https://ui-avatars.com/api/?name=Google+User&background=random',
-      getIdToken: async () => 'mock-google-token-' + Math.random().toString(36).substring(2)
-    };
-    
-    return {
-      user: mockGoogleUser
-    };
-  }
-  
   // Sign out
   async signOut() {
+    // Clear local storage
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    
+    // Clear current user
     this._currentUser = null;
+    
+    return true;
   }
   
-  // Check if user is authenticated
-  isAuthenticated() {
-    return !!this._currentUser && !!localStorage.getItem('token');
+  // Get current user
+  getCurrentUser() {
+    return this._currentUser;
+  }
+  
+  // Check if user is signed in
+  isSignedIn() {
+    return this._currentUser !== null;
   }
   
   // Get ID token
@@ -140,8 +122,7 @@ const auth = new AuthService();
 
 // Export everything needed
 export { 
-  auth,
-  GoogleAuthProvider
+  auth
 };
 
 // Mock Google Auth Provider
