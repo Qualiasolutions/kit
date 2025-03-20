@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const hashtagsContainer = document.getElementById('hashtags-container');
   const logoutButton = document.getElementById('logout-btn');
   const alertContainer = document.querySelector('.alert-container');
+  const templatePreviewImage = document.getElementById('template-preview-image');
   
   // Template data - fallback if API fails
   const defaultTemplates = [
@@ -161,7 +162,7 @@ document.addEventListener('DOMContentLoaded', function() {
       templateCard.className = 'col-md-4 mb-4';
       templateCard.innerHTML = `
         <div class="card h-100 template-card" data-template-id="${template.id}">
-          <img src="${template.thumbnailUrl || 'img/placeholder-template.jpg'}" class="card-img-top" alt="${template.name}">
+          <img src="${template.thumbnailUrl || 'img/placeholder-template.jpg'}" class="card-img-top template-thumbnail" alt="${template.name}">
           <div class="card-body">
             <h5 class="card-title">${template.name}</h5>
             <p class="card-text text-muted">${template.description}</p>
@@ -201,11 +202,19 @@ document.addEventListener('DOMContentLoaded', function() {
       <p class="preview-description text-muted">${template.description}</p>
     `;
     
+    // Also update the template preview image in Step 2
+    if (templatePreviewImage) {
+      templatePreviewImage.src = template.thumbnailUrl || 'img/placeholder-template.jpg';
+    }
+    
     // Update state
     selectedTemplate = template;
     
     // Enable next button
     nextButtons[0].disabled = false;
+
+    // Update summary
+    document.getElementById('summary-template').textContent = template.name;
   }
   
   // Update business profile preview
@@ -223,6 +232,11 @@ document.addEventListener('DOMContentLoaded', function() {
   async function generateAIContent() {
     if (!businessProfile) {
       showAlert('danger', 'Please create a business profile first.');
+      return;
+    }
+    
+    if (!selectedTemplate) {
+      showAlert('danger', 'Please select a template first.');
       return;
     }
     
@@ -253,27 +267,29 @@ document.addEventListener('DOMContentLoaded', function() {
           platform,
           contentType,
           tone,
-          businessProfile,
-          templateType: selectedTemplate ? selectedTemplate.type : 'general'
+          templateType: selectedTemplate.type
         })
       });
       
       if (response.ok) {
-        generatedContent = await response.json();
-        displayGeneratedContent(generatedContent);
+        const content = await response.json();
+        displayGeneratedContent(content);
       } else {
-        // Handle API error
-        const error = await response.json();
-        console.error('Generation failed:', error);
-        showAlert('danger', 'Failed to generate content: ' + (error.message || 'Server error'));
+        const errorData = await response.json();
+        console.error('Error generating content:', errorData);
+        showAlert('danger', 'Failed to generate content. Please try again.');
+        
         // Fall back to mock content
-        generateMockContent(topic, platform, contentType, tone);
+        const mockContent = generateMockContent(topic, platform, contentType, tone);
+        displayGeneratedContent(mockContent);
       }
     } catch (error) {
-      console.error('Error generating content:', error);
-      showAlert('danger', 'Failed to connect to the AI service. Using sample content instead.');
+      console.error('Error calling AI service:', error);
+      showAlert('warning', 'Could not connect to the AI service. Using sample content.');
+      
       // Fall back to mock content
-      generateMockContent(topic, platform, contentType, tone);
+      const mockContent = generateMockContent(topic, platform, contentType, tone);
+      displayGeneratedContent(mockContent);
     } finally {
       // Hide loading indicator
       loadingIndicator.classList.add('d-none');
@@ -281,160 +297,139 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
   
-  // Generate mock AI content as fallback
+  // Generate mock content (fallback if API fails)
   function generateMockContent(topic, platform, contentType, tone) {
-    console.log('Generating mock content with:', { topic, platform, contentType, tone });
+    // Default content for different platforms
+    let title = `${tone.charAt(0).toUpperCase() + tone.slice(1)} Post About ${topic}`;
+    let content = '';
+    let hashtags = [];
     
-    // Sample content templates based on type
-    const contentTemplates = {
-      post: {
-        title: `Top Tips for ${topic}`,
-        content: `Looking to improve your ${topic}? Here are some expert tips from our team at ${businessProfile.name}!\n\n1. Start with a clear strategy\n2. Understand your target audience\n3. Create consistent, high-quality content\n4. Engage with your followers regularly\n\nWhat challenges do you face with ${topic}? Let us know in the comments!`,
-        hashtags: [`#${topic.replace(/\s+/g, '')}`, `#${businessProfile.industry.replace(/\s+/g, '')}`, '#tips', '#strategy', '#growth']
-      },
-      carousel: {
-        title: `${topic} Guide: Swipe for Expert Tips`,
-        content: `📊 Our ${topic} guide is here! Swipe through for expert insights.\n\nSlide 1: Understanding ${topic}\nSlide 2: Key strategies for success\nSlide 3: Tools that can help\nSlide 4: Common mistakes to avoid\nSlide 5: How ${businessProfile.name} can help\n\nSave this post for later reference!`,
-        hashtags: [`#${topic.replace(/\s+/g, '')}`, '#guide', '#expertadvice', '#swiperight', '#savethispost']
-      },
-      story: {
-        title: `Quick ${topic} Tip`,
-        content: `Did you know?\n\n${businessProfile.name}'s quick tip for ${topic}:\n\nFocus on consistency rather than perfection. Start small, be regular with your efforts, and gradually scale up as you learn what works for your audience.`,
-        hashtags: [`#${topic.replace(/\s+/g, '')}`, '#quicktip', '#didyouknow']
-      },
-      reel: {
-        title: `${topic} in 60 Seconds`,
-        content: `🎬 ${topic.toUpperCase()} IN 60 SECONDS 🎬\n\nHere's everything you need to know about ${topic} in just one minute!\n\n- Point 1: Start with research\n- Point 2: Create a plan\n- Point 3: Execute consistently\n- Point 4: Measure results\n- Point 5: Adjust and improve\n\nFollow ${businessProfile.name} for more quick tips!`,
-        hashtags: [`#${topic.replace(/\s+/g, '')}`, '#60seconds', '#learnontiktok', '#quicktips']
-      }
-    };
-    
-    // Get the appropriate template
-    const template = contentTemplates[contentType] || contentTemplates.post;
-    
-    // Adapt tone if specified
-    let content = template.content;
-    if (tone === 'professional') {
-      content = content.replace(/!+/g, '.').replace(/\?+/g, '?');
-    } else if (tone === 'casual') {
-      content = content.replace(/\./g, '!').replace(/Did you know\?/g, 'Hey! Did you know?');
-    } else if (tone === 'humorous') {
-      content = `😂 ${content} (And yes, we're serious about this, even though we're making you smile!)`;
+    // Basic content templates based on platform and tone
+    if (platform === 'instagram') {
+      content = `📸 Exciting news about ${topic}! Check out our latest updates. #${topic.replace(/\s+/g, '')}`;
+      hashtags = ['instagram', 'socialmedia', topic.replace(/\s+/g, '')];
+    } else if (platform === 'facebook') {
+      content = `We're excited to share the latest about ${topic}. What do you think? Let us know in the comments!`;
+      hashtags = ['facebook', topic.replace(/\s+/g, '')];
+    } else if (platform === 'twitter' || platform === 'x') {
+      content = `New ${topic} update! Check out what we've been working on. #${topic.replace(/\s+/g, '')}`;
+      hashtags = ['twitter', topic.replace(/\s+/g, '')];
+    } else if (platform === 'linkedin') {
+      content = `Professional insights about ${topic} for our valued network. We'd love to hear your thoughts on this topic.`;
+      hashtags = ['linkedin', 'professional', topic.replace(/\s+/g, '')];
     }
     
-    // Create mock AI response
-    generatedContent = {
-      title: template.title,
-      content: content,
-      hashtags: template.hashtags
-    };
+    // Adjust tone
+    if (tone === 'professional') {
+      content = `We're pleased to announce our latest developments regarding ${topic}. ${content}`;
+    } else if (tone === 'humorous') {
+      content = `You won't believe what happened with our ${topic}! 😂 ${content}`;
+    } else if (tone === 'inspirational') {
+      content = `Achieving greatness with ${topic}! Believe in the power of innovation. ${content}`;
+    }
     
-    displayGeneratedContent(generatedContent);
+    // Adjust for different content types
+    if (contentType === 'carousel') {
+      content = `SWIPE to see more about ${topic}! ➡️\n\n${content}`;
+    } else if (contentType === 'story') {
+      content = `24 HOURS ONLY! ${content}`;
+    } else if (contentType === 'reel') {
+      content = `Watch till the end! 🎬 ${content}`;
+    }
+    
+    return {
+      title,
+      content,
+      hashtags
+    };
   }
   
-  // Display generated content in the UI
+  // Display generated content
   function displayGeneratedContent(content) {
-    // Display in editor
+    // Update editor fields
     document.getElementById('post-title').value = content.title || '';
     document.getElementById('post-content').value = content.content || '';
     
-    // Display hashtags
-    displayHashtags(content.hashtags || []);
-    
-    // Update preview
-    document.getElementById('preview-caption').textContent = content.content || '';
-    
-    // Show generated content
+    // Display generated content
     const generatedContentContainer = document.getElementById('generatedContentContainer');
     generatedContentContainer.innerHTML = `
       <div class="alert alert-success">
-        <h5 class="alert-heading"><i class="bi bi-check-circle-fill me-2"></i>Content Generated Successfully</h5>
-        <p>Your AI-generated content is ready! You can now customize it in the editor.</p>
+        <h5 class="alert-heading"><i class="bi bi-check-circle me-2"></i>Content Generated!</h5>
+        <p>Your AI-generated content is ready. You can edit it in the editor panel.</p>
       </div>
     `;
     
-    // Update summary
-    document.getElementById('summary-title').textContent = content.title || 'Untitled';
+    // Display hashtags
+    if (content.hashtags && content.hashtags.length > 0) {
+      displayHashtags(content.hashtags);
+    }
+    
+    // Update summary fields
+    document.getElementById('summary-title').textContent = content.title || 'Your Post Title';
     document.getElementById('summary-type').textContent = document.getElementById('content-type-select').options[document.getElementById('content-type-select').selectedIndex].text;
-    document.getElementById('summary-template').textContent = selectedTemplate ? selectedTemplate.name : 'Standard';
+    document.getElementById('summary-platforms').textContent = document.getElementById('platform-select').options[document.getElementById('platform-select').selectedIndex].text;
     document.getElementById('summary-created').textContent = new Date().toLocaleDateString();
   }
   
-  // Generate and display hashtags
+  // Generate hashtags based on content
   function generateHashtags() {
-    const postContent = document.getElementById('post-content').value.trim();
-    
-    if (!postContent) {
-      showAlert('warning', 'Please generate or enter post content first.');
+    const contentText = document.getElementById('post-content').value;
+    if (!contentText.trim()) {
+      showAlert('warning', 'Please generate or enter content first');
       return;
     }
     
-    // Extract keywords from content
-    const keywords = extractKeywords(postContent);
-    
-    // Convert keywords to hashtags
-    const hashtags = keywords.map(keyword => `#${keyword.replace(/\s+/g, '')}`);
-    
-    // Add some generic hashtags based on business profile
-    if (businessProfile) {
-      if (businessProfile.industry) {
-        hashtags.push(`#${businessProfile.industry.replace(/\s+/g, '')}`);
-      }
-      
-      if (businessProfile.products && businessProfile.products.length > 0) {
-        const productHashtag = `#${businessProfile.products[0].replace(/\s+/g, '')}`;
-        if (!hashtags.includes(productHashtag)) {
-          hashtags.push(productHashtag);
-        }
-      }
-    }
-    
-    // Add platform-specific hashtags
+    // Extract keywords and generate hashtags
+    const keywords = extractKeywords(contentText);
     const platform = document.getElementById('platform-select').value;
+    
+    // Platform-specific hashtags
+    let platformHashtags = [];
     if (platform === 'instagram') {
-      hashtags.push('#instagood', '#instadaily');
+      platformHashtags = ['instagram', 'instagood', 'photooftheday'];
+    } else if (platform === 'facebook') {
+      platformHashtags = ['facebook', 'share'];
     } else if (platform === 'twitter') {
-      hashtags.push('#trending');
+      platformHashtags = ['twitter', 'trending'];
     } else if (platform === 'linkedin') {
-      hashtags.push('#networking', '#business');
+      platformHashtags = ['linkedin', 'professional', 'networking'];
     }
+    
+    // Combine keywords and platform hashtags
+    const hashtags = [...keywords, ...platformHashtags];
     
     // Display hashtags
     displayHashtags(hashtags);
   }
   
-  // Extract keywords from text
+  // Extract keywords from text for hashtags
   function extractKeywords(text) {
-    // Simple keyword extraction (in a real app, this would be more sophisticated)
-    const words = text.split(/\s+/);
-    const commonWords = ['the', 'and', 'a', 'an', 'in', 'on', 'at', 'with', 'for', 'to', 'of', 'is', 'are'];
+    const words = text.toLowerCase().split(/\s+/);
+    const filteredWords = words.filter(word => 
+      word.length > 4 && 
+      !['about', 'after', 'again', 'before', 'could', 'every', 'first', 'would', 'should', 'their', 'there'].includes(word)
+    );
     
-    // Filter out common words and keep words longer than 3 characters
-    const keywords = words
-      .filter(word => word.length > 3 && !commonWords.includes(word.toLowerCase()))
-      .map(word => word.replace(/[^a-zA-Z0-9]/g, ''));
-    
-    // Remove duplicates and limit to 5 keywords
-    return [...new Set(keywords)].slice(0, 5);
+    // Get unique words and limit to 5
+    return [...new Set(filteredWords)].slice(0, 5).map(word => word.replace(/[^a-z0-9]/g, ''));
   }
   
-  // Display hashtags in the container
+  // Display hashtags in container
   function displayHashtags(hashtags) {
     hashtagsContainer.innerHTML = '';
     
-    hashtags.forEach(hashtag => {
+    hashtags.forEach(tag => {
       const badge = document.createElement('span');
-      badge.className = 'badge bg-light text-primary';
-      badge.textContent = hashtag;
-      
+      badge.className = 'badge bg-primary-light text-primary me-2 mb-2';
+      badge.textContent = `#${tag}`;
       hashtagsContainer.appendChild(badge);
     });
     
-    // Update preview
-    document.getElementById('preview-hashtags').textContent = hashtags.join(' ');
+    // Update preview and summary
+    document.getElementById('summary-title').textContent = document.getElementById('post-title').value || 'Your Post Title';
   }
   
-  // Show an alert message
+  // Show alert message
   function showAlert(type, message) {
     const alert = document.createElement('div');
     alert.className = `alert alert-${type} alert-dismissible fade show`;
@@ -448,13 +443,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Auto-dismiss after 5 seconds
     setTimeout(() => {
       alert.classList.remove('show');
-      setTimeout(() => alert.remove(), 150);
+      setTimeout(() => alert.remove(), 300);
     }, 5000);
   }
   
-  // Navigate to next step
+  // Move to next step
   function nextStep() {
-    if (currentStep < 4) {
+    if (currentStep < 3) {
       // Hide current step
       stepsTabs[currentStep - 1].classList.remove('show', 'active');
       
@@ -467,7 +462,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
   
-  // Navigate to previous step
+  // Move to previous step
   function prevStep() {
     if (currentStep > 1) {
       // Hide current step
@@ -484,9 +479,9 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Update step indicators
   function updateStepIndicators() {
-    // Update step numbers
+    // Update step indicators
     stepIndicators.forEach((indicator, index) => {
-      if (index + 1 === currentStep) {
+      if (index < currentStep) {
         indicator.classList.add('active');
       } else {
         indicator.classList.remove('active');
@@ -495,7 +490,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Update step items
     stepItems.forEach((item, index) => {
-      if (index + 1 === currentStep) {
+      if (index < currentStep) {
         item.classList.add('active');
       } else {
         item.classList.remove('active');
@@ -503,17 +498,17 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Update progress bar
-    const progress = ((currentStep - 1) / 3) * 100;
-    progressBar.style.width = `${progress}%`;
+    const progressPercentage = ((currentStep - 1) / 2) * 100;
+    progressBar.style.width = `${progressPercentage}%`;
   }
   
-  // Handle logout
+  // Logout function
   function logout() {
     localStorage.removeItem('token');
     window.location.href = 'login.html';
   }
   
-  // Setup event listeners
+  // Setup all event listeners
   function setupEventListeners() {
     // Next buttons
     nextButtons.forEach(button => {
@@ -532,117 +527,107 @@ document.addEventListener('DOMContentLoaded', function() {
     generateHashtagsButton.addEventListener('click', generateHashtags);
     
     // Logout button
-    if (logoutButton) {
-      logoutButton.addEventListener('click', logout);
-    }
+    logoutButton.addEventListener('click', logout);
     
-    // Platform select buttons
-    document.querySelectorAll('.platform-btn').forEach(button => {
-      button.addEventListener('click', () => {
-        const platform = button.dataset.platform;
-        
-        if (button.classList.contains('active')) {
-          // Don't allow deselecting the last platform
-          if (selectedPlatforms.length > 1) {
-            button.classList.remove('active');
-            selectedPlatforms = selectedPlatforms.filter(p => p !== platform);
-          }
-        } else {
-          button.classList.add('active');
-          selectedPlatforms.push(platform);
-        }
-        
-        // Update selected platforms display
-        updateSelectedPlatforms();
-      });
-    });
-    
-    // Schedule option
-    document.getElementById('publish-schedule').addEventListener('change', function() {
-      document.getElementById('schedule-options').classList.remove('d-none');
-    });
-    
+    // Schedule options
     document.getElementById('publish-now').addEventListener('change', function() {
       document.getElementById('schedule-options').classList.add('d-none');
+      document.getElementById('summary-schedule').textContent = 'Publish immediately';
+    });
+    
+    document.getElementById('publish-schedule').addEventListener('change', function() {
+      document.getElementById('schedule-options').classList.remove('d-none');
+      updateScheduleSummary();
+    });
+    
+    // Update schedule summary when date/time changes
+    document.getElementById('schedule-date').addEventListener('change', updateScheduleSummary);
+    document.getElementById('schedule-time').addEventListener('change', updateScheduleSummary);
+    
+    // Update post status in summary
+    document.getElementById('post-status').addEventListener('change', function() {
+      document.getElementById('summary-status').textContent = this.options[this.selectedIndex].text;
     });
     
     // Create post button
     document.getElementById('create-post-btn').addEventListener('click', createPost);
     
-    // Post content changes
-    document.getElementById('post-content').addEventListener('input', function() {
-      document.getElementById('preview-caption').textContent = this.value;
-    });
-    
-    // Post title changes
+    // Live preview updates
     document.getElementById('post-title').addEventListener('input', function() {
-      document.getElementById('summary-title').textContent = this.value || 'Untitled';
+      document.getElementById('summary-title').textContent = this.value || 'Your Post Title';
     });
     
-    // Image upload preview
-    document.getElementById('upload-image-btn').addEventListener('click', function() {
-      const fileInput = document.getElementById('image-upload');
-      if (fileInput.files && fileInput.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          document.getElementById('preview-image').src = e.target.result;
-        };
-        reader.readAsDataURL(fileInput.files[0]);
-      }
+    document.getElementById('post-content').addEventListener('input', function() {
+      // Update preview if needed
     });
   }
   
-  // Update selected platforms
-  function updateSelectedPlatforms() {
-    const platformsContainer = document.querySelector('.selected-platforms');
-    platformsContainer.innerHTML = '';
+  // Update schedule summary
+  function updateScheduleSummary() {
+    const date = document.getElementById('schedule-date').value;
+    const time = document.getElementById('schedule-time').value;
     
-    selectedPlatforms.forEach(platform => {
-      const badge = document.createElement('span');
-      badge.className = 'badge bg-primary me-1';
-      badge.textContent = platform.charAt(0).toUpperCase() + platform.slice(1);
-      platformsContainer.appendChild(badge);
-    });
-    
-    // Update summary
-    document.getElementById('summary-platforms').textContent = selectedPlatforms
-      .map(p => p.charAt(0).toUpperCase() + p.slice(1))
-      .join(', ');
+    if (date && time) {
+      const scheduleDateObj = new Date(`${date}T${time}`);
+      document.getElementById('summary-schedule').textContent = scheduleDateObj.toLocaleString();
+      document.getElementById('post-status').value = 'scheduled';
+      document.getElementById('summary-status').textContent = 'Scheduled';
+    } else {
+      document.getElementById('summary-schedule').textContent = 'Incomplete schedule information';
+    }
   }
   
   // Create post
   async function createPost() {
+    // Validate required fields
     const title = document.getElementById('post-title').value.trim();
     const content = document.getElementById('post-content').value.trim();
+    const status = document.getElementById('post-status').value;
     
     if (!title || !content) {
-      showAlert('warning', 'Please provide a title and content for your post.');
+      showAlert('warning', 'Please fill in both title and content fields');
       return;
     }
     
-    // Get status
-    const status = document.getElementById('post-status').value;
+    if (!selectedTemplate) {
+      showAlert('warning', 'Please select a template');
+      return;
+    }
     
-    // Get schedule
-    let scheduledDate = null;
+    // Get schedule info if scheduled
+    let scheduledAt = null;
     if (document.getElementById('publish-schedule').checked) {
       const date = document.getElementById('schedule-date').value;
       const time = document.getElementById('schedule-time').value;
+      
       if (date && time) {
-        scheduledDate = new Date(`${date}T${time}`);
+        scheduledAt = new Date(`${date}T${time}`).toISOString();
+      } else if (status === 'scheduled') {
+        showAlert('warning', 'Please set both date and time for scheduling');
+        return;
       }
     }
     
-    // Prepare post data
+    // Get hashtags
+    const hashtagElements = hashtagsContainer.querySelectorAll('.badge');
+    const hashtags = Array.from(hashtagElements).map(el => el.textContent.substring(1)); // Remove # prefix
+    
+    // Create post object
     const postData = {
       title,
       content,
-      platforms: selectedPlatforms,
-      templateId: selectedTemplate ? selectedTemplate.id : null,
       status,
-      scheduledDate: scheduledDate ? scheduledDate.toISOString() : null,
-      hashtags: Array.from(hashtagsContainer.children).map(el => el.textContent)
+      templateId: selectedTemplate.id,
+      templateImage: selectedTemplate.thumbnailUrl,
+      platform: document.getElementById('platform-select').value,
+      contentType: document.getElementById('content-type-select').value,
+      hashtags,
+      scheduledAt
     };
+    
+    // Show loading
+    document.getElementById('create-post-btn').disabled = true;
+    document.getElementById('create-post-btn').innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Creating...';
     
     try {
       const token = localStorage.getItem('token');
@@ -659,14 +644,18 @@ document.addEventListener('DOMContentLoaded', function() {
         showAlert('success', 'Post created successfully!');
         setTimeout(() => {
           window.location.href = 'dashboard.html';
-        }, 2000);
+        }, 1500);
       } else {
-        const error = await response.json();
-        showAlert('danger', 'Failed to create post: ' + (error.message || 'Server error'));
+        const errorData = await response.json();
+        console.error('Error creating post:', errorData);
+        showAlert('danger', `Failed to create post: ${errorData.message || 'Unknown error'}`);
       }
     } catch (error) {
-      console.error('Error creating post:', error);
-      showAlert('danger', 'Could not connect to the server. Please try again later.');
+      console.error('Error calling API:', error);
+      showAlert('danger', 'Could not connect to the server. Please try again.');
+    } finally {
+      document.getElementById('create-post-btn').disabled = false;
+      document.getElementById('create-post-btn').textContent = 'Create Post';
     }
   }
   

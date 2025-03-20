@@ -164,6 +164,13 @@
       width: 3rem;
       height: 3rem;
     }
+    
+    .template-thumbnail {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 8px 8px 0 0;
+    }
   </style>
 </head>
 <body>
@@ -209,25 +216,21 @@
         <div class="col-12">
           <div class="steps-progress">
             <div class="row justify-content-center">
-              <div class="col-3 col-md-2 step-item active">
+              <div class="col-4 col-md-3 step-item active">
                 <div class="step active">1</div>
                 <div class="step-title">Choose Template</div>
               </div>
-              <div class="col-3 col-md-2 step-item">
+              <div class="col-4 col-md-3 step-item">
                 <div class="step">2</div>
                 <div class="step-title">Generate Content</div>
               </div>
-              <div class="col-3 col-md-2 step-item">
+              <div class="col-4 col-md-3 step-item">
                 <div class="step">3</div>
-                <div class="step-title">Customize</div>
-              </div>
-              <div class="col-3 col-md-2 step-item">
-                <div class="step">4</div>
                 <div class="step-title">Schedule</div>
               </div>
             </div>
             <div class="progress mt-3" style="height: 5px;">
-              <div class="progress-bar bg-primary" role="progressbar" style="width: 25%"></div>
+              <div class="progress-bar bg-primary" role="progressbar" style="width: 33%"></div>
             </div>
           </div>
         </div>
@@ -244,7 +247,7 @@
                   <h5 class="mb-0">Select a Template</h5>
                 </div>
                 <div class="card-body">
-                  <p class="text-muted mb-4">Choose a template that best fits your content needs.</p>
+                  <p class="text-muted mb-4">Choose a template that best fits your content needs. The template image will be used as your post visual.</p>
                   
                   <div class="row" id="templateContainer">
                     <!-- Templates will be loaded here -->
@@ -291,7 +294,7 @@
                   <h5 class="mb-0">Generate Content</h5>
                 </div>
                 <div class="card-body">
-                  <p class="text-muted mb-4">Our AI will generate engaging content based on your business profile.</p>
+                  <p class="text-muted mb-4">Our AI will generate engaging content based on your business profile and chosen template.</p>
                   
                   <form id="generate-content-form">
                     <div class="mb-3">
@@ -383,89 +386,10 @@
                       <!-- Hashtags will appear here -->
                     </div>
                   </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div class="row mt-4">
-            <div class="col-12 d-flex justify-content-between">
-              <button class="btn btn-outline-primary prev-step">Previous</button>
-              <button class="btn btn-primary next-step">Next: Customize</button>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Step 3: Customize -->
-        <div class="tab-pane fade" id="step3Content">
-          <div class="row">
-            <div class="col-md-8">
-              <div class="card">
-                <div class="card-header">
-                  <h5 class="mb-0">Customize Your Post</h5>
-                </div>
-                <div class="card-body">
-                  <p class="text-muted mb-4">Add visuals and fine-tune your content.</p>
                   
-                  <div class="mb-4">
-                    <label class="form-label">Upload Image</label>
-                    <div class="input-group mb-3">
-                      <input type="file" class="form-control" id="image-upload" accept="image/*">
-                      <button class="btn btn-outline-secondary" type="button" id="upload-image-btn">Upload</button>
-                    </div>
-                    <div class="form-text">Recommended size: 1080x1080px (1:1 ratio) for regular posts.</div>
-                  </div>
-                  
-                  <div class="mb-4">
-                    <label class="form-label">Target Platforms</label>
-                    <div class="d-flex flex-wrap">
-                      <button class="btn platform-btn active" data-platform="instagram">
-                        <i class="bi bi-instagram platform-icon"></i>Instagram
-                      </button>
-                      <button class="btn platform-btn" data-platform="facebook">
-                        <i class="bi bi-facebook platform-icon"></i>Facebook
-                      </button>
-                      <button class="btn platform-btn" data-platform="twitter">
-                        <i class="bi bi-twitter platform-icon"></i>Twitter/X
-                      </button>
-                      <button class="btn platform-btn" data-platform="linkedin">
-                        <i class="bi bi-linkedin platform-icon"></i>LinkedIn
-                      </button>
-                    </div>
-                    <div class="mt-2">
-                      <span class="text-muted">Selected: </span>
-                      <div class="selected-platforms d-inline-block">
-                        <span class="badge bg-primary me-1">Instagram</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div class="col-md-4">
-              <div class="card preview-card">
-                <div class="card-header">
-                  <h5 class="mb-0">Post Preview</h5>
-                </div>
-                <div class="card-body">
-                  <div class="preview-card mb-3">
-                    <div class="preview-card-header">
-                      <img src="img/business-logo.png" alt="Business Logo" width="32" height="32" class="rounded-circle me-2 business-logo">
-                      <div>
-                        <div class="fw-bold business-name">Your Business</div>
-                        <div class="text-muted" style="font-size: 0.8rem;">Just now</div>
-                      </div>
-                    </div>
-                    <div class="preview-image-container">
-                      <img src="img/placeholder-image.jpg" alt="Post Preview" class="preview-image img-fluid" id="preview-image">
-                    </div>
-                    <div class="preview-card-body">
-                      <p class="caption-preview" id="preview-caption">Your post content will appear here...</p>
-                      <div class="text-muted" id="preview-hashtags" style="font-size: 0.85rem;">
-                        #yourbusiness #socialmedia
-                      </div>
-                    </div>
+                  <div class="preview-image-container text-center mt-4 mb-3">
+                    <h6 class="mb-2">Template Image Preview</h6>
+                    <img src="img/placeholder-image.jpg" alt="Template Preview" class="img-fluid rounded" id="template-preview-image" style="max-height: 200px;">
                   </div>
                 </div>
               </div>
@@ -480,8 +404,8 @@
           </div>
         </div>
         
-        <!-- Step 4: Schedule -->
-        <div class="tab-pane fade" id="step4Content">
+        <!-- Step 3: Schedule -->
+        <div class="tab-pane fade" id="step3Content">
           <div class="row">
             <div class="col-md-8">
               <div class="card">
