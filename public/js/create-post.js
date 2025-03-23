@@ -22,42 +22,42 @@ document.addEventListener('DOMContentLoaded', function() {
       name: 'Product Showcase',
       description: 'Perfect for highlighting features of products or services',
       type: 'product',
-      thumbnailUrl: 'img/templates/product-showcase.jpg'
+      thumbnailUrl: 'img/templates/promotional.jpg'
     },
     {
       id: 'template2',
       name: 'Testimonial',
       description: 'Highlight customer reviews and feedback',
       type: 'testimonial',
-      thumbnailUrl: 'img/templates/testimonial.jpg'
+      thumbnailUrl: 'img/templates/event.jpg'
     },
     {
       id: 'template3',
       name: 'Industry Tip',
       description: 'Share valuable insights and tips related to your industry',
       type: 'tip',
-      thumbnailUrl: 'img/templates/industry-tip.jpg'
+      thumbnailUrl: 'img/templates/news.jpg'
     },
     {
       id: 'template4',
       name: 'Promotional Offer',
       description: 'Announce sales, discounts, and special offers',
       type: 'promotion',
-      thumbnailUrl: 'img/templates/promo-offer.jpg'
+      thumbnailUrl: 'img/templates/promotional.jpg'
     },
     {
       id: 'template5',
       name: 'Event Announcement',
       description: 'Promote upcoming events, webinars, or launches',
       type: 'event',
-      thumbnailUrl: 'img/templates/event-announcement.jpg'
+      thumbnailUrl: 'img/templates/event.jpg'
     },
     {
       id: 'template6',
       name: 'Company News',
       description: 'Share updates about your business or team',
       type: 'news',
-      thumbnailUrl: 'img/templates/company-news.jpg'
+      thumbnailUrl: 'img/templates/news.jpg'
     }
   ];
 
@@ -162,7 +162,7 @@ document.addEventListener('DOMContentLoaded', function() {
       templateCard.className = 'col-md-4 mb-4';
       templateCard.innerHTML = `
         <div class="card h-100 template-card" data-template-id="${template.id}">
-          <img src="${template.thumbnailUrl || 'img/placeholder-template.jpg'}" class="card-img-top template-thumbnail" alt="${template.name}">
+          <img src="${template.thumbnailUrl || 'img/placeholder-template.png'}" class="card-img-top template-thumbnail" alt="${template.name}">
           <div class="card-body">
             <h5 class="card-title">${template.name}</h5>
             <p class="card-text text-muted">${template.description}</p>
@@ -197,14 +197,14 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Update preview
     document.querySelector('#templatePreview').innerHTML = `
-      <img src="${template.thumbnailUrl || 'img/placeholder-template.jpg'}" alt="${template.name}" class="preview-image img-fluid mb-3">
+      <img src="${template.thumbnailUrl || 'img/placeholder-template.png'}" alt="${template.name}" class="preview-image img-fluid mb-3">
       <h5 class="preview-title">${template.name}</h5>
       <p class="preview-description text-muted">${template.description}</p>
     `;
     
     // Also update the template preview image in Step 2
     if (templatePreviewImage) {
-      templatePreviewImage.src = template.thumbnailUrl || 'img/placeholder-template.jpg';
+      templatePreviewImage.src = template.thumbnailUrl || 'img/placeholder-template.png';
     }
     
     // Update state
@@ -267,7 +267,8 @@ document.addEventListener('DOMContentLoaded', function() {
           platform,
           contentType,
           tone,
-          templateType: selectedTemplate.type
+          templateType: selectedTemplate.type,
+          templateImage: selectedTemplate.thumbnailUrl
         })
       });
       
@@ -277,7 +278,7 @@ document.addEventListener('DOMContentLoaded', function() {
       } else {
         const errorData = await response.json();
         console.error('Error generating content:', errorData);
-        showAlert('danger', 'Failed to generate content. Please try again.');
+        showAlert('warning', 'Failed to generate content from API. Using example content instead.');
         
         // Fall back to mock content
         const mockContent = generateMockContent(topic, platform, contentType, tone);
@@ -335,6 +336,22 @@ document.addEventListener('DOMContentLoaded', function() {
       content = `24 HOURS ONLY! ${content}`;
     } else if (contentType === 'reel') {
       content = `Watch till the end! 🎬 ${content}`;
+    }
+    
+    // Add template type customization
+    const templateType = selectedTemplate ? selectedTemplate.type : 'general';
+    if (templateType === 'product') {
+      content = `PRODUCT SPOTLIGHT: ${content}`;
+    } else if (templateType === 'testimonial') {
+      content = `CUSTOMER TESTIMONIAL: "This ${topic} changed our business!" - Happy Customer\n\n${content}`;
+    } else if (templateType === 'tip') {
+      content = `PRO TIP: When dealing with ${topic}, always remember to plan ahead!\n\n${content}`;
+    } else if (templateType === 'promotion') {
+      content = `🔥 SPECIAL OFFER 🔥\nLimited time deal on ${topic}!\n\n${content}`;
+    } else if (templateType === 'event') {
+      content = `📅 UPCOMING EVENT: Join us for a special ${topic} discussion!\n\n${content}`;
+    } else if (templateType === 'news') {
+      content = `BREAKING: Important ${topic} update you need to know!\n\n${content}`;
     }
     
     return {
