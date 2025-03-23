@@ -6,12 +6,120 @@
   <title>Business Profile Setup - OmuMediaKit</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
+  <style>
+    :root {
+      --primary: #00897b;
+      --primary-light: #4ebaaa;
+      --primary-dark: #005b4f;
+      --secondary: #26a69a;
+      --accent: #4db6ac;
+      --light-bg: #f5f9f8;
+      --dark-text: #263238;
+      --card-shadow: 0 8px 24px rgba(0, 139, 123, 0.08);
+    }
+    
+    body {
+      background-color: var(--light-bg);
+      color: var(--dark-text);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+    }
+    
+    .step {
+      display: none;
+    }
+    
+    .step.active {
+      display: block;
+    }
+    
+    .form-section {
+      margin-bottom: 30px;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .ai-action {
+      background-color: rgba(0, 137, 123, 0.1);
+      border-left: 3px solid var(--primary);
+      padding: 15px;
+      border-radius: 4px;
+      margin: 20px 0;
+    }
+    
+    .ai-action i {
+      color: var(--primary);
+    }
+    
+    .step-pills {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 30px;
+    }
+    
+    .step-pill {
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      background-color: #e0e0e0;
+      color: #757575;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 5px;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    
+    .step-pill.active {
+      background-color: var(--primary);
+      color: white;
+    }
+    
+    .step-pill.completed {
+      background-color: var(--primary-light);
+      color: white;
+    }
+    
+    .platform-option, .audience-option, .objective-option, .voice-option {
+      padding: 15px;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .platform-option:hover, .audience-option:hover, .objective-option:hover, .voice-option:hover {
+      border-color: var(--primary);
+      background-color: rgba(0, 137, 123, 0.05);
+    }
+    
+    .platform-option.selected, .audience-option.selected, .objective-option.selected, .voice-option.selected {
+      border-color: var(--primary);
+      background-color: rgba(0, 137, 123, 0.1);
+    }
+    
+    .color-preview {
+      width: 100%;
+      height: 50px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+  </style>
 </head>
 <body>
-  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
     <div class="container">
-      <a class="navbar-brand" href="dashboard.html">OmuMediaKit</a>
+      <a class="navbar-brand fw-bold" href="dashboard.html">
+        <img src="img/logo.png" alt="OmuMediaKit" height="40">
+      </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -35,325 +143,425 @@
     <div class="row justify-content-center">
       <div class="col-lg-8">
         <div class="card shadow">
-          <div class="card-body p-5">
+          <div class="card-body p-4 p-md-5">
             <h2 class="text-center mb-4">Business Profile Setup</h2>
+            <p class="text-center text-muted mb-4">Create your business profile to get the most out of OmuMediaKit's AI-powered content creation.</p>
+            
             <div id="alert-container"></div>
             
+            <!-- Step Pills -->
+            <div class="step-pills">
+              <div class="step-pill active" data-step="1">1</div>
+              <div class="step-pill" data-step="2">2</div>
+              <div class="step-pill" data-step="3">3</div>
+              <div class="step-pill" data-step="4">4</div>
+              <div class="step-pill" data-step="5">5</div>
+              <div class="step-pill" data-step="6">6</div>
+              <div class="step-pill" data-step="7">7</div>
+            </div>
+            
+            <!-- Progress bar -->
+            <div class="progress mb-4">
+              <div class="progress-bar bg-primary" role="progressbar" style="width: 14.28%;" aria-valuenow="14.28" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+            
             <form id="profile-form" class="needs-validation" novalidate>
-              <!-- Progress bar -->
-              <div class="progress mb-4">
-                <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">Step 1 of 8</div>
-              </div>
-              
-              <!-- Step 1: Business Name -->
-              <div class="step" id="step-1">
-                <h4 class="mb-3">Choose Account</h4>
-                <div class="mb-3">
-                  <label for="business-name" class="form-label">Business Name</label>
-                  <input type="text" class="form-control" id="business-name" required>
-                </div>
-                <div class="d-flex justify-content-end">
-                  <button type="button" class="btn btn-primary next-step">Next</button>
-                </div>
-              </div>
-              
-              <!-- Step 2: Business Type Selection -->
-              <div class="step d-none" id="step-2">
-                <h4 class="mb-3">Business Type</h4>
-                <p class="text-muted">Select your business type for niche-specific templates</p>
-                <div class="mb-3">
-                  <select class="form-select" id="business-type" required>
-                    <option value="" selected disabled>Select business type</option>
-                    <option value="car-dealership">Car Dealership</option>
-                    <option value="nail-salon">Nail Salon</option>
-                    <option value="restaurant">Restaurant</option>
-                    <option value="fitness-trainer">Fitness Trainer</option>
+              <!-- Step 1: Select Industry & Niche -->
+              <div class="step active" id="step-1">
+                <h4 class="mb-2">Step 1/7: Select Industry & Niche</h4>
+                <p class="text-muted mb-4">Knowing your industry and niche helps the AI generate content that aligns with your business type and audience.</p>
+                
+                <div class="mb-4">
+                  <label for="industry-select" class="form-label">Choose an Industry</label>
+                  <select class="form-select mb-3" id="industry-select" required>
+                    <option value="" selected disabled>Select your industry</option>
+                    <option value="automotive">Automotive</option>
                     <option value="real-estate">Real Estate</option>
-                    <option value="retail">Retail Store</option>
-                    <option value="spa-wellness">Spa & Wellness</option>
-                    <option value="consulting">Consulting Business</option>
+                    <option value="e-commerce">E-commerce</option>
+                    <option value="health-wellness">Health & Wellness</option>
+                    <option value="social-media">Social Media</option>
+                    <option value="food-beverage">Food & Beverage</option>
+                    <option value="education">Education</option>
+                    <option value="technology">Technology</option>
+                    <option value="fashion">Fashion & Clothing</option>
+                    <option value="beauty">Beauty & Cosmetics</option>
+                    <option value="fitness">Fitness</option>
+                    <option value="finance">Finance</option>
                     <option value="other">Other</option>
                   </select>
                 </div>
-                <div class="d-flex justify-content-between">
-                  <button type="button" class="btn btn-secondary prev-step">Previous</button>
-                  <button type="button" class="btn btn-primary next-step">Next</button>
-                </div>
-              </div>
-              
-              <!-- Step 3: Brand Name & Logo Upload -->
-              <div class="step d-none" id="step-3">
-                <h4 class="mb-3">Brand & Logo Upload</h4>
-                <div class="mb-3">
-                  <label for="logo" class="form-label">Business Logo</label>
-                  <input type="file" class="form-control" id="logo" accept="image/*">
-                  <div class="form-text">Upload your logo to automatically extract brand colors.</div>
-                </div>
-                <div class="mb-3">
-                  <div id="logo-preview" class="mt-3 text-center d-none">
-                    <img src="" alt="Logo Preview" class="img-fluid" style="max-height: 150px;">
-                  </div>
-                </div>
-                <div class="alert alert-info d-none" id="ai-detection-alert">
-                  <i class="bi bi-magic"></i> AI is analyzing your logo to detect brand colors and style...
-                </div>
-                <div class="d-flex justify-content-between">
-                  <button type="button" class="btn btn-secondary prev-step">Previous</button>
-                  <button type="button" class="btn btn-primary next-step">Next</button>
-                </div>
-              </div>
-              
-              <!-- Step 4: Brand Colors -->
-              <div class="step d-none" id="step-4">
-                <h4 class="mb-3">Brand Colors</h4>
-                <p class="text-muted">Colors were auto-detected from your logo. You can adjust them if needed.</p>
-                <div class="row">
-                  <div class="col-md-4 mb-3">
-                    <label for="primary-color" class="form-label">Primary Color</label>
-                    <input type="color" class="form-control form-control-color w-100" id="primary-color" value="#000000">
-                  </div>
-                  <div class="col-md-4 mb-3">
-                    <label for="secondary-color" class="form-label">Secondary Color</label>
-                    <input type="color" class="form-control form-control-color w-100" id="secondary-color" value="#ffffff">
-                  </div>
-                  <div class="col-md-4 mb-3">
-                    <label for="accent-color" class="form-label">Accent Color</label>
-                    <input type="color" class="form-control form-control-color w-100" id="accent-color" value="#cccccc">
-                  </div>
-                </div>
-                <div class="form-check mb-3">
-                  <input class="form-check-input" type="checkbox" id="auto-color-detection" checked>
-                  <label class="form-check-label" for="auto-color-detection">
-                    Use AI-detected colors
-                  </label>
-                </div>
-                <div class="d-flex justify-content-between">
-                  <button type="button" class="btn btn-secondary prev-step">Previous</button>
-                  <button type="button" class="btn btn-primary next-step">Next</button>
-                </div>
-              </div>
-              
-              <!-- Step 5: Template & Style Selection -->
-              <div class="step d-none" id="step-5">
-                <h4 class="mb-3">Choose Template & Features</h4>
-                <p class="text-muted">Select a template style or let AI suggest one based on your business</p>
                 
                 <div class="mb-4">
+                  <label for="niche-select" class="form-label">Select a Specific Niche</label>
+                  <select class="form-select mb-3" id="niche-select">
+                    <option value="" selected disabled>Select your niche (based on industry)</option>
+                    <!-- Niche options will be dynamically loaded based on selected industry -->
+                  </select>
+                  
                   <div class="form-check mb-2">
-                    <input class="form-check-input" type="radio" name="template-selection" id="ai-suggest-template" value="ai-suggest" checked>
-                    <label class="form-check-label" for="ai-suggest-template">
-                      Let AI suggest the best template for my business
+                    <input class="form-check-input" type="checkbox" id="custom-niche-toggle">
+                    <label class="form-check-label" for="custom-niche-toggle">
+                      I don't see my specific niche
                     </label>
                   </div>
-                  <div class="form-check">
-                    <input class="form-check-input" type="radio" name="template-selection" id="manual-select-template" value="manual-select">
-                    <label class="form-check-label" for="manual-select-template">
-                      I want to choose a template manually
-                    </label>
+                  
+                  <div id="custom-niche-container" class="mt-3 d-none">
+                    <label for="custom-niche" class="form-label">Define Your Niche Manually</label>
+                    <input type="text" class="form-control" id="custom-niche" placeholder="e.g., Vintage Car Restoration">
                   </div>
                 </div>
                 
-                <div id="template-options" class="row d-none">
-                  <!-- Template options will be displayed here when manual selection is chosen -->
+                <div class="ai-action">
+                  <i class="bi bi-magic me-2"></i><strong>AI Action:</strong> Identifies the most relevant templates, content strategies, and post styles.
                 </div>
                 
-                <div class="d-flex justify-content-between">
-                  <button type="button" class="btn btn-secondary prev-step">Previous</button>
+                <div class="d-flex justify-content-end mt-4">
                   <button type="button" class="btn btn-primary next-step">Next</button>
                 </div>
               </div>
               
-              <!-- Step 6: Business Voice & Style -->
-              <div class="step d-none" id="step-6">
-                <h4 class="mb-3">Business Voice & Style</h4>
-                <p class="text-muted">Select a voice that defines your brand:</p>
-                <div class="mb-3">
-                  <div class="form-check mb-2">
-                    <input class="form-check-input business-voice" type="radio" name="business-voice" value="Professional & Clean" id="voice-professional">
-                    <label class="form-check-label" for="voice-professional">
-                      Professional & Clean
-                    </label>
-                  </div>
-                  <div class="form-check mb-2">
-                    <input class="form-check-input business-voice" type="radio" name="business-voice" value="Trendy & Modern" id="voice-trendy">
-                    <label class="form-check-label" for="voice-trendy">
-                      Trendy & Modern
-                    </label>
-                  </div>
-                  <div class="form-check mb-2">
-                    <input class="form-check-input business-voice" type="radio" name="business-voice" value="Bold & Eye-Catching" id="voice-bold">
-                    <label class="form-check-label" for="voice-bold">
-                      Bold & Eye-Catching
-                    </label>
-                  </div>
-                  <div class="form-check mb-2">
-                    <input class="form-check-input business-voice" type="radio" name="business-voice" value="Minimalist & Elegant" id="voice-minimalist">
-                    <label class="form-check-label" for="voice-minimalist">
-                      Minimalist & Elegant
-                    </label>
-                  </div>
-                </div>
-                <div class="d-flex justify-content-between">
-                  <button type="button" class="btn btn-secondary prev-step">Previous</button>
-                  <button type="button" class="btn btn-primary next-step">Next</button>
-                </div>
-              </div>
-              
-              <!-- Step 7: Target Audience -->
-              <div class="step d-none" id="step-7">
-                <h4 class="mb-3">Target Audience</h4>
-                <p class="text-muted">Select up to 3 target audiences:</p>
-                <div class="mb-3">
-                  <div class="form-check mb-2">
-                    <input class="form-check-input target-audience" type="checkbox" value="Young Professionals (18-35)" id="audience-young-professionals">
-                    <label class="form-check-label" for="audience-young-professionals">
-                      Young Professionals (18-35)
-                    </label>
-                  </div>
-                  <div class="form-check mb-2">
-                    <input class="form-check-input target-audience" type="checkbox" value="Families & Parents" id="audience-families">
-                    <label class="form-check-label" for="audience-families">
-                      Families & Parents
-                    </label>
-                  </div>
-                  <div class="form-check mb-2">
-                    <input class="form-check-input target-audience" type="checkbox" value="Small Business Owners" id="audience-business-owners">
-                    <label class="form-check-label" for="audience-business-owners">
-                      Small Business Owners
-                    </label>
-                  </div>
-                  <div class="form-check mb-2">
-                    <input class="form-check-input target-audience" type="checkbox" value="Luxury Shoppers" id="audience-luxury">
-                    <label class="form-check-label" for="audience-luxury">
-                      Luxury Shoppers
-                    </label>
-                  </div>
-                  <div class="form-check mb-2">
-                    <input class="form-check-input target-audience" type="checkbox" value="Budget-Conscious Buyers" id="audience-budget">
-                    <label class="form-check-label" for="audience-budget">
-                      Budget-Conscious Buyers
-                    </label>
-                  </div>
-                  <div class="form-check mb-2">
-                    <input class="form-check-input target-audience" type="checkbox" value="Fitness / Health Enthusiasts" id="audience-fitness">
-                    <label class="form-check-label" for="audience-fitness">
-                      Fitness / Health Enthusiasts
-                    </label>
-                  </div>
-                </div>
-                <div class="mb-3">
-                  <label for="custom-audience" class="form-label">Add Custom Audience</label>
-                  <div class="input-group">
-                    <input type="text" class="form-control" id="custom-audience">
-                    <button class="btn btn-outline-secondary" type="button" id="add-audience-btn">Add</button>
-                  </div>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label">Selected Audiences: <span id="audience-count">(0/3)</span></label>
-                  <div id="selected-audiences" class="border p-2 rounded min-height-100">
-                    <!-- Selected audiences will appear here -->
-                  </div>
-                </div>
-                <div class="d-flex justify-content-between">
-                  <button type="button" class="btn btn-secondary prev-step">Previous</button>
-                  <button type="button" class="btn btn-primary next-step">Next</button>
-                </div>
-              </div>
-              
-              <!-- Step 8: Location & Social Platforms -->
-              <div class="step d-none" id="step-8">
-                <h4 class="mb-3">Location & Social Platforms</h4>
-                <div class="mb-3">
-                  <label class="form-label">Location Type:</label>
-                  <div class="form-check mb-2">
-                    <input class="form-check-input location-type" type="radio" name="locationType" id="physical-business" value="physical">
-                    <label class="form-check-label" for="physical-business">
-                      Local Business (Physical store or service)
-                    </label>
-                  </div>
-                  <div class="form-check mb-2">
-                    <input class="form-check-input location-type" type="radio" name="locationType" id="online-business" value="online">
-                    <label class="form-check-label" for="online-business">
-                      Online Business (E-commerce, Digital Services)
-                    </label>
-                  </div>
-                  <div class="form-check mb-2">
-                    <input class="form-check-input location-type" type="radio" name="locationType" id="both-business" value="both">
-                    <label class="form-check-label" for="both-business">
-                      Both
-                    </label>
-                  </div>
-                </div>
+              <!-- Step 2: Select Main Objectives -->
+              <div class="step" id="step-2">
+                <h4 class="mb-2">Step 2/7: Select Main Objectives</h4>
+                <p class="text-muted mb-4">Your marketing goals determine the type of content the AI will create for you.</p>
                 
-                <div class="mb-3 d-none" id="location-details">
-                  <!-- Location details will be shown/hidden based on selection -->
-                  <div id="physical-details" class="mb-3 d-none">
-                    <label for="business-address" class="form-label">Business Address</label>
-                    <input type="text" class="form-control mb-2" id="business-address" placeholder="Street address">
-                    <div class="row">
-                      <div class="col-md-6 mb-2">
-                        <input type="text" class="form-control" id="business-city" placeholder="City">
-                      </div>
-                      <div class="col-md-6 mb-2">
-                        <input type="text" class="form-control" id="business-state" placeholder="State/Province">
-                      </div>
+                <div class="mb-4">
+                  <label class="form-label mb-3">What are your top 2 objectives? (Choose up to 2)</label>
+                  
+                  <div class="objective-option" data-value="grow-presence">
+                    <div class="form-check">
+                      <input class="form-check-input objective-checkbox" type="checkbox" id="objective-grow">
+                      <label class="form-check-label fw-bold" for="objective-grow">
+                        Grow social media presence
+                      </label>
                     </div>
-                    <input type="text" class="form-control" id="business-zip" placeholder="Zip/Postal Code">
+                    <p class="text-muted small mt-1 mb-0">Increase followers, reach, and visibility online</p>
                   </div>
                   
-                  <div id="online-details" class="mb-3 d-none">
-                    <label for="business-website" class="form-label">Business Website</label>
-                    <input type="url" class="form-control" id="business-website" placeholder="https://example.com">
+                  <div class="objective-option" data-value="get-clients">
+                    <div class="form-check">
+                      <input class="form-check-input objective-checkbox" type="checkbox" id="objective-clients">
+                      <label class="form-check-label fw-bold" for="objective-clients">
+                        Get more clients/customers
+                      </label>
+                    </div>
+                    <p class="text-muted small mt-1 mb-0">Generate leads and convert them into paying customers</p>
                   </div>
                   
-                  <div class="mb-3">
-                    <label for="business-phone" class="form-label">Business Phone</label>
-                    <input type="tel" class="form-control" id="business-phone" placeholder="Phone number">
+                  <div class="objective-option" data-value="professional-presence">
+                    <div class="form-check">
+                      <input class="form-check-input objective-checkbox" type="checkbox" id="objective-professional">
+                      <label class="form-check-label fw-bold" for="objective-professional">
+                        Maintain a professional and consistent account
+                      </label>
+                    </div>
+                    <p class="text-muted small mt-1 mb-0">Create a polished brand image that builds trust and credibility</p>
                   </div>
                   
-                  <div class="mb-3">
-                    <label for="business-email" class="form-label">Business Email</label>
-                    <input type="email" class="form-control" id="business-email" placeholder="contact@yourbusiness.com">
+                  <div class="objective-option" data-value="increase-engagement">
+                    <div class="form-check">
+                      <input class="form-check-input objective-checkbox" type="checkbox" id="objective-engagement">
+                      <label class="form-check-label fw-bold" for="objective-engagement">
+                        Increase engagement & brand awareness
+                      </label>
+                    </div>
+                    <p class="text-muted small mt-1 mb-0">Boost likes, comments, shares, and overall brand recognition</p>
                   </div>
                 </div>
+                
+                <div class="ai-action">
+                  <i class="bi bi-magic me-2"></i><strong>AI Action:</strong> Customizes content strategy based on selected goals.
+                </div>
+                
+                <div class="d-flex justify-content-between mt-4">
+                  <button type="button" class="btn btn-outline-secondary prev-step">Back</button>
+                  <button type="button" class="btn btn-primary next-step">Next</button>
+                </div>
+              </div>
+              
+              <!-- Step 3: Upload Brand Name & Logo -->
+              <div class="step" id="step-3">
+                <h4 class="mb-2">Step 3/7: Upload Brand Name & Logo</h4>
+                <p class="text-muted mb-4">Your logo and brand name help the AI create visually consistent and branded content.</p>
+                
+                <div class="mb-4">
+                  <label for="brand-name" class="form-label">Enter Your Brand Name</label>
+                  <input type="text" class="form-control" id="brand-name" placeholder="e.g., Acme Corporation" required>
+                </div>
+                
+                <div class="mb-4">
+                  <label for="logo-upload" class="form-label">Upload Your Logo (Optional)</label>
+                  <p class="text-muted small mb-2">AI will extract colors automatically</p>
+                  <input type="file" class="form-control" id="logo-upload" accept="image/*">
+                  
+                  <div id="logo-preview" class="mt-3 text-center d-none">
+                    <img src="" alt="Logo Preview" class="img-fluid border rounded" style="max-height: 150px;">
+                  </div>
+                </div>
+                
+                <div class="ai-action">
+                  <i class="bi bi-magic me-2"></i><strong>AI Action:</strong> Suggests brand colors & font styles.
+                </div>
+                
+                <div class="d-flex justify-content-between mt-4">
+                  <button type="button" class="btn btn-outline-secondary prev-step">Back</button>
+                  <button type="button" class="btn btn-primary next-step">Next</button>
+                </div>
+              </div>
+              
+              <!-- Step 4: Confirm Brand Colors -->
+              <div class="step" id="step-4">
+                <h4 class="mb-2">Step 4/7: Confirm Brand Colors</h4>
+                <p class="text-muted mb-4">Consistent colors ensure a strong brand identity across all your posts.</p>
                 
                 <div class="mb-3">
-                  <label class="form-label">Social Media Platforms:</label>
-                  <p class="text-muted">Select the platforms you want to create content for</p>
-                  <div class="form-check mb-2">
-                    <input class="form-check-input social-platform" type="checkbox" value="Instagram" id="platform-instagram">
-                    <label class="form-check-label" for="platform-instagram">
-                      Instagram
-                    </label>
-                  </div>
-                  <div class="form-check mb-2">
-                    <input class="form-check-input social-platform" type="checkbox" value="Facebook" id="platform-facebook">
-                    <label class="form-check-label" for="platform-facebook">
-                      Facebook
-                    </label>
-                  </div>
-                  <div class="form-check mb-2">
-                    <input class="form-check-input social-platform" type="checkbox" value="TikTok" id="platform-tiktok">
-                    <label class="form-check-label" for="platform-tiktok">
-                      TikTok
-                    </label>
-                  </div>
-                  <div class="form-check mb-2">
-                    <input class="form-check-input social-platform" type="checkbox" value="LinkedIn" id="platform-linkedin">
-                    <label class="form-check-label" for="platform-linkedin">
-                      LinkedIn
-                    </label>
-                  </div>
-                  <div class="form-check mb-2">
-                    <input class="form-check-input social-platform" type="checkbox" value="Twitter/X" id="platform-twitter">
-                    <label class="form-check-label" for="platform-twitter">
-                      Twitter/X
-                    </label>
+                  <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i> AI has detected these colors from your logo. You can adjust them if needed.
                   </div>
                 </div>
                 
-                <div class="d-flex justify-content-between">
-                  <button type="button" class="btn btn-secondary prev-step">Previous</button>
+                <div class="row">
+                  <div class="col-md-4 mb-3">
+                    <div class="color-preview" id="primary-color-preview" style="background-color: #00897b;"></div>
+                    <label for="primary-color" class="form-label">Primary Color</label>
+                    <input type="color" class="form-control form-control-color w-100" id="primary-color" value="#00897b">
+                  </div>
+                  
+                  <div class="col-md-4 mb-3">
+                    <div class="color-preview" id="secondary-color-preview" style="background-color: #4db6ac;"></div>
+                    <label for="secondary-color" class="form-label">Secondary Color</label>
+                    <input type="color" class="form-control form-control-color w-100" id="secondary-color" value="#4db6ac">
+                  </div>
+                  
+                  <div class="col-md-4 mb-3">
+                    <div class="color-preview" id="accent-color-preview" style="background-color: #e0f2f1;"></div>
+                    <label for="accent-color" class="form-label">Accent Color</label>
+                    <input type="color" class="form-control form-control-color w-100" id="accent-color" value="#e0f2f1">
+                  </div>
+                </div>
+                
+                <div class="form-check mb-3">
+                  <input class="form-check-input" type="checkbox" id="reset-colors" value="true">
+                  <label class="form-check-label" for="reset-colors">
+                    Reset to AI-detected colors
+                  </label>
+                </div>
+                
+                <div class="ai-action">
+                  <i class="bi bi-magic me-2"></i><strong>AI Action:</strong> Ensures all content follows brand identity.
+                </div>
+                
+                <div class="d-flex justify-content-between mt-4">
+                  <button type="button" class="btn btn-outline-secondary prev-step">Back</button>
+                  <button type="button" class="btn btn-primary next-step">Next</button>
+                </div>
+              </div>
+              
+              <!-- Step 5: Select Business Voice & Style -->
+              <div class="step" id="step-5">
+                <h4 class="mb-2">Step 5/7: Select Business Voice & Style</h4>
+                <p class="text-muted mb-4">Your brand's tone and personality define how your audience perceives your business.</p>
+                
+                <div class="mb-4">
+                  <label class="form-label mb-3">How should your brand sound? (Choose up to 2)</label>
+                  
+                  <div class="voice-option" data-value="professional">
+                    <div class="form-check">
+                      <input class="form-check-input voice-checkbox" type="checkbox" id="voice-professional">
+                      <label class="form-check-label fw-bold" for="voice-professional">
+                        Professional & Trustworthy
+                      </label>
+                    </div>
+                    <p class="text-muted small mt-1 mb-0">Formal, expert tone that builds credibility and authority</p>
+                  </div>
+                  
+                  <div class="voice-option" data-value="friendly">
+                    <div class="form-check">
+                      <input class="form-check-input voice-checkbox" type="checkbox" id="voice-friendly">
+                      <label class="form-check-label fw-bold" for="voice-friendly">
+                        Friendly & Approachable
+                      </label>
+                    </div>
+                    <p class="text-muted small mt-1 mb-0">Warm, conversational tone that connects with customers</p>
+                  </div>
+                  
+                  <div class="voice-option" data-value="luxury">
+                    <div class="form-check">
+                      <input class="form-check-input voice-checkbox" type="checkbox" id="voice-luxury">
+                      <label class="form-check-label fw-bold" for="voice-luxury">
+                        Luxury & Elegant
+                      </label>
+                    </div>
+                    <p class="text-muted small mt-1 mb-0">Sophisticated, premium tone that elevates your brand</p>
+                  </div>
+                  
+                  <div class="voice-option" data-value="bold">
+                    <div class="form-check">
+                      <input class="form-check-input voice-checkbox" type="checkbox" id="voice-bold">
+                      <label class="form-check-label fw-bold" for="voice-bold">
+                        Bold & Energetic
+                      </label>
+                    </div>
+                    <p class="text-muted small mt-1 mb-0">Dynamic, passionate tone that excites and motivates</p>
+                  </div>
+                </div>
+                
+                <div class="ai-action">
+                  <i class="bi bi-magic me-2"></i><strong>AI Action:</strong> Adjusts captions, fonts, and post styles accordingly.
+                </div>
+                
+                <div class="d-flex justify-content-between mt-4">
+                  <button type="button" class="btn btn-outline-secondary prev-step">Back</button>
+                  <button type="button" class="btn btn-primary next-step">Next</button>
+                </div>
+              </div>
+              
+              <!-- Step 6: Define Your Target Audience -->
+              <div class="step" id="step-6">
+                <h4 class="mb-2">Step 6/7: Define Your Target Audience</h4>
+                <p class="text-muted mb-4">The right audience ensures your content reaches potential customers who are most likely to engage.</p>
+                
+                <div class="mb-3">
+                  <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i> Based on your industry and niche, AI suggests these audience types. Select the most relevant.
+                  </div>
+                </div>
+                
+                <div class="mb-4">
+                  <div id="audience-options">
+                    <!-- These will be dynamically generated based on industry/niche -->
+                    <div class="audience-option" data-value="young-professionals">
+                      <div class="form-check">
+                        <input class="form-check-input audience-checkbox" type="checkbox" id="audience-young">
+                        <label class="form-check-label fw-bold" for="audience-young">
+                          Young Professionals (25-40)
+                        </label>
+                      </div>
+                      <p class="text-muted small mt-1 mb-0">Career-focused individuals with disposable income</p>
+                    </div>
+                    
+                    <div class="audience-option" data-value="parents">
+                      <div class="form-check">
+                        <input class="form-check-input audience-checkbox" type="checkbox" id="audience-parents">
+                        <label class="form-check-label fw-bold" for="audience-parents">
+                          Parents & Families
+                        </label>
+                      </div>
+                      <p class="text-muted small mt-1 mb-0">People with children looking for family-friendly options</p>
+                    </div>
+                    
+                    <div class="audience-option" data-value="business-owners">
+                      <div class="form-check">
+                        <input class="form-check-input audience-checkbox" type="checkbox" id="audience-business">
+                        <label class="form-check-label fw-bold" for="audience-business">
+                          Small Business Owners
+                        </label>
+                      </div>
+                      <p class="text-muted small mt-1 mb-0">Entrepreneurs and company decision-makers</p>
+                    </div>
+                    
+                    <div class="audience-option" data-value="local-customers">
+                      <div class="form-check">
+                        <input class="form-check-input audience-checkbox" type="checkbox" id="audience-local">
+                        <label class="form-check-label fw-bold" for="audience-local">
+                          Local Community
+                        </label>
+                      </div>
+                      <p class="text-muted small mt-1 mb-0">People within your geographic service area</p>
+                    </div>
+                    
+                    <div class="audience-option" data-value="luxury-buyers">
+                      <div class="form-check">
+                        <input class="form-check-input audience-checkbox" type="checkbox" id="audience-luxury">
+                        <label class="form-check-label fw-bold" for="audience-luxury">
+                          Luxury Buyers
+                        </label>
+                      </div>
+                      <p class="text-muted small mt-1 mb-0">High-income individuals seeking premium products/services</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="mb-4">
+                  <label for="custom-audience" class="form-label">Enter a Custom Audience</label>
+                  <input type="text" class="form-control" id="custom-audience" placeholder="e.g., Outdoor Enthusiasts">
+                </div>
+                
+                <div class="ai-action">
+                  <i class="bi bi-magic me-2"></i><strong>AI Action:</strong> Personalizes content messaging for the ideal customer.
+                </div>
+                
+                <div class="d-flex justify-content-between mt-4">
+                  <button type="button" class="btn btn-outline-secondary prev-step">Back</button>
+                  <button type="button" class="btn btn-primary next-step">Next</button>
+                </div>
+              </div>
+              
+              <!-- Step 7: Select Social Media Platforms -->
+              <div class="step" id="step-7">
+                <h4 class="mb-2">Step 7/7: Select Social Media Platforms</h4>
+                <p class="text-muted mb-4">Choosing your platforms helps the AI tailor content specifically for where you post.</p>
+                
+                <div class="mb-4">
+                  <label class="form-label mb-3">Where will you publish content? (Choose one or more)</label>
+                  
+                  <div class="platform-option" data-value="instagram">
+                    <div class="form-check">
+                      <input class="form-check-input platform-checkbox" type="checkbox" id="platform-instagram">
+                      <label class="form-check-label fw-bold" for="platform-instagram">
+                        <i class="bi bi-instagram me-2"></i>Instagram
+                      </label>
+                    </div>
+                    <p class="text-muted small mt-1 mb-0">Visual platform best for photos, carousels, Stories, and Reels</p>
+                  </div>
+                  
+                  <div class="platform-option" data-value="facebook">
+                    <div class="form-check">
+                      <input class="form-check-input platform-checkbox" type="checkbox" id="platform-facebook">
+                      <label class="form-check-label fw-bold" for="platform-facebook">
+                        <i class="bi bi-facebook me-2"></i>Facebook
+                      </label>
+                    </div>
+                    <p class="text-muted small mt-1 mb-0">Versatile platform for all content types and community building</p>
+                  </div>
+                  
+                  <div class="platform-option" data-value="tiktok">
+                    <div class="form-check">
+                      <input class="form-check-input platform-checkbox" type="checkbox" id="platform-tiktok">
+                      <label class="form-check-label fw-bold" for="platform-tiktok">
+                        <i class="bi bi-tiktok me-2"></i>TikTok
+                      </label>
+                    </div>
+                    <p class="text-muted small mt-1 mb-0">Short-form video platform for trending, authentic content</p>
+                  </div>
+                  
+                  <div class="platform-option" data-value="linkedin">
+                    <div class="form-check">
+                      <input class="form-check-input platform-checkbox" type="checkbox" id="platform-linkedin">
+                      <label class="form-check-label fw-bold" for="platform-linkedin">
+                        <i class="bi bi-linkedin me-2"></i>LinkedIn
+                      </label>
+                    </div>
+                    <p class="text-muted small mt-1 mb-0">Professional platform for industry insights and B2B content</p>
+                  </div>
+                  
+                  <div class="platform-option" data-value="twitter">
+                    <div class="form-check">
+                      <input class="form-check-input platform-checkbox" type="checkbox" id="platform-twitter">
+                      <label class="form-check-label fw-bold" for="platform-twitter">
+                        <i class="bi bi-twitter-x me-2"></i>Twitter/X
+                      </label>
+                    </div>
+                    <p class="text-muted small mt-1 mb-0">Text-focused platform for news, updates, and quick engagement</p>
+                  </div>
+                </div>
+                
+                <div class="ai-action">
+                  <i class="bi bi-magic me-2"></i><strong>AI Action:</strong> Adapts post formats and content style for each platform.
+                </div>
+                
+                <div class="d-flex justify-content-between mt-4">
+                  <button type="button" class="btn btn-outline-secondary prev-step">Back</button>
                   <button type="submit" class="btn btn-success">Complete Setup</button>
                 </div>
               </div>
@@ -364,9 +572,18 @@
     </div>
   </div>
 
-  <footer class="py-4 bg-dark">
+  <footer class="bg-dark text-white py-4 mt-5">
     <div class="container">
-      <p class="m-0 text-center text-white">Copyright &copy; OmuMediaKit 2025</p>
+      <div class="row">
+        <div class="col-md-6">
+          <p class="mb-0">© OmuMediaKit 2024. All rights reserved.</p>
+        </div>
+        <div class="col-md-6 text-md-end">
+          <a href="#" class="text-white me-3">Terms</a>
+          <a href="#" class="text-white me-3">Privacy</a>
+          <a href="#" class="text-white">Support</a>
+        </div>
+      </div>
     </div>
   </footer>
 

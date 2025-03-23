@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const alertContainer = document.getElementById('alert-container');
   const progressBar = document.querySelector('.progress-bar');
   const steps = document.querySelectorAll('.step');
+  const stepPills = document.querySelectorAll('.step-pill');
   const nextButtons = document.querySelectorAll('.next-step');
   const prevButtons = document.querySelectorAll('.prev-step');
   const businessTypeSelect = document.getElementById('business-type');
@@ -42,14 +43,70 @@ document.addEventListener('DOMContentLoaded', function() {
   const onlineDetails = document.getElementById('online-details');
   const socialPlatformCheckboxes = document.querySelectorAll('.social-platform');
   
-  // Current step
-  let currentStep = 0;
+  // Step-specific elements
+  const industrySelect = document.getElementById('industry-select');
+  const nicheSelect = document.getElementById('niche-select');
+  const customNicheToggle = document.getElementById('custom-niche-toggle');
+  const customNicheContainer = document.getElementById('custom-niche-container');
+  const objectiveCheckboxes = document.querySelectorAll('.objective-checkbox');
+  const objectiveOptions = document.querySelectorAll('.objective-option');
+  const logoUpload = document.getElementById('logo-upload');
+  const brandName = document.getElementById('brand-name');
+  const voiceCheckboxes = document.querySelectorAll('.voice-checkbox');
+  const voiceOptions = document.querySelectorAll('.voice-option');
+  const platformCheckboxes = document.querySelectorAll('.platform-checkbox');
+  const platformOptions = document.querySelectorAll('.platform-option');
   
-  // Selected audiences array
-  let audiences = [];
+  // Constants
+  const totalSteps = steps.length;
+  const maxSelections = {
+    objectives: 2,
+    voices: 2,
+    audiences: 3
+  };
   
-  // Max number of target audiences
-  const MAX_AUDIENCES = 3;
+  // Stored data
+  let profileData = {
+    industry: '',
+    niche: '',
+    customNiche: '',
+    objectives: [],
+    brandName: '',
+    logo: null,
+    colors: {
+      primary: '#00897b',
+      secondary: '#4db6ac',
+      accent: '#e0f2f1'
+    },
+    detectedColors: {
+      primary: '#00897b',
+      secondary: '#4db6ac',
+      accent: '#e0f2f1'
+    },
+    voices: [],
+    audiences: [],
+    customAudience: '',
+    platforms: []
+  };
+  
+  // Initialize current step
+  let currentStep = 1;
+  
+  // Industry and Niche data
+  const nichesByIndustry = {
+    'automotive': ['Car Dealership', 'Auto Repair Shop', 'Car Rental', 'Auto Parts Store', 'Custom Car Modifications'],
+    'real-estate': ['Residential Real Estate', 'Commercial Real Estate', 'Property Management', 'Interior Design', 'Home Staging'],
+    'e-commerce': ['Fashion & Apparel', 'Electronics', 'Home Goods', 'Specialty Products', 'Handmade Crafts'],
+    'health-wellness': ['Medical Practice', 'Wellness Center', 'Alternative Medicine', 'Mental Health', 'Nutrition'],
+    'food-beverage': ['Restaurant', 'Café', 'Bakery', 'Food Truck', 'Catering Service'],
+    'education': ['Private School', 'Online Courses', 'Tutoring Service', 'Language School', 'Professional Training'],
+    'technology': ['IT Services', 'Software Development', 'Tech Repairs', 'Web Development', 'App Development'],
+    'fashion': ['Clothing Store', 'Fashion Boutique', 'Custom Tailoring', 'Accessories', 'Footwear'],
+    'beauty': ['Salon', 'Spa', 'Barber Shop', 'Nail Studio', 'Skincare Clinic'],
+    'fitness': ['Gym', 'Personal Training', 'Yoga Studio', 'CrossFit Box', 'Dance Studio'],
+    'finance': ['Accounting Firm', 'Financial Advisor', 'Insurance Agency', 'Tax Services', 'Investment Consulting'],
+    'social-media': ['Social Media Agency', 'Content Creation', 'Influencer Marketing', 'Community Management', 'Social Media Analytics']
+  };
   
   // Initialize
   updateProgressBar();
@@ -101,6 +158,133 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Form submission
     profileForm.addEventListener('submit', submitProfile);
+    
+    // Industry and Niche Selection
+    industrySelect.addEventListener('change', function() {
+      const selectedIndustry = this.value;
+      profileData.industry = selectedIndustry;
+      
+      // Clear and populate niche dropdown
+      nicheSelect.innerHTML = '<option value="" selected disabled>Select your niche (based on industry)</option>';
+      
+      if (selectedIndustry && nichesByIndustry[selectedIndustry]) {
+        nichesByIndustry[selectedIndustry].forEach(niche => {
+          const option = document.createElement('option');
+          option.value = niche.toLowerCase().replace(/ /g, '-');
+          option.textContent = niche;
+          nicheSelect.appendChild(option);
+        });
+        nicheSelect.disabled = false;
+      } else {
+        nicheSelect.disabled = true;
+      }
+    });
+    
+    nicheSelect.addEventListener('change', function() {
+      profileData.niche = this.value;
+    });
+    
+    customNicheToggle.addEventListener('change', function() {
+      if (this.checked) {
+        customNicheContainer.classList.remove('d-none');
+        nicheSelect.disabled = true;
+      } else {
+        customNicheContainer.classList.add('d-none');
+        nicheSelect.disabled = false;
+      }
+    });
+    
+    document.getElementById('custom-niche').addEventListener('input', function() {
+      profileData.customNiche = this.value;
+    });
+    
+    // Objective Selection
+    objectiveOptions.forEach(option => {
+      option.addEventListener('click', function() {
+        const checkbox = this.querySelector('.objective-checkbox');
+        checkbox.checked = !checkbox.checked;
+        
+        if (checkbox.checked) {
+          this.classList.add('selected');
+          
+          // Check if we've reached the maximum number of objectives
+          const selectedObjectives = document.querySelectorAll('.objective-checkbox:checked');
+          if (selectedObjectives.length > maxSelections.objectives) {
+            // Uncheck the first one if we have too many
+            selectedObjectives[0].checked = false;
+            selectedObjectives[0].closest('.objective-option').classList.remove('selected');
+          }
+        } else {
+          this.classList.remove('selected');
+        }
+        
+        // Update stored data
+        profileData.objectives = Array.from(document.querySelectorAll('.objective-checkbox:checked')).map(cb => cb.closest('.objective-option').dataset.value);
+      });
+    });
+    
+    // Brand Name
+    brandName.addEventListener('input', function() {
+      profileData.brandName = this.value;
+    });
+    
+    // Color Management
+    primaryColorInput.addEventListener('input', function() {
+      profileData.colors.primary = this.value;
+      document.getElementById('primary-color-preview').style.backgroundColor = this.value;
+    });
+    
+    secondaryColorInput.addEventListener('input', function() {
+      profileData.colors.secondary = this.value;
+      document.getElementById('secondary-color-preview').style.backgroundColor = this.value;
+    });
+    
+    accentColorInput.addEventListener('input', function() {
+      profileData.colors.accent = this.value;
+      document.getElementById('accent-color-preview').style.backgroundColor = this.value;
+    });
+    
+    // Voice Selection
+    voiceOptions.forEach(option => {
+      option.addEventListener('click', function() {
+        const checkbox = this.querySelector('.voice-checkbox');
+        checkbox.checked = !checkbox.checked;
+        
+        if (checkbox.checked) {
+          this.classList.add('selected');
+          
+          // Check if we've reached the maximum number of voices
+          const selectedVoices = document.querySelectorAll('.voice-checkbox:checked');
+          if (selectedVoices.length > maxSelections.voices) {
+            // Uncheck the first one if we have too many
+            selectedVoices[0].checked = false;
+            selectedVoices[0].closest('.voice-option').classList.remove('selected');
+          }
+        } else {
+          this.classList.remove('selected');
+        }
+        
+        // Update stored data
+        profileData.voices = Array.from(document.querySelectorAll('.voice-checkbox:checked')).map(cb => cb.closest('.voice-option').dataset.value);
+      });
+    });
+    
+    // Platform Selection
+    platformOptions.forEach(option => {
+      option.addEventListener('click', function() {
+        const checkbox = this.querySelector('.platform-checkbox');
+        checkbox.checked = !checkbox.checked;
+        
+        if (checkbox.checked) {
+          this.classList.add('selected');
+        } else {
+          this.classList.remove('selected');
+        }
+        
+        // Update stored data
+        profileData.platforms = Array.from(document.querySelectorAll('.platform-checkbox:checked')).map(cb => cb.closest('.platform-option').dataset.value);
+      });
+    });
   }
   
   // Update progress bar
