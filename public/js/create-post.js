@@ -158,7 +158,7 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
         <div class="template-info">
           <h5>${template.categoryName}</h5>
-          <p class="text-muted small">Photo by ${template.authorName}</p>
+          <p class="text-muted small">${template.attribution || `Photo by ${template.authorName}`}</p>
         </div>
       `;
       
@@ -205,7 +205,8 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
       </div>
       <div class="preview-caption mt-2">
-        <p class="mb-0"><small class="text-muted">Photo by ${selectedTemplate.authorName}</small></p>
+        <p class="mb-0"><small class="text-muted">${selectedTemplate.attribution || `Photo by ${selectedTemplate.authorName}`}</small></p>
+        ${selectedTemplate.authorUrl ? `<p class="mb-0"><small class="text-muted"><a href="${selectedTemplate.authorUrl}" target="_blank" rel="noopener noreferrer">View on Unsplash</a></small></p>` : ''}
       </div>
     `;
   }

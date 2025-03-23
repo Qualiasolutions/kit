@@ -10,9 +10,14 @@ const config = require('../config/config');
 
 // Initialize Unsplash API client
 const unsplash = createApi({
-  accessKey: process.env.UNSPLASH_ACCESS_KEY || 'YOUR_UNSPLASH_ACCESS_KEY', // Replace with your key when testing
+  accessKey: process.env.UNSPLASH_ACCESS_KEY,
   fetch: fetch,
 });
+
+// Verify the API key is available
+if (!process.env.UNSPLASH_ACCESS_KEY) {
+  console.warn('Warning: Unsplash API key not found in environment variables. Template functionality will be limited.');
+}
 
 // Template categories that map to Unsplash search queries
 const templateCategories = {
@@ -94,6 +99,15 @@ const getTemplatesByCategory = async (categoryId, count = 5) => {
       throw new Error(`Unsplash API error: ${result.errors[0]}`);
     }
     
+    // Check if we received a rate limiting error
+    if (result.type === 'error') {
+      if (result.status === 403) {
+        console.error('Unsplash API rate limit exceeded. Using fallback templates.');
+        return getFallbackTemplates(categoryId, count);
+      }
+      throw new Error(`Unsplash API error: ${result.errors || 'Unknown error'}`);
+    }
+    
     // Process and return template data
     return result.response.results.map(photo => ({
       id: photo.id,
@@ -104,12 +118,42 @@ const getTemplatesByCategory = async (categoryId, count = 5) => {
       authorName: photo.user.name,
       authorUrl: photo.user.links.html,
       overlay: category.overlay,
-      downloadUrl: photo.links.download
+      downloadUrl: photo.links.download,
+      attribution: `Photo by ${photo.user.name} on Unsplash`
     }));
   } catch (error) {
     console.error('Error fetching templates:', error);
-    throw error;
+    
+    // Return fallback templates if API call fails
+    return getFallbackTemplates(categoryId, count);
   }
+};
+
+/**
+ * Get fallback templates when Unsplash API fails
+ * @param {string} categoryId - The template category ID
+ * @param {number} count - Number of templates to return
+ * @returns {Array} - Array of fallback templates
+ */
+const getFallbackTemplates = (categoryId, count) => {
+  const category = templateCategories[categoryId];
+  if (!category) {
+    return [];
+  }
+  
+  // Create a single fallback template for the category
+  return [{
+    id: categoryId,
+    categoryId: categoryId,
+    categoryName: category.name,
+    url: `img/templates/${categoryId}.jpg`,
+    thumbnailUrl: `img/templates/${categoryId}.jpg`,
+    authorName: 'OmuMediaKit',
+    authorUrl: '#',
+    overlay: category.overlay,
+    downloadUrl: null,
+    attribution: 'Default template'
+  }];
 };
 
 /**

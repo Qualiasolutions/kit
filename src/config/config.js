@@ -36,7 +36,7 @@ const config = {
   
   // Check if required environment variables are set
   checkEnv: function() {
-    const requiredVars = ['JWT_SECRET', 'OPENAI_API_KEY'];
+    const requiredVars = ['JWT_SECRET', 'OPENAI_API_KEY', 'UNSPLASH_ACCESS_KEY'];
     const missing = requiredVars.filter(varName => !process.env[varName]);
     
     if (missing.length > 0) {
