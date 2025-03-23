@@ -4,6 +4,242 @@ const path = require('path');
 const ErrorResponse = require('../utils/errorResponse');
 const localStorageService = require('./localStorageService');
 const { db } = require('../config/firebase');
+const { createApi } = require('unsplash-js');
+const fetch = require('node-fetch');
+const config = require('../config/config');
+
+// Initialize Unsplash API client
+const unsplash = createApi({
+  accessKey: process.env.UNSPLASH_ACCESS_KEY || 'YOUR_UNSPLASH_ACCESS_KEY', // Replace with your key when testing
+  fetch: fetch,
+});
+
+// Template categories that map to Unsplash search queries
+const templateCategories = {
+  'product-showcase': {
+    name: 'Product Showcase',
+    description: 'Perfect for highlighting features of products or services',
+    searchQueries: ['product', 'showcase', 'marketing'],
+    overlay: { position: 'bottom', textColor: 'white', bgOpacity: 0.7 }
+  },
+  'testimonial': {
+    name: 'Testimonial',
+    description: 'Highlight customer reviews and feedback',
+    searchQueries: ['testimonial', 'review', 'customer success'],
+    overlay: { position: 'center', textColor: 'white', bgOpacity: 0.7 }
+  },
+  'industry-tip': {
+    name: 'Industry Tip',
+    description: 'Share valuable insights and tips related to your industry',
+    searchQueries: ['business tip', 'advice', 'professional'],
+    overlay: { position: 'top', textColor: 'white', bgOpacity: 0.6 }
+  },
+  'promotional-offer': {
+    name: 'Promotional Offer',
+    description: 'Announce special offers, discounts, or promotions',
+    searchQueries: ['sale', 'promotion', 'discount', 'offer'],
+    overlay: { position: 'center', textColor: 'white', bgOpacity: 0.6 }
+  },
+  'event-announcement': {
+    name: 'Event Announcement',
+    description: 'Promote upcoming events, webinars, or meetups',
+    searchQueries: ['event', 'announcement', 'celebration'],
+    overlay: { position: 'bottom', textColor: 'white', bgOpacity: 0.7 }
+  },
+  'company-news': {
+    name: 'Company News',
+    description: 'Share updates about your business or team',
+    searchQueries: ['business news', 'corporate', 'team'],
+    overlay: { position: 'top', textColor: 'white', bgOpacity: 0.6 }
+  }
+};
+
+/**
+ * Get all available template categories
+ * @returns {Object} Template categories metadata
+ */
+const getTemplateCategories = () => {
+  return Object.keys(templateCategories).map(key => ({
+    id: key,
+    name: templateCategories[key].name,
+    description: templateCategories[key].description
+  }));
+};
+
+/**
+ * Fetch template images for a specific category
+ * @param {string} categoryId - The template category ID
+ * @param {number} count - Number of templates to fetch (default: 5)
+ * @returns {Promise<Array>} - Array of template images with metadata
+ */
+const getTemplatesByCategory = async (categoryId, count = 5) => {
+  try {
+    const category = templateCategories[categoryId];
+    
+    if (!category) {
+      throw new Error(`Template category '${categoryId}' not found`);
+    }
+    
+    // Pick a random search query from the category
+    const searchQuery = category.searchQueries[Math.floor(Math.random() * category.searchQueries.length)];
+    
+    // Fetch images from Unsplash
+    const result = await unsplash.search.getPhotos({
+      query: searchQuery,
+      orientation: 'landscape',
+      perPage: count
+    });
+    
+    if (result.errors) {
+      throw new Error(`Unsplash API error: ${result.errors[0]}`);
+    }
+    
+    // Process and return template data
+    return result.response.results.map(photo => ({
+      id: photo.id,
+      categoryId: categoryId,
+      categoryName: category.name,
+      url: photo.urls.regular,
+      thumbnailUrl: photo.urls.small,
+      authorName: photo.user.name,
+      authorUrl: photo.user.links.html,
+      overlay: category.overlay,
+      downloadUrl: photo.links.download
+    }));
+  } catch (error) {
+    console.error('Error fetching templates:', error);
+    throw error;
+  }
+};
+
+/**
+ * Fetch a specific template by its ID
+ * @param {string} templateId - The template ID from Unsplash
+ * @returns {Promise<Object>} - Template metadata
+ */
+const getTemplateById = async (templateId) => {
+  try {
+    const result = await unsplash.photos.get({ photoId: templateId });
+    
+    if (result.errors) {
+      throw new Error(`Unsplash API error: ${result.errors[0]}`);
+    }
+    
+    const photo = result.response;
+    
+    // Try to match the photo to a category based on its tags or description
+    let matchedCategory = null;
+    
+    for (const [categoryId, category] of Object.entries(templateCategories)) {
+      const photoTags = (photo.tags || []).map(tag => tag.title.toLowerCase());
+      const photoDescription = photo.description ? photo.description.toLowerCase() : '';
+      
+      const hasMatchingTag = category.searchQueries.some(query => 
+        photoTags.some(tag => tag.includes(query.toLowerCase()))
+      );
+      
+      const hasMatchingDescription = category.searchQueries.some(query =>
+        photoDescription.includes(query.toLowerCase())
+      );
+      
+      if (hasMatchingTag || hasMatchingDescription) {
+        matchedCategory = { id: categoryId, ...category };
+        break;
+      }
+    }
+    
+    // Default to product showcase if we can't find a match
+    if (!matchedCategory) {
+      matchedCategory = { 
+        id: 'product-showcase', 
+        ...templateCategories['product-showcase'] 
+      };
+    }
+    
+    return {
+      id: photo.id,
+      categoryId: matchedCategory.id,
+      categoryName: matchedCategory.name,
+      url: photo.urls.regular,
+      thumbnailUrl: photo.urls.small,
+      authorName: photo.user.name,
+      authorUrl: photo.user.links.html,
+      overlay: matchedCategory.overlay,
+      downloadUrl: photo.links.download
+    };
+  } catch (error) {
+    console.error('Error fetching template by ID:', error);
+    throw error;
+  }
+};
+
+/**
+ * Search for templates using a keyword
+ * @param {string} keyword - Search keyword
+ * @param {number} page - Page number
+ * @param {number} perPage - Results per page
+ * @returns {Promise<Object>} - Search results
+ */
+const searchTemplates = async (keyword, page = 1, perPage = 10) => {
+  try {
+    const result = await unsplash.search.getPhotos({
+      query: keyword,
+      page,
+      perPage
+    });
+    
+    if (result.errors) {
+      throw new Error(`Unsplash API error: ${result.errors[0]}`);
+    }
+    
+    const photos = result.response.results.map(photo => {
+      // Try to match to a category
+      let matchedCategory = null;
+      
+      for (const [categoryId, category] of Object.entries(templateCategories)) {
+        const photoTags = (photo.tags || []).map(tag => tag.title.toLowerCase());
+        
+        const hasMatchingTag = category.searchQueries.some(query => 
+          photoTags.some(tag => tag.includes(query.toLowerCase()))
+        );
+        
+        if (hasMatchingTag) {
+          matchedCategory = { id: categoryId, ...category };
+          break;
+        }
+      }
+      
+      // Default to product showcase if we can't find a match
+      if (!matchedCategory) {
+        matchedCategory = { 
+          id: 'product-showcase', 
+          ...templateCategories['product-showcase'] 
+        };
+      }
+      
+      return {
+        id: photo.id,
+        categoryId: matchedCategory.id,
+        categoryName: matchedCategory.name,
+        url: photo.urls.regular,
+        thumbnailUrl: photo.urls.small,
+        authorName: photo.user.name,
+        authorUrl: photo.user.links.html,
+        overlay: matchedCategory.overlay,
+        downloadUrl: photo.links.download
+      };
+    });
+    
+    return {
+      results: photos,
+      total: result.response.total,
+      totalPages: result.response.total_pages
+    };
+  } catch (error) {
+    console.error('Error searching templates:', error);
+    throw error;
+  }
+};
 
 /**
  * Template service for creating and managing post templates
@@ -290,4 +526,10 @@ class TemplateService {
   }
 }
 
-module.exports = TemplateService; 
+module.exports = {
+  getTemplateCategories,
+  getTemplatesByCategory,
+  getTemplateById,
+  searchTemplates,
+  TemplateService
+}; 
