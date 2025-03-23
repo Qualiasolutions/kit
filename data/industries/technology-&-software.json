@@ -1,0 +1,25 @@
+{
+  "name": "Technology & Software",
+  "niches": [
+    {
+      "name": "SaaS Companies"
+    },
+    {
+      "name": "App Developers"
+    },
+    {
+      "name": "IT Solutions Providers"
+    },
+    {
+      "name": "Digital Marketing Agencies"
+    },
+    {
+      "name": "Cybersecurity Firms"
+    },
+    {
+      "name": "Other"
+    }
+  ],
+  "id": "technology-&-software",
+  "updatedAt": "2025-03-23T20:52:29.023Z"
+}

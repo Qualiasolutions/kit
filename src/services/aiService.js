@@ -1,5 +1,11 @@
+const OpenAI = require('openai');
 const axios = require('axios');
 const config = require('../config/config');
+
+// Initialize OpenAI client
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
 
 /**
  * Service for handling AI-powered content generation
@@ -18,203 +24,143 @@ class AIService {
    * @returns {Promise<Object>} Generated content including title, content, and hashtags
    */
   async generatePostContent(options) {
-    try {
-      console.log('Generating AI content with options:', JSON.stringify(options, null, 2));
-      
-      // Ensure we have an API key
-      const apiKey = process.env.OPENAI_API_KEY;
-      if (!apiKey) {
-        console.error('Missing OpenAI API Key');
-        throw new Error('OpenAI API key is required for content generation');
-      }
-      
-      // Extract options
-      const { topic, platform, contentType, tone, businessProfile, templateType } = options;
-      
-      // Create the prompt for OpenAI
-      const prompt = this.createPostPrompt({
-        topic,
-        platform,
-        contentType,
-        tone,
-        businessProfile,
-        templateType
-      });
-      
-      console.log('Sending prompt to OpenAI:', prompt);
-      
-      // Call OpenAI API
-      const response = await axios.post(
-        'https://api.openai.com/v1/chat/completions',
-        {
-          model: 'gpt-3.5-turbo',
-          messages: [
-            { 
-              role: 'system', 
-              content: 'You are a professional social media content creator that specializes in creating engaging, on-brand content for businesses.'
-            },
-            { role: 'user', content: prompt }
-          ],
-          temperature: 0.7,
-          max_tokens: 800
-        },
-        {
-          headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-      
-      // Extract and parse the response
-      const aiResponse = response.data.choices[0].message.content;
-      console.log('Received AI response:', aiResponse);
-      
-      // Parse the AI response to extract structured content
-      const parsedContent = this.parseAIResponse(aiResponse);
-      
-      return parsedContent;
-    } catch (error) {
-      console.error('Error in AI content generation:', error);
-      
-      // Check for OpenAI API specific errors
-      if (error.response && error.response.data) {
-        console.error('OpenAI API error details:', error.response.data);
-        
-        // Handle different error types
-        if (error.response.status === 401) {
-          throw new Error('Invalid OpenAI API key. Please check your API key and try again.');
-        } else if (error.response.status === 429) {
-          throw new Error('OpenAI API rate limit exceeded. Please try again later.');
-        }
-      }
-      
-      throw new Error('Failed to generate content: ' + (error.message || 'Unknown error'));
-    }
-  }
-  
-  /**
-   * Create a prompt for the OpenAI API based on the requested content
-   */
-  createPostPrompt(options) {
     const { topic, platform, contentType, tone, businessProfile, templateType } = options;
     
-    // Construct information about the business
-    const businessInfo = businessProfile 
-      ? `Business name: ${businessProfile.name}
-         Industry: ${businessProfile.industry || 'Not specified'}
-         Target audience: ${businessProfile.targetAudience || 'Not specified'}
-         Products/Services: ${(businessProfile.products || []).join(', ')}
-         Business description: ${businessProfile.description || 'Not specified'}`
-      : 'No business profile available';
-    
-    // Different instructions based on content type
-    const contentTypeInstructions = {
-      post: 'Create a regular social media post with engaging text.',
-      carousel: 'Create content for a carousel post with multiple slides. Include an intro and descriptions for 3-5 slides.',
-      story: 'Create brief, attention-grabbing content for a story that disappears after 24 hours.',
-      reel: 'Create content for a short-form video post that is entertaining and engaging.'
-    };
-    
-    // Platform-specific guidance
-    const platformGuidance = {
-      instagram: 'Instagram content should be visual and use 5-10 relevant hashtags.',
-      facebook: 'Facebook content should be conversational and encourage engagement.',
-      twitter: 'Twitter content should be concise (under 280 characters) and timely.',
-      linkedin: 'LinkedIn content should be professional and industry-relevant.',
-      tiktok: 'TikTok content should be trendy, authentic, and entertaining.'
-    };
-    
-    // Template type guidance
-    const templateGuidance = {
-      product: 'Focus on highlighting product features, benefits, and use cases.',
-      testimonial: 'Format this as a customer testimonial or success story.',
-      tip: 'Share practical advice, tips, or industry insights.',
-      promotion: 'Create promotional content highlighting special offers or deals.',
-      event: 'Announce or promote an upcoming event, webinar, or launch.',
-      news: 'Share company news, updates, or announcements.'
-    };
-    
-    // Construct the prompt
-    return `
-      Create engaging social media content for the following specifications:
-      
-      TOPIC: ${topic}
-      PLATFORM: ${platform}
-      CONTENT TYPE: ${contentType} - ${contentTypeInstructions[contentType] || 'Create engaging social media content.'}
-      TONE: ${tone || 'Professional'}
-      TEMPLATE TYPE: ${templateType || 'standard'} - ${templateGuidance[templateType] || ''}
-      
-      BUSINESS INFORMATION:
-      ${businessInfo}
-      
-      PLATFORM GUIDANCE:
-      ${platformGuidance[platform] || 'Create platform-appropriate content.'}
-      
-      Please format your response like this:
-      
-      TITLE: [A catchy title for the post]
-      
-      CONTENT: [The main content of the post]
-      
-      HASHTAGS: [A list of 5-8 relevant hashtags separated by commas]
-      
-      Make the content authentic, engaging, and aligned with the brand. Avoid generic, template-like content.
-    `;
-  }
-  
-  /**
-   * Parse the OpenAI response to extract structured content
-   */
-  parseAIResponse(aiResponse) {
     try {
-      // Extract title
-      const titleMatch = aiResponse.match(/TITLE:(.*?)(?=\n\n|CONTENT:)/s);
-      const title = titleMatch ? titleMatch[1].trim() : '';
+      let businessContext = "a business";
+      let audienceContext = "general audience";
+      let platformSpecifics = "";
+      let contentStructure = "";
+      let businessVoice = "";
       
-      // Extract content
-      const contentMatch = aiResponse.match(/CONTENT:(.*?)(?=\n\n|HASHTAGS:)/s);
-      const content = contentMatch ? contentMatch[1].trim() : '';
-      
-      // Extract hashtags
-      const hashtagsMatch = aiResponse.match(/HASHTAGS:(.*?)$/s);
-      let hashtags = [];
-      
-      if (hashtagsMatch && hashtagsMatch[1]) {
-        // Process hashtags - handle various formats
-        const hashtagsText = hashtagsMatch[1].trim();
+      // Process business profile information if available
+      if (businessProfile) {
+        // Business details
+        businessContext = `${businessProfile.businessName}, a business in the ${businessProfile.industry} industry`;
+        if (businessProfile.niche) {
+          businessContext += `, specializing in ${businessProfile.niche}`;
+        }
         
-        if (hashtagsText.includes(',')) {
-          // Comma-separated list
-          hashtags = hashtagsText.split(',')
-            .map(tag => tag.trim())
-            .filter(tag => tag)
-            .map(tag => tag.startsWith('#') ? tag : `#${tag}`);
-        } else if (hashtagsText.includes(' ')) {
-          // Space-separated list
-          hashtags = hashtagsText.split(' ')
-            .map(tag => tag.trim())
-            .filter(tag => tag)
-            .map(tag => tag.startsWith('#') ? tag : `#${tag}`);
-        } else {
-          // Single hashtag
-          hashtags = [hashtagsText.startsWith('#') ? hashtagsText : `#${hashtagsText}`];
+        // Target audience
+        if (businessProfile.targetAudience && businessProfile.targetAudience.length > 0) {
+          audienceContext = businessProfile.targetAudience.join(', ');
+        }
+        
+        // Business voice/tone preferences
+        if (businessProfile.businessVoice && businessProfile.businessVoice.length > 0) {
+          businessVoice = `The brand voice is ${businessProfile.businessVoice.join(' and ')}.`;
         }
       }
       
+      // Platform-specific guidance
+      switch (platform.toLowerCase()) {
+        case 'instagram':
+          platformSpecifics = "For Instagram, use emojis appropriately and focus on visually-driven content. Keep it concise but engaging.";
+          break;
+        case 'facebook':
+          platformSpecifics = "For Facebook, balance informative and conversational tone. Questions drive engagement.";
+          break;
+        case 'twitter':
+          platformSpecifics = "For Twitter, be concise and direct. Use relevant hashtags but don't overdo it.";
+          break;
+        case 'linkedin':
+          platformSpecifics = "For LinkedIn, maintain a professional tone while sharing industry insights and value.";
+          break;
+        case 'tiktok':
+          platformSpecifics = "For TikTok, be casual, trendy, and authentic. Use appropriate trends and sounds references.";
+          break;
+      }
+      
+      // Content type specifics
+      switch (contentType.toLowerCase()) {
+        case 'post':
+          contentStructure = "Create a standard post with a hook, body, and call-to-action.";
+          break;
+        case 'carousel':
+          contentStructure = "Create content for a multi-slide carousel post with a logical flow between points.";
+          break;
+        case 'story':
+          contentStructure = "Create brief, punchy content suitable for a disappearing story format.";
+          break;
+        case 'reel':
+          contentStructure = "Create a script for a short video that grabs attention quickly.";
+          break;
+      }
+      
+      // Build the prompt
+      const prompt = `
+        Create engaging social media content for ${businessContext} targeting ${audienceContext}.
+        
+        Topic: ${topic}
+        Platform: ${platform}
+        Content Type: ${contentType}
+        Tone: ${tone}
+        ${businessVoice ? businessVoice : ''}
+        
+        ${platformSpecifics}
+        ${contentStructure}
+        
+        If the template type is ${templateType || 'general'}, consider this in the content style.
+        
+        Generate:
+        1. A catchy title/headline
+        2. The main post content
+        3. 5-7 relevant hashtags
+      `;
+      
+      // Call OpenAI API
+      const completion = await openai.chat.completions.create({
+        model: "gpt-3.5-turbo",
+        messages: [
+          {
+            role: "system",
+            content: "You are a professional social media marketer who creates engaging, platform-specific content."
+          },
+          {
+            role: "user", 
+            content: prompt
+          }
+        ],
+        max_tokens: 1000
+      });
+      
+      // Process the AI response
+      const aiResponse = completion.choices[0].message.content;
+      
+      // Parse the AI response
+      const titleMatch = aiResponse.match(/(?:Title:|Headline:)(.*?)(?:\n|$)/i);
+      const contentMatch = aiResponse.match(/(?:Content:|Post:|Main Content:)([\s\S]*?)(?:\n*Hashtags|\n*$)/i);
+      const hashtagsMatch = aiResponse.match(/(?:Hashtags:)([\s\S]*?)$/i);
+      
+      // Extract the components
+      const title = titleMatch ? titleMatch[1].trim() : "";
+      let content = contentMatch ? contentMatch[1].trim() : aiResponse.trim();
+      let hashtags = [];
+      
+      if (hashtagsMatch) {
+        const hashtagText = hashtagsMatch[1].trim();
+        hashtags = hashtagText
+          .split(/[\s,]+/)
+          .map(tag => tag.trim())
+          .filter(tag => tag.startsWith('#') || (tag = '#' + tag))
+          .slice(0, 7); // Limit to 7 hashtags
+      }
+      
       return {
-        title,
-        content, 
-        hashtags
+        success: true,
+        content: {
+          title,
+          content,
+          hashtags
+        }
       };
     } catch (error) {
-      console.error('Error parsing AI response:', error);
+      console.error('Error generating content with OpenAI:', error);
       
-      // Return a basic structure if parsing fails
       return {
-        title: 'Generated Post',
-        content: aiResponse,
-        hashtags: []
+        success: false,
+        error: 'Failed to generate content',
+        message: error.message
       };
     }
   }

@@ -1,0 +1,25 @@
+{
+  "name": "Beauty & Personal Care",
+  "niches": [
+    {
+      "name": "Nail Salons"
+    },
+    {
+      "name": "Hair Salons"
+    },
+    {
+      "name": "Spas & Wellness Centers"
+    },
+    {
+      "name": "Barber Shops"
+    },
+    {
+      "name": "Makeup Studios"
+    },
+    {
+      "name": "Other"
+    }
+  ],
+  "id": "beauty-&-personal-care",
+  "updatedAt": "2025-03-23T20:52:29.008Z"
+}

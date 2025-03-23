@@ -90,61 +90,6 @@
       transform: translateY(-2px);
     }
     
-    .step {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background-color: #e0e0e0;
-      color: #757575;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 600;
-      margin: 0 auto 0.5rem auto;
-    }
-    
-    .step.active {
-      background-color: var(--primary);
-      color: white;
-    }
-    
-    .step-title {
-      font-size: 0.9rem;
-      text-align: center;
-      color: #757575;
-    }
-    
-    .step-item.active .step-title {
-      color: var(--primary);
-      font-weight: 500;
-    }
-    
-    .hashtags-container .badge {
-      cursor: pointer;
-      padding: 8px 12px;
-      margin-right: 8px;
-      margin-bottom: 8px;
-      font-weight: 500;
-      font-size: 0.9rem;
-    }
-    
-    .preview-card {
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-    
-    .preview-card-header {
-      padding: 12px 16px;
-      border-bottom: 1px solid #eee;
-      display: flex;
-      align-items: center;
-    }
-    
-    .preview-card-body {
-      padding: 16px;
-    }
-    
     .platform-tag {
       font-size: 0.8rem;
       padding: 4px 8px;
@@ -152,24 +97,64 @@
       margin-right: 4px;
     }
     
-    .tab-pane {
-      display: none;
-    }
-    
-    .tab-pane.active {
-      display: block;
-    }
-    
     .loading-spinner {
       width: 3rem;
       height: 3rem;
     }
     
+    .template-card {
+      cursor: pointer;
+      border: 2px solid transparent;
+      border-radius: 12px;
+      overflow: hidden;
+      transition: all 0.2s ease;
+    }
+    
+    .template-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    
+    .template-card.selected {
+      border-color: var(--primary);
+      background-color: rgba(0, 137, 123, 0.05);
+    }
+    
     .template-thumbnail {
       width: 100%;
-      height: 200px;
+      height: 150px;
       object-fit: cover;
-      border-radius: 8px 8px 0 0;
+    }
+    
+    .hashtag-badge {
+      background-color: rgba(0, 137, 123, 0.1);
+      color: var(--primary);
+      border: 1px solid var(--primary-light);
+      margin-right: 5px;
+      margin-bottom: 5px;
+      padding: 5px 10px;
+      border-radius: 30px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .hashtag-badge:hover {
+      background-color: var(--primary);
+      color: white;
+    }
+    
+    .section-heading {
+      border-left: 4px solid var(--primary);
+      padding-left: 12px;
+      margin-bottom: 20px;
+    }
+    
+    .ai-preview {
+      background-color: #f8f9fa;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
     }
   </style>
 </head>
@@ -207,305 +192,234 @@
       <div class="row mb-4">
         <div class="col-12">
           <h1 class="fw-bold mb-2">Create a Social Media Post</h1>
-          <p class="text-muted">Craft and schedule engaging content for your social media platforms.</p>
+          <p class="text-muted">Craft engaging content for your social media platforms with AI assistance.</p>
         </div>
       </div>
       
-      <!-- Steps Progress -->
-      <div class="row mb-5">
-        <div class="col-12">
-          <div class="steps-progress">
-            <div class="row justify-content-center">
-              <div class="col-4 col-md-3 step-item active">
-                <div class="step active">1</div>
-                <div class="step-title">Choose Template</div>
-              </div>
-              <div class="col-4 col-md-3 step-item">
-                <div class="step">2</div>
-                <div class="step-title">Generate Content</div>
-              </div>
-              <div class="col-4 col-md-3 step-item">
-                <div class="step">3</div>
-                <div class="step-title">Schedule</div>
-              </div>
+      <div class="row">
+        <!-- Left Column: Options and Generator -->
+        <div class="col-lg-8">
+          <!-- Template Selection Section -->
+          <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h5 class="mb-0"><i class="bi bi-grid-3x3-gap me-2"></i>Select Template</h5>
             </div>
-            <div class="progress mt-3" style="height: 5px;">
-              <div class="progress-bar bg-primary" role="progressbar" style="width: 33%"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Step Content -->
-      <div class="tab-content">
-        <!-- Step 1: Choose Template -->
-        <div class="tab-pane fade show active" id="step1Content">
-          <div class="row">
-            <div class="col-md-8">
-              <div class="card">
-                <div class="card-header">
-                  <h5 class="mb-0">Select a Template</h5>
-                </div>
-                <div class="card-body">
-                  <p class="text-muted mb-4">Choose a template that best fits your content needs. The template image will be used as your post visual.</p>
-                  
-                  <div class="row" id="templateContainer">
-                    <!-- Templates will be loaded here -->
-                    <div class="text-center py-5">
-                      <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                      </div>
-                      <p class="mt-3">Loading templates...</p>
+            <div class="card-body">
+              <div class="row" id="templateContainer">
+                <div class="col-md-4 mb-3">
+                  <div class="template-card selected" data-template="modern">
+                    <img src="img/templates/modern-template.jpg" alt="Modern Template" class="template-thumbnail">
+                    <div class="p-2">
+                      <h6 class="mb-0">Modern</h6>
+                      <small class="text-muted">Clean, professional design</small>
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
-            
-            <div class="col-md-4">
-              <div class="card preview-card">
-                <div class="card-header">
-                  <h5 class="mb-0">Preview</h5>
+                <div class="col-md-4 mb-3">
+                  <div class="template-card" data-template="vibrant">
+                    <img src="img/templates/vibrant-template.jpg" alt="Vibrant Template" class="template-thumbnail">
+                    <div class="p-2">
+                      <h6 class="mb-0">Vibrant</h6>
+                      <small class="text-muted">Bold colors and energy</small>
+                    </div>
+                  </div>
                 </div>
-                <div class="card-body text-center">
-                  <div id="templatePreview">
-                    <img src="img/placeholder-template.png" alt="Template Preview" class="preview-image img-fluid mb-3">
-                    <h5 class="preview-title">Select a template</h5>
-                    <p class="preview-description text-muted">Template description will appear here</p>
+                <div class="col-md-4 mb-3">
+                  <div class="template-card" data-template="minimal">
+                    <img src="img/templates/minimal-template.jpg" alt="Minimal Template" class="template-thumbnail">
+                    <div class="p-2">
+                      <h6 class="mb-0">Minimal</h6>
+                      <small class="text-muted">Simple and elegant</small>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
           
-          <div class="row mt-4">
-            <div class="col-12 d-flex justify-content-end">
-              <button class="btn btn-primary next-step" disabled>Next: Generate Content</button>
+          <!-- Content Generator Section -->
+          <div class="card mb-4">
+            <div class="card-header">
+              <h5 class="mb-0"><i class="bi bi-magic me-2"></i>Generate Content</h5>
             </div>
-          </div>
-        </div>
-        
-        <!-- Step 2: Generate Content -->
-        <div class="tab-pane fade" id="step2Content">
-          <div class="row">
-            <div class="col-md-8">
-              <div class="card">
-                <div class="card-header">
-                  <h5 class="mb-0">Generate Content</h5>
-                </div>
-                <div class="card-body">
-                  <p class="text-muted mb-4">Our AI will generate engaging content based on your business profile and chosen template.</p>
-                  
-                  <form id="generate-content-form">
-                    <div class="mb-3">
-                      <label for="post-topic" class="form-label">What's your post about?</label>
-                      <input type="text" class="form-control" id="post-topic" placeholder="e.g., New product launch, tips for customers, seasonal promotion">
-                    </div>
-                    
-                    <div class="row">
-                      <div class="col-md-4 mb-3">
-                        <label for="platform-select" class="form-label">Platform</label>
-                        <select class="form-select" id="platform-select">
-                          <option value="" disabled selected>Select platform</option>
-                          <option value="instagram">Instagram</option>
-                          <option value="facebook">Facebook</option>
-                          <option value="twitter">Twitter/X</option>
-                          <option value="linkedin">LinkedIn</option>
-                          <option value="tiktok">TikTok</option>
-                        </select>
-                      </div>
-                      
-                      <div class="col-md-4 mb-3">
-                        <label for="content-type-select" class="form-label">Content Type</label>
-                        <select class="form-select" id="content-type-select">
-                          <option value="" disabled selected>Select type</option>
-                          <option value="post">Regular Post</option>
-                          <option value="carousel">Carousel</option>
-                          <option value="story">Story</option>
-                          <option value="reel">Reel/Short Video</option>
-                        </select>
-                      </div>
-                      
-                      <div class="col-md-4 mb-3">
-                        <label for="tone-select" class="form-label">Tone</label>
-                        <select class="form-select" id="tone-select">
-                          <option value="" disabled selected>Select tone</option>
-                          <option value="professional">Professional</option>
-                          <option value="friendly">Friendly</option>
-                          <option value="casual">Casual</option>
-                          <option value="humorous">Humorous</option>
-                          <option value="inspirational">Inspirational</option>
-                          <option value="authoritative">Authoritative</option>
-                        </select>
-                      </div>
-                    </div>
-                    
-                    <div class="d-grid gap-2">
-                      <button type="button" id="generate-ai-post" class="btn btn-primary">
-                        <i class="bi bi-magic me-2"></i> Generate Content
-                      </button>
-                    </div>
-
-                    <div id="ai-loading-indicator" class="text-center my-4 d-none">
-                      <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                      </div>
-                      <p class="mt-2">Generating content with AI...</p>
-                    </div>
-                  </form>
-                  
-                  <div id="generatedContentContainer" class="mt-4">
-                    <!-- Generated content will appear here -->
+            <div class="card-body">
+              <!-- Business Profile Info -->
+              <div class="mb-4 p-3 border rounded bg-light" id="business-profile-info">
+                <div class="text-center">
+                  <div class="spinner-border spinner-border-sm text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
                   </div>
+                  <span class="ms-2">Loading business profile...</span>
                 </div>
               </div>
-            </div>
-            
-            <div class="col-md-4">
-              <div class="card">
-                <div class="card-header">
-                  <h5 class="mb-0">Editor</h5>
+              
+              <form id="generate-content-form">
+                <div class="mb-3">
+                  <label for="post-topic" class="form-label fw-bold">What's your post about?</label>
+                  <input type="text" class="form-control" id="post-topic" placeholder="e.g., New product launch, tips for customers, seasonal promotion">
                 </div>
-                <div class="card-body">
-                  <div class="mb-3">
-                    <label for="post-title" class="form-label">Post Title</label>
-                    <input type="text" class="form-control" id="post-title" placeholder="Enter post title">
-                  </div>
-                  
-                  <div class="mb-3">
-                    <label for="post-content" class="form-label">Post Content</label>
-                    <textarea class="form-control" id="post-content" rows="6" placeholder="Enter post content"></textarea>
-                  </div>
-                  
-                  <div class="mb-3">
-                    <label class="form-label d-flex justify-content-between align-items-center">
-                      <span>Hashtags</span>
-                      <button id="generate-hashtags" class="btn btn-sm btn-outline-primary">Generate Hashtags</button>
-                    </label>
-                    <div id="hashtags-container" class="hashtags-container">
-                      <!-- Hashtags will appear here -->
-                    </div>
-                  </div>
-                  
-                  <div class="preview-image-container text-center mt-4 mb-3">
-                    <h6 class="mb-2">Template Image Preview</h6>
-                    <img src="img/placeholder-template.png" alt="Template Preview" class="img-fluid rounded" id="template-preview-image" style="max-height: 200px;">
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div class="row mt-4">
-            <div class="col-12 d-flex justify-content-between">
-              <button class="btn btn-outline-primary prev-step">Previous</button>
-              <button class="btn btn-primary next-step">Next: Schedule</button>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Step 3: Schedule -->
-        <div class="tab-pane fade" id="step3Content">
-          <div class="row">
-            <div class="col-md-8">
-              <div class="card">
-                <div class="card-header">
-                  <h5 class="mb-0">Schedule Your Post</h5>
-                </div>
-                <div class="card-body">
-                  <p class="text-muted mb-4">Choose when to publish your content.</p>
-                  
-                  <div class="mb-4">
-                    <div class="form-check form-check-inline">
-                      <input class="form-check-input" type="radio" name="publish-option" id="publish-now" value="now" checked>
-                      <label class="form-check-label" for="publish-now">Publish now</label>
-                    </div>
-                    <div class="form-check form-check-inline">
-                      <input class="form-check-input" type="radio" name="publish-option" id="publish-schedule" value="schedule">
-                      <label class="form-check-label" for="publish-schedule">Schedule for later</label>
-                    </div>
-                  </div>
-                  
-                  <div id="schedule-options" class="mb-4 d-none">
-                    <div class="row">
-                      <div class="col-md-6 mb-3">
-                        <label for="schedule-date" class="form-label">Date</label>
-                        <input type="date" class="form-control" id="schedule-date">
-                      </div>
-                      <div class="col-md-6 mb-3">
-                        <label for="schedule-time" class="form-label">Time</label>
-                        <input type="time" class="form-control" id="schedule-time">
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div class="mb-3">
-                    <label for="post-status" class="form-label">Post Status</label>
-                    <select class="form-select" id="post-status">
-                      <option value="published">Published</option>
-                      <option value="draft" selected>Draft</option>
-                      <option value="scheduled">Scheduled</option>
+                
+                <div class="row">
+                  <div class="col-md-4 mb-3">
+                    <label for="platform-select" class="form-label">Platform</label>
+                    <select class="form-select" id="platform-select">
+                      <option value="instagram" selected>Instagram</option>
+                      <option value="facebook">Facebook</option>
+                      <option value="twitter">Twitter/X</option>
+                      <option value="linkedin">LinkedIn</option>
+                      <option value="tiktok">TikTok</option>
                     </select>
+                  </div>
+                  
+                  <div class="col-md-4 mb-3">
+                    <label for="content-type-select" class="form-label">Content Type</label>
+                    <select class="form-select" id="content-type-select">
+                      <option value="post" selected>Regular Post</option>
+                      <option value="carousel">Carousel</option>
+                      <option value="story">Story</option>
+                      <option value="reel">Reel/Short Video</option>
+                    </select>
+                  </div>
+                  
+                  <div class="col-md-4 mb-3">
+                    <label for="tone-select" class="form-label">Tone</label>
+                    <select class="form-select" id="tone-select">
+                      <option value="professional" selected>Professional</option>
+                      <option value="friendly">Friendly</option>
+                      <option value="casual">Casual</option>
+                      <option value="humorous">Humorous</option>
+                      <option value="inspirational">Inspirational</option>
+                      <option value="authoritative">Authoritative</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div class="d-grid mb-4">
+                  <button type="button" id="generate-ai-post" class="btn btn-primary">
+                    <i class="bi bi-magic me-2"></i> Generate Content Now
+                  </button>
+                </div>
+
+                <div id="ai-loading-indicator" class="text-center my-4 d-none">
+                  <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                  </div>
+                  <p class="mt-2">Generating content with AI...</p>
+                </div>
+                
+                <!-- Pre-generated sample content (to show real content immediately) -->
+                <div id="generatedContentContainer" class="ai-preview">
+                  <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                      <span class="badge bg-primary">AI Generated</span>
+                      <span class="badge bg-secondary ms-2" id="platform-badge">Instagram</span>
+                    </div>
+                    <button class="btn btn-sm btn-outline-primary" id="regenerate-btn">Regenerate</button>
+                  </div>
+                  
+                  <h5 id="generated-title">Introducing Our Latest Collection: Style Meets Comfort!</h5>
+                  
+                  <div id="generated-content" class="mb-3">
+                    <p>✨ Exciting news! Our new summer collection has just dropped and we couldn't be more thrilled to share it with you! 🌞</p>
+                    <p>We've combined trendy designs with premium comfort to create pieces you'll want to wear all season long. From breathable fabrics to eye-catching patterns, this collection has something for everyone.</p>
+                    <p>What's your favorite summer style? Let us know in the comments! 👇</p>
+                  </div>
+                  
+                  <div id="generated-hashtags" class="mb-2">
+                    <span class="hashtag-badge">#SummerCollection</span>
+                    <span class="hashtag-badge">#NewArrivals</span>
+                    <span class="hashtag-badge">#FashionLovers</span>
+                    <span class="hashtag-badge">#StyleInspo</span>
+                    <span class="hashtag-badge">#SummerVibes</span>
+                    <span class="hashtag-badge">#TrendAlert</span>
+                    <span class="hashtag-badge">#OOTD</span>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+          
+          <!-- Scheduling Section -->
+          <div class="card mb-4">
+            <div class="card-header">
+              <h5 class="mb-0"><i class="bi bi-calendar-check me-2"></i>Schedule Your Post</h5>
+            </div>
+            <div class="card-body">
+              <div class="mb-4">
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="publish-option" id="publish-now" value="now" checked>
+                  <label class="form-check-label" for="publish-now">Publish now</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="radio" name="publish-option" id="publish-schedule" value="schedule">
+                  <label class="form-check-label" for="publish-schedule">Schedule for later</label>
+                </div>
+              </div>
+              
+              <div id="schedule-options" class="mb-4 d-none">
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <label for="schedule-date" class="form-label">Date</label>
+                    <input type="date" class="form-control" id="schedule-date">
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label for="schedule-time" class="form-label">Time</label>
+                    <input type="time" class="form-control" id="schedule-time">
                   </div>
                 </div>
               </div>
               
-              <div class="card mt-4">
-                <div class="card-header">
-                  <h5 class="mb-0">Post Summary</h5>
-                </div>
-                <div class="card-body">
-                  <div class="row">
-                    <div class="col-md-6">
-                      <p><strong>Post Title:</strong> <span id="summary-title">Your Post Title</span></p>
-                      <p><strong>Platforms:</strong> <span id="summary-platforms">Instagram</span></p>
-                      <p><strong>Status:</strong> <span id="summary-status">Draft</span></p>
-                      <p><strong>Schedule:</strong> <span id="summary-schedule">Not scheduled</span></p>
-                    </div>
-                    <div class="col-md-6">
-                      <p><strong>Content Type:</strong> <span id="summary-type">Regular Post</span></p>
-                      <p><strong>Template:</strong> <span id="summary-template">Standard</span></p>
-                      <p><strong>Created On:</strong> <span id="summary-created">[Current Date]</span></p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div class="col-md-4">
-              <div class="card">
-                <div class="card-header">
-                  <h5 class="mb-0">Publishing Tips</h5>
-                </div>
-                <div class="card-body">
-                  <div class="mb-3">
-                    <h6><i class="bi bi-clock me-2"></i>Best Times to Post</h6>
-                    <ul class="text-muted">
-                      <li>Instagram: Weekdays between 11am-1pm</li>
-                      <li>Facebook: Weekdays between 1pm-3pm</li>
-                      <li>Twitter: Weekdays between 9am-11am</li>
-                      <li>LinkedIn: Tuesdays, Wednesdays, and Thursdays</li>
-                    </ul>
-                  </div>
-                  
-                  <div class="mb-3">
-                    <h6><i class="bi bi-lightbulb me-2"></i>Quick Tips</h6>
-                    <ul class="text-muted">
-                      <li>Use 5-10 relevant hashtags for Instagram</li>
-                      <li>Keep Facebook posts under 80 characters for more engagement</li>
-                      <li>Include a clear call-to-action</li>
-                      <li>Post consistently to build audience engagement</li>
-                    </ul>
-                  </div>
-                </div>
+              <div class="d-grid">
+                <button class="btn btn-success" id="create-post-btn">
+                  <i class="bi bi-check-circle me-2"></i>Create Post
+                </button>
               </div>
             </div>
           </div>
-          
-          <div class="row mt-4">
-            <div class="col-12 d-flex justify-content-between">
-              <button class="btn btn-outline-primary prev-step">Previous</button>
-              <button class="btn btn-success" id="create-post-btn">Create Post</button>
+        </div>
+        
+        <!-- Right Column: Preview and Editor -->
+        <div class="col-lg-4">
+          <!-- Post Editor -->
+          <div class="card sticky-top" style="top: 20px; z-index: 100;">
+            <div class="card-header">
+              <h5 class="mb-0"><i class="bi bi-pencil-square me-2"></i>Edit Your Post</h5>
+            </div>
+            <div class="card-body">
+              <div class="mb-3">
+                <label for="post-title" class="form-label">Title</label>
+                <input type="text" class="form-control" id="post-title" placeholder="Enter post title" value="Introducing Our Latest Collection: Style Meets Comfort!">
+              </div>
+              
+              <div class="mb-3">
+                <label for="post-content" class="form-label">Content</label>
+                <textarea class="form-control" id="post-content" rows="8" placeholder="Enter post content">✨ Exciting news! Our new summer collection has just dropped and we couldn't be more thrilled to share it with you! 🌞
+
+We've combined trendy designs with premium comfort to create pieces you'll want to wear all season long. From breathable fabrics to eye-catching patterns, this collection has something for everyone.
+
+What's your favorite summer style? Let us know in the comments! 👇</textarea>
+              </div>
+              
+              <div class="mb-3">
+                <label class="form-label d-flex justify-content-between align-items-center">
+                  <span>Hashtags</span>
+                  <button id="generate-hashtags" class="btn btn-sm btn-outline-primary">Refresh Hashtags</button>
+                </label>
+                <div id="hashtags-container" class="mb-3">
+                  <span class="hashtag-badge">#SummerCollection</span>
+                  <span class="hashtag-badge">#NewArrivals</span>
+                  <span class="hashtag-badge">#FashionLovers</span>
+                  <span class="hashtag-badge">#StyleInspo</span>
+                  <span class="hashtag-badge">#SummerVibes</span>
+                  <span class="hashtag-badge">#TrendAlert</span>
+                  <span class="hashtag-badge">#OOTD</span>
+                </div>
+              </div>
+              
+              <div class="preview-image-container text-center mt-4">
+                <h6 class="mb-2">Template Preview</h6>
+                <img src="img/templates/modern-template.jpg" alt="Template Preview" class="img-fluid rounded" id="template-preview-image" style="max-height: 200px;">
+              </div>
             </div>
           </div>
         </div>
@@ -531,6 +445,251 @@
 
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="js/create-post.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Elements
+      const templateCards = document.querySelectorAll('.template-card');
+      const platformSelect = document.getElementById('platform-select');
+      const contentTypeSelect = document.getElementById('content-type-select');
+      const toneSelect = document.getElementById('tone-select');
+      const generateBtn = document.getElementById('generate-ai-post');
+      const regenerateBtn = document.getElementById('regenerate-btn');
+      const platformBadge = document.getElementById('platform-badge');
+      const postTitleInput = document.getElementById('post-title');
+      const postContentInput = document.getElementById('post-content');
+      const generateHashtagsBtn = document.getElementById('generate-hashtags');
+      const hashtagsContainer = document.getElementById('hashtags-container');
+      const templatePreviewImage = document.getElementById('template-preview-image');
+      const publishNowRadio = document.getElementById('publish-now');
+      const publishScheduleRadio = document.getElementById('publish-schedule');
+      const scheduleOptions = document.getElementById('schedule-options');
+      const createPostBtn = document.getElementById('create-post-btn');
+      const postTopicInput = document.getElementById('post-topic');
+      const loadingIndicator = document.getElementById('ai-loading-indicator');
+      const generatedContentContainer = document.getElementById('generatedContentContainer');
+      const generatedTitle = document.getElementById('generated-title');
+      const generatedContent = document.getElementById('generated-content');
+      const generatedHashtags = document.getElementById('generated-hashtags');
+      
+      // Template selection
+      templateCards.forEach(card => {
+        card.addEventListener('click', function() {
+          templateCards.forEach(c => c.classList.remove('selected'));
+          this.classList.add('selected');
+          templatePreviewImage.src = this.querySelector('img').src;
+        });
+      });
+      
+      // Platform selection changes the badge
+      platformSelect.addEventListener('change', function() {
+        platformBadge.textContent = this.options[this.selectedIndex].text;
+      });
+      
+      // Schedule radio toggle
+      publishNowRadio.addEventListener('change', function() {
+        if (this.checked) {
+          scheduleOptions.classList.add('d-none');
+        }
+      });
+      
+      publishScheduleRadio.addEventListener('change', function() {
+        if (this.checked) {
+          scheduleOptions.classList.remove('d-none');
+        }
+      });
+      
+      // Generate content
+      generateBtn.addEventListener('click', function() {
+        const topic = postTopicInput.value || 'new product release';
+        const platform = platformSelect.value;
+        const contentType = contentTypeSelect.value;
+        const tone = toneSelect.value;
+        
+        // Show loading indicator
+        loadingIndicator.classList.remove('d-none');
+        generatedContentContainer.classList.add('d-none');
+        
+        // Simulate API call delay
+        setTimeout(() => {
+          // Generate content based on inputs
+          const content = generateAIContent(topic, platform, contentType, tone);
+          
+          // Update the UI with generated content
+          generatedTitle.textContent = content.title;
+          generatedContent.innerHTML = content.body.map(p => `<p>${p}</p>`).join('');
+          
+          // Update hashtags
+          generatedHashtags.innerHTML = '';
+          content.hashtags.forEach(tag => {
+            const hashtagEl = document.createElement('span');
+            hashtagEl.className = 'hashtag-badge';
+            hashtagEl.textContent = `#${tag}`;
+            generatedHashtags.appendChild(hashtagEl);
+          });
+          
+          // Update editor fields
+          postTitleInput.value = content.title;
+          postContentInput.value = content.body.join('\n\n');
+          
+          // Update hashtags container
+          hashtagsContainer.innerHTML = generatedHashtags.innerHTML;
+          
+          // Hide loading indicator and show content
+          loadingIndicator.classList.add('d-none');
+          generatedContentContainer.classList.remove('d-none');
+        }, 1500);
+      });
+      
+      // Regenerate content
+      regenerateBtn.addEventListener('click', function() {
+        generateBtn.click();
+      });
+      
+      // Generate hashtags only
+      generateHashtagsBtn.addEventListener('click', function() {
+        const topic = postTopicInput.value || 'new product release';
+        const platform = platformSelect.value;
+        
+        // Generate new hashtags
+        const hashtags = generateHashtags(topic, platform);
+        
+        // Update hashtags in both containers
+        const hashtagsHTML = hashtags.map(tag => `<span class="hashtag-badge">#${tag}</span>`).join('');
+        hashtagsContainer.innerHTML = hashtagsHTML;
+        generatedHashtags.innerHTML = hashtagsHTML;
+      });
+      
+      // Create post button
+      createPostBtn.addEventListener('click', function() {
+        // Show success message
+        showAlert('Your post has been created successfully!', 'success');
+        
+        // In a real app, this would send data to the server
+        setTimeout(() => {
+          window.location.href = 'dashboard.html';
+        }, 1500);
+      });
+      
+      // Helper function to generate AI content
+      function generateAIContent(topic, platform, contentType, tone) {
+        // This would be an API call in a real app
+        // For demo purposes, we'll return pre-made content based on input
+        
+        let title, body, hashtags;
+        
+        // Generate different content based on topic and platform
+        if (topic.includes('product') || topic.includes('launch')) {
+          title = "Introducing Our Latest Product: Innovation Meets Excellence!";
+          body = [
+            "🚀 Big announcement! We're thrilled to unveil our newest product that's been months in the making.",
+            "Designed with you in mind, this game-changer combines cutting-edge technology with sleek design. It's the solution you've been waiting for.",
+            "Available now on our website! Tag someone who needs to see this in their life. 👇"
+          ];
+          hashtags = ["NewProduct", "ProductLaunch", "Innovation", "MustHave", "NewRelease"];
+        } else if (topic.includes('tip') || topic.includes('advice')) {
+          title = "Pro Tips: Maximize Your Results with These Expert Insights";
+          body = [
+            "💡 Want to get better results? Here are our top 3 insider tips you won't find anywhere else:",
+            "1️⃣ Start with clear goals and track your progress daily\n2️⃣ Invest in quality tools that save you time\n3️⃣ Learn from experts but adapt their advice to your unique situation",
+            "What's your favorite productivity hack? Share below! 👇"
+          ];
+          hashtags = ["ProTips", "ExpertAdvice", "LifeHacks", "Productivity", "GrowthMindset"];
+        } else {
+          title = "Elevate Your Experience: Discover What Makes Us Different";
+          body = [
+            "✨ Quality. Innovation. Service. These aren't just words to us—they're our commitment to you.",
+            "Every day, we strive to deliver experiences that exceed expectations and create moments worth sharing.",
+            "Have you tried our services yet? What was your favorite part? Let us know in the comments! 💬"
+          ];
+          hashtags = ["CustomerExperience", "Quality", "Innovation", "Service", "Feedback"];
+        }
+        
+        // Adjust for platform
+        if (platform === "instagram") {
+          hashtags = [...hashtags, "Instagram", "InstaDaily", "InstaGood"];
+        } else if (platform === "facebook") {
+          hashtags = [...hashtags, "FacebookCommunity", "ShareTheLove"];
+        } else if (platform === "twitter") {
+          title = title.substring(0, 50) + "..."; // Shorter for Twitter
+          hashtags = hashtags.slice(0, 3); // Fewer hashtags for Twitter
+        } else if (platform === "linkedin") {
+          body.push("What are your thoughts on this? I'd love to hear from my professional network.");
+          hashtags = [...hashtags, "ProfessionalDevelopment", "LinkedInCommunity"];
+        }
+        
+        // Adjust for tone
+        if (tone === "humorous") {
+          body.push("P.S. We promise this update is better than your ex's apology text. 😂");
+        } else if (tone === "inspirational") {
+          body.push("Remember, every day is a new opportunity to redefine what's possible. ✨");
+        } else if (tone === "authoritative") {
+          body.push("Based on our extensive research and industry expertise, this is the direction that delivers optimal results.");
+        }
+        
+        return {
+          title,
+          body,
+          hashtags
+        };
+      }
+      
+      // Helper function to generate hashtags
+      function generateHashtags(topic, platform) {
+        // Base hashtags that work for most content
+        const baseHashtags = ["ContentCreator", "DigitalMarketing", "SocialMedia", "Growth", "Engagement"];
+        
+        // Platform specific hashtags
+        const platformHashtags = {
+          instagram: ["Instagram", "InstaDaily", "InstaGood", "InstaVibes", "IGDaily"],
+          facebook: ["Facebook", "FacebookMarketing", "FacebookTips", "FacebookCommunity"],
+          twitter: ["Twitter", "TwitterTips", "TweetLife", "TweetSmarter"],
+          linkedin: ["LinkedIn", "LinkedInMarketing", "ProfessionalDevelopment", "BusinessTips"],
+          tiktok: ["TikTok", "TikTokTips", "TikTokMarketing", "TikTokCreator", "FYP"]
+        };
+        
+        // Topic specific hashtags
+        let topicHashtags = [];
+        if (topic.includes('product') || topic.includes('launch')) {
+          topicHashtags = ["NewProduct", "ProductLaunch", "Innovation", "MustHave", "NewRelease"];
+        } else if (topic.includes('tip') || topic.includes('advice')) {
+          topicHashtags = ["Tips", "Advice", "HowTo", "Tutorial", "LifeHacks"];
+        } else if (topic.includes('summer') || topic.includes('collection')) {
+          topicHashtags = ["SummerCollection", "NewArrivals", "SummerStyle", "SeasonalTrends", "SummerVibes"];
+        } else {
+          topicHashtags = ["BrandAwareness", "CustomerExperience", "QualityService", "Innovation"];
+        }
+        
+        // Combine and shuffle
+        const allHashtags = [...topicHashtags, ...platformHashtags[platform], ...baseHashtags];
+        const shuffled = allHashtags.sort(() => 0.5 - Math.random());
+        
+        // Return appropriate number for the platform
+        const hashtagCount = platform === 'instagram' ? 10 : (platform === 'twitter' ? 3 : 5);
+        return shuffled.slice(0, hashtagCount);
+      }
+      
+      // Helper function to show alert
+      function showAlert(message, type) {
+        const alertContainer = document.querySelector('.alert-container');
+        const alert = document.createElement('div');
+        alert.className = `alert alert-${type} alert-dismissible fade show`;
+        alert.innerHTML = `
+          ${message}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+        
+        alertContainer.innerHTML = '';
+        alertContainer.appendChild(alert);
+        
+        // Auto dismiss after 5 seconds
+        setTimeout(() => {
+          alert.classList.remove('show');
+          setTimeout(() => {
+            alertContainer.innerHTML = '';
+          }, 300);
+        }, 5000);
+      }
+    });
+  </script>
 </body>
 </html> 

@@ -1,0 +1,28 @@
+{
+  "name": "Food & Beverage",
+  "niches": [
+    {
+      "name": "Restaurants"
+    },
+    {
+      "name": "Cafés"
+    },
+    {
+      "name": "Fast Food Chains"
+    },
+    {
+      "name": "Bakeries"
+    },
+    {
+      "name": "Food Trucks"
+    },
+    {
+      "name": "Catering Services"
+    },
+    {
+      "name": "Other"
+    }
+  ],
+  "id": "food-&-beverage",
+  "updatedAt": "2025-03-23T20:52:29.013Z"
+}

@@ -119,33 +119,63 @@ document.addEventListener('DOMContentLoaded', function() {
       }
       
       // If not in dev mode, fetch from server
-      const response = await fetch(`${API_URL}/api/profile`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      if (response.status === 404) {
-        // No profile found, show incomplete section
-        profileIncomplete.style.display = 'block';
-        profileComplete.style.display = 'none';
-        return;
-      }
-      
-      const data = await response.json();
-      
-      if (response.ok) {
-        // Show profile section
-        profileIncomplete.style.display = 'none';
-        profileComplete.style.display = 'block';
+      try {
+        const response = await fetch(`${API_URL}/api/profile`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
         
-        // Update profile display
-        updateProfileDisplay(data.data);
-      } else {
-        console.error('Error loading profile:', data.error);
+        if (response.status === 404) {
+          // No profile found, show incomplete section
+          profileIncomplete.style.display = 'block';
+          profileComplete.style.display = 'none';
+          return;
+        }
+        
+        const data = await response.json();
+        
+        if (data.success && data.data) {
+          // Show profile section
+          profileIncomplete.style.display = 'none';
+          profileComplete.style.display = 'block';
+          
+          // Update profile display
+          updateProfileDisplay(data.data);
+
+          // Also populate business profile for other pages
+          localStorage.setItem('businessProfile', JSON.stringify(data.data));
+        } else {
+          console.error('Error loading profile:', data.error || 'Unknown error');
+          profileIncomplete.style.display = 'block';
+          profileComplete.style.display = 'none';
+        }
+      } catch (error) {
+        console.error('Error loading profile from server:', error);
+        
+        // Try to get from localStorage as fallback
+        const cachedProfile = localStorage.getItem('businessProfile');
+        if (cachedProfile) {
+          try {
+            const profile = JSON.parse(cachedProfile);
+            profileIncomplete.style.display = 'none';
+            profileComplete.style.display = 'block';
+            updateProfileDisplay(profile);
+            console.log('Using cached business profile from localStorage');
+          } catch (e) {
+            console.error('Error parsing cached profile:', e);
+            profileIncomplete.style.display = 'block';
+            profileComplete.style.display = 'none';
+          }
+        } else {
+          profileIncomplete.style.display = 'block';
+          profileComplete.style.display = 'none';
+        }
       }
     } catch (error) {
-      console.error('Error loading profile:', error);
+      console.error('Error in loadProfile function:', error);
+      profileIncomplete.style.display = 'block';
+      profileComplete.style.display = 'none';
     }
   }
 

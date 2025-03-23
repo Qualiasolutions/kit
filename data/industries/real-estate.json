@@ -1,0 +1,25 @@
+{
+  "name": "Real Estate",
+  "niches": [
+    {
+      "name": "Real Estate Agencies"
+    },
+    {
+      "name": "Property Management"
+    },
+    {
+      "name": "Home Stagers"
+    },
+    {
+      "name": "Commercial Real Estate"
+    },
+    {
+      "name": "Real Estate Investors"
+    },
+    {
+      "name": "Other"
+    }
+  ],
+  "id": "real-estate",
+  "updatedAt": "2025-03-23T20:52:29.020Z"
+}

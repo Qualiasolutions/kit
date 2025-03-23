@@ -1,5 +1,3 @@
-[33mcommit e8c0a0888df19cf129845c2d3babaa5591edd18d[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m)[m
-Author: Qualia Solutions <info@qualiasolutions.com>
-Date:   Mon Mar 17 20:56:28 2025 +0200
-
-    Fix Vercel deployment: Move to api directory structure and update routing
+[33m3bbf8b5[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m)[m Update dashboard with AI content generation features and improve create-post integration
+[33m474039d[m[33m ([m[1;31morigin/master[m[33m)[m Replace Firebase with local storage and add AI post generation
+[33m0c24748[m Implement modern SMMA software UI layout with responsive design

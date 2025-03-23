@@ -1,0 +1,25 @@
+{
+  "name": "Automotive",
+  "niches": [
+    {
+      "name": "Car Dealerships"
+    },
+    {
+      "name": "Auto Repair Shops"
+    },
+    {
+      "name": "Car Rentals"
+    },
+    {
+      "name": "Car Washes"
+    },
+    {
+      "name": "Auto Parts Retailers"
+    },
+    {
+      "name": "Other"
+    }
+  ],
+  "id": "automotive",
+  "updatedAt": "2025-03-23T20:52:29.003Z"
+}

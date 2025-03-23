@@ -60,34 +60,67 @@ const getTemplate = async (req, res) => {
 
 /**
  * Get all template categories
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
+ * @route   GET /api/templates/categories
+ * @access  Public
  */
 const getTemplateCategories = async (req, res) => {
   try {
+    // Get all template categories
     const categories = templateService.getTemplateCategories();
-    res.status(200).json({ success: true, categories });
+    
+    // Return the categories
+    res.status(200).json({
+      success: true,
+      count: categories.length,
+      categories
+    });
   } catch (error) {
     console.error('Error fetching template categories:', error);
-    res.status(500).json({ success: false, error: 'Failed to fetch template categories' });
+    res.status(500).json({
+      success: false,
+      error: 'Could not retrieve template categories'
+    });
   }
 };
 
 /**
  * Get templates by category
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
+ * @route   GET /api/templates/category/:categoryId
+ * @access  Public
  */
 const getTemplatesByCategory = async (req, res) => {
   try {
     const { categoryId } = req.params;
-    const count = req.query.count ? parseInt(req.query.count) : 6;
+    const count = parseInt(req.query.count) || 5;
     
+    console.log(`Request for templates in category: ${categoryId}, count: ${count}`);
+    
+    // Validate category ID
+    const categories = templateService.getTemplateCategories();
+    const categoryExists = categories.some(category => category.id === categoryId);
+    
+    if (!categoryExists) {
+      return res.status(400).json({
+        success: false,
+        error: `Category ID '${categoryId}' is not valid`
+      });
+    }
+    
+    // Get templates for the category
     const templates = await templateService.getTemplatesByCategory(categoryId, count);
-    res.status(200).json({ success: true, templates });
+    
+    // Return the templates
+    res.status(200).json({
+      success: true,
+      count: templates.length,
+      templates
+    });
   } catch (error) {
-    console.error('Error fetching templates by category:', error);
-    res.status(500).json({ success: false, error: 'Failed to fetch templates' });
+    console.error(`Error fetching templates for category '${req.params.categoryId}':`, error);
+    res.status(500).json({
+      success: false,
+      error: 'Could not retrieve templates for this category'
+    });
   }
 };
 

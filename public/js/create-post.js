@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const hashtagsContainer = document.getElementById('hashtags-container');
   const generateHashtagsBtn = document.getElementById('generate-hashtags-btn');
   const alertContainer = document.getElementById('alert-container');
+  const businessProfileInfoEl = document.getElementById('business-profile-info');
 
   // State variables
   let selectedTemplate = null;
@@ -32,6 +33,93 @@ document.addEventListener('DOMContentLoaded', function() {
   let isGenerating = false;
   let templates = [];
   let templateCategories = [];
+  let businessProfile = null;
+
+  // Initialize: Load business profile first, then templates
+  fetchBusinessProfile()
+    .then(() => fetchTemplateCategories())
+    .catch(error => {
+      console.error('Error during initialization:', error);
+      showAlert('Could not load required data. Please try refreshing the page.', 'danger');
+    });
+
+  // Fetch business profile data
+  async function fetchBusinessProfile() {
+    try {
+      const response = await fetch(`${API_URL}/api/profile`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch business profile');
+      }
+      
+      const data = await response.json();
+      
+      if (data.success && data.data) {
+        businessProfile = data.data;
+        updateBusinessProfileDisplay();
+      } else {
+        showAlert('Please complete your business profile setup before creating AI content', 'warning');
+        businessProfileInfoEl.innerHTML = `
+          <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <strong>Business profile not found!</strong> 
+            <p class="mb-0">Please <a href="profile-setup.html" class="alert-link">complete your business profile</a> to enhance content generation.</p>
+          </div>
+        `;
+      }
+    } catch (error) {
+      console.error('Error fetching business profile:', error);
+      showAlert('Could not load your business profile', 'warning');
+    }
+  }
+
+  // Display business profile summary
+  function updateBusinessProfileDisplay() {
+    if (!businessProfile || !businessProfileInfoEl) return;
+
+    const socialPlatforms = businessProfile.socialPlatforms ? 
+      Object.keys(businessProfile.socialPlatforms)
+        .filter(platform => businessProfile.socialPlatforms[platform])
+        .join(', ') : 
+      'None';
+
+    businessProfileInfoEl.innerHTML = `
+      <div class="d-flex align-items-center mb-3">
+        <div class="me-3">
+          <i class="bi bi-building text-primary" style="font-size: 1.5rem;"></i>
+        </div>
+        <div>
+          <h6 class="mb-1">${businessProfile.businessName}</h6>
+          <p class="text-muted small mb-0">${businessProfile.industry} / ${businessProfile.niche}</p>
+        </div>
+      </div>
+      <p class="small mb-1"><strong>Target Audience:</strong> ${businessProfile.targetAudience?.join(', ') || 'Not specified'}</p>
+      <p class="small mb-1"><strong>Voice:</strong> ${businessProfile.businessVoice?.join(', ') || 'Not specified'}</p>
+      <p class="small mb-0"><strong>Platforms:</strong> ${socialPlatforms}</p>
+    `;
+
+    // Pre-select the platform based on the user's social platforms
+    if (businessProfile.socialPlatforms && platformSelect) {
+      const platforms = Object.keys(businessProfile.socialPlatforms)
+        .filter(platform => businessProfile.socialPlatforms[platform]);
+      
+      if (platforms.length > 0) {
+        const platformToSelect = platforms[0].toLowerCase();
+        
+        // Find the option with this value or closest match
+        for (const option of platformSelect.options) {
+          if (option.value.toLowerCase().includes(platformToSelect)) {
+            platformSelect.value = option.value;
+            break;
+          }
+        }
+      }
+    }
+  }
 
   // Fetch template categories
   async function fetchTemplateCategories() {
@@ -219,22 +307,21 @@ document.addEventListener('DOMContentLoaded', function() {
     const platform = platformSelect.value;
     const contentType = contentTypeSelect.value;
     const tone = toneSelect.value;
-    const templateType = selectedTemplate ? selectedTemplate.categoryId : '';
     
-    // Validate inputs
     if (!topic) {
       showAlert('Please enter a post topic', 'warning');
+      postTopicInput.focus();
       return;
     }
     
-    // Show loading state
     isGenerating = true;
     generateBtn.disabled = true;
-    loadingIndicator.classList.remove('d-none');
-    showAlert('Generating your content...', 'info');
+    loadingIndicator.style.display = 'block';
     
     try {
-      const response = await fetch(`${API_URL}/api/generate-post`, {
+      const templateType = selectedTemplate ? selectedTemplate.category : 'general';
+      
+      const response = await fetch(`${API_URL}/api/ai/generate-post`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -245,7 +332,8 @@ document.addEventListener('DOMContentLoaded', function() {
           platform,
           contentType,
           tone,
-          templateType
+          templateType,
+          businessProfile: businessProfile // Include the business profile data
         })
       });
       
@@ -254,28 +342,29 @@ document.addEventListener('DOMContentLoaded', function() {
       if (data.success) {
         generatedContent = data.content;
         
-        // Update the form with generated content
-        postTitleInput.value = generatedContent.title;
-        postContentInput.value = generatedContent.content;
+        if (generatedContent.title) {
+          postTitleInput.value = generatedContent.title;
+        }
         
-        // Update preview
-        updateTemplatePreview();
+        if (generatedContent.content) {
+          postContentInput.value = generatedContent.content;
+        }
         
-        // Generate hashtags automatically
-        generateHashtags();
-        
-        showAlert('Content generated successfully!', 'success');
+        if (generatedContent.hashtags && generatedContent.hashtags.length > 0) {
+          renderHashtags(generatedContent.hashtags);
+        } else {
+          hashtagsContainer.innerHTML = '';
+        }
       } else {
         showAlert(data.error || 'Failed to generate content', 'danger');
       }
     } catch (error) {
       console.error('Error generating post:', error);
-      showAlert('Network error. Please try again.', 'danger');
+      showAlert('Network error when generating content', 'danger');
     } finally {
-      // Hide loading state
       isGenerating = false;
       generateBtn.disabled = false;
-      loadingIndicator.classList.add('d-none');
+      loadingIndicator.style.display = 'none';
     }
   }
 
@@ -343,9 +432,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 5000);
   }
 
-  // Initialize
-  fetchTemplateCategories();
-  
   // Setup event listeners
   generateBtn.addEventListener('click', generatePost);
   

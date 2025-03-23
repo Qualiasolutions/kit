@@ -1,0 +1,25 @@
+{
+  "name": "Health & Fitness",
+  "niches": [
+    {
+      "name": "Fitness Trainers"
+    },
+    {
+      "name": "Gyms & Fitness Centers"
+    },
+    {
+      "name": "Yoga Studios"
+    },
+    {
+      "name": "Personal Training"
+    },
+    {
+      "name": "Nutritionists & Dietitians"
+    },
+    {
+      "name": "Other"
+    }
+  ],
+  "id": "health-&-fitness",
+  "updatedAt": "2025-03-23T20:52:29.017Z"
+}

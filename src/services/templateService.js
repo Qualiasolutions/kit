@@ -1,15 +1,23 @@
 const { createApi } = require('unsplash-js');
 const fetch = require('node-fetch');
 
-// Initialize Unsplash API client
-const unsplash = createApi({
-  accessKey: process.env.UNSPLASH_ACCESS_KEY,
-  fetch: fetch,
-});
-
-// Verify the API key is available
-if (!process.env.UNSPLASH_ACCESS_KEY) {
-  console.warn('Warning: Unsplash API key not found in environment variables. Template functionality will be limited.');
+// Unsplash API configuration
+let unsplash;
+try {
+  // Initialize Unsplash API client
+  if (process.env.UNSPLASH_ACCESS_KEY) {
+    console.log('Initializing Unsplash API with access key');
+    unsplash = createApi({
+      accessKey: process.env.UNSPLASH_ACCESS_KEY,
+      fetch: fetch,
+    });
+  } else {
+    console.warn('Warning: Unsplash API key not found in environment variables. Template functionality will be limited.');
+    unsplash = null;
+  }
+} catch (error) {
+  console.error('Error initializing Unsplash API:', error);
+  unsplash = null;
 }
 
 // Template categories that map to Unsplash search queries
@@ -71,80 +79,88 @@ const getTemplateCategories = () => {
 };
 
 /**
- * Fetch template images for a specific category
+ * Get templates by category
  * @param {string} categoryId - The template category ID
- * @param {number} count - Number of templates to fetch (default: 5)
- * @returns {Promise<Array>} - Array of template images with metadata
+ * @param {number} count - Number of templates to return
+ * @returns {Promise<Array>} - Array of template objects
  */
 const getTemplatesByCategory = async (categoryId, count = 5) => {
   try {
-    // Check if we have cached results
-    if (templateCache.byCategory[categoryId]) {
+    console.log(`Getting templates for category: ${categoryId}`);
+    
+    // Check if we have cached templates for this category
+    if (templateCache.byCategory[categoryId] && templateCache.byCategory[categoryId].length >= count) {
       console.log(`Using cached templates for category: ${categoryId}`);
-      return templateCache.byCategory[categoryId];
+      return templateCache.byCategory[categoryId].slice(0, count);
     }
-    
-    const category = templateCategories[categoryId];
-    
-    if (!category) {
-      throw new Error(`Template category '${categoryId}' not found`);
+
+    // Verify category exists
+    if (!templateCategories[categoryId]) {
+      console.error(`Invalid template category: ${categoryId}`);
+      // Return default category templates instead
+      return getTemplatesByCategory('product-showcase', count);
     }
-    
-    // Pick a random search query from the category
-    const searchQuery = category.searchQueries[Math.floor(Math.random() * category.searchQueries.length)];
-    
-    console.log(`Fetching Unsplash images for query: ${searchQuery}`);
-    
-    // Fetch images from Unsplash
-    const result = await unsplash.search.getPhotos({
-      query: searchQuery,
-      orientation: 'landscape',
-      perPage: count
-    });
-    
-    if (result.errors) {
-      console.error(`Unsplash API error: ${result.errors[0]}`);
+
+    // Check if we have the Unsplash API key and instance
+    if (!process.env.UNSPLASH_ACCESS_KEY || !unsplash) {
+      console.error('Unsplash API key is missing or initialization failed - using fallback templates');
       return getFallbackTemplates(categoryId, count);
     }
-    
-    // Check if we received a rate limiting error
-    if (result.type === 'error') {
-      if (result.status === 403) {
-        console.error('Unsplash API rate limit exceeded. Using fallback templates.');
+
+    try {
+      // Get search queries for this category
+      const { searchQueries, overlay } = templateCategories[categoryId];
+      const randomQuery = searchQueries[Math.floor(Math.random() * searchQueries.length)];
+
+      console.log(`Fetching Unsplash images for query: "${randomQuery}"`);
+
+      // Search Unsplash for images
+      const response = await unsplash.search.getPhotos({
+        query: randomQuery,
+        page: 1,
+        perPage: count * 2, // Get more photos than needed to have variety
+        orientation: 'landscape'
+      });
+
+      // Check if Unsplash request was successful
+      if (!response || !response.response || !response.response.results || response.response.results.length === 0) {
+        console.warn(`Unsplash API request failed for query '${randomQuery}' - using fallback templates`);
         return getFallbackTemplates(categoryId, count);
       }
-      
-      console.error(`Unsplash API error: ${JSON.stringify(result)}`);
+
+      console.log(`Successfully received ${response.response.results.length} images from Unsplash`);
+
+      // Process results into templates
+      const results = response.response.results;
+      const templates = results.slice(0, count).map((result, index) => {
+        const template = {
+          id: `${categoryId}-${result.id}`,
+          title: `${templateCategories[categoryId].name} Template ${index + 1}`,
+          category: categoryId,
+          imageUrl: result.urls.regular,
+          imageThumbUrl: result.urls.thumb,
+          imageAuthor: result.user.name,
+          imageAuthorUrl: result.user.links.html,
+          overlay: overlay
+        };
+
+        // Cache template by ID
+        templateCache.byId[template.id] = template;
+        return template;
+      });
+
+      // Cache templates for this category
+      templateCache.byCategory[categoryId] = templates;
+
+      return templates;
+    } catch (apiError) {
+      console.error(`Unsplash API error for category '${categoryId}':`, apiError);
+      // Return fallback templates when Unsplash API fails
       return getFallbackTemplates(categoryId, count);
     }
-    
-    // Process and return template data
-    const templates = result.response.results.map(photo => ({
-      id: photo.id,
-      categoryId: categoryId,
-      categoryName: category.name,
-      url: photo.urls.regular,
-      thumbnailUrl: photo.urls.small,
-      authorName: photo.user.name,
-      authorUrl: photo.user.links.html,
-      overlay: category.overlay,
-      downloadUrl: photo.links.download,
-      attribution: `Photo by ${photo.user.name} on Unsplash`
-    }));
-    
-    // Cache the results
-    templateCache.byCategory[categoryId] = templates;
-    
-    // Also cache individual templates by ID
-    templates.forEach(template => {
-      templateCache.byId[template.id] = template;
-    });
-    
-    return templates;
   } catch (error) {
-    console.error('Error fetching templates from Unsplash:', error);
-    
-    // Return fallback templates if API call fails
+    console.error(`Error fetching templates for category '${categoryId}':`, error);
+    // Return fallback templates when any error occurs
     return getFallbackTemplates(categoryId, count);
   }
 };
@@ -156,25 +172,32 @@ const getTemplatesByCategory = async (categoryId, count = 5) => {
  * @returns {Array} - Array of fallback templates
  */
 const getFallbackTemplates = (categoryId, count) => {
+  console.log(`Generating ${count} fallback templates for category: ${categoryId}`);
+  
   const category = templateCategories[categoryId];
   if (!category) {
     return [];
   }
   
   // Create multiple fallback templates for the category
-  return Array(count).fill().map((_, i) => ({
+  const templates = Array(count).fill().map((_, i) => ({
     id: `${categoryId}-fallback-${i}`,
-    categoryId: categoryId,
-    categoryName: category.name,
-    // Use placeholder images that are publicly available
-    url: `https://via.placeholder.com/800x600?text=${category.name.replace(/\s+/g, '+')}`,
-    thumbnailUrl: `https://via.placeholder.com/400x300?text=${category.name.replace(/\s+/g, '+')}`,
-    authorName: 'OmuMediaKit',
-    authorUrl: '#',
-    overlay: category.overlay,
-    downloadUrl: null,
-    attribution: 'Default template'
+    title: `${category.name} Template ${i + 1}`,
+    category: categoryId,
+    imageUrl: `https://source.unsplash.com/random/800x600/?${encodeURIComponent(category.searchQueries[0])}`,
+    imageThumbUrl: `https://source.unsplash.com/random/400x300/?${encodeURIComponent(category.searchQueries[0])}`,
+    imageAuthor: 'Unsplash',
+    imageAuthorUrl: 'https://unsplash.com',
+    overlay: category.overlay
   }));
+  
+  // Cache templates
+  templateCache.byCategory[categoryId] = templates;
+  templates.forEach(template => {
+    templateCache.byId[template.id] = template;
+  });
+  
+  return templates;
 };
 
 /**
