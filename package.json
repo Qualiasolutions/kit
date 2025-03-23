@@ -7,12 +7,11 @@
     "node": "18.x"
   },
   "scripts": {
-    "start": "NODE_ENV=production node src/server.js",
-    "start:win": "set NODE_ENV=production&& node src/server.js",
+    "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "seed": "node src/utils/seedData.js -i",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "init-db": "node src/scripts/initFirestore.js"
+    "init-db": "node src/scripts/initLocalStorage.js"
   },
   "keywords": [],
   "author": "",
@@ -27,13 +26,16 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "fabric": "^6.6.1",
-    "firebase": "^11.4.0",
-    "firebase-admin": "^13.2.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.12.1",
+    "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
     "multer-storage-cloudinary": "^4.0.0",
-    "path": "^0.12.7"
+    "node-fetch": "^2.7.0",
+    "openai": "^4.88.0",
+    "path": "^0.12.7",
+    "unsplash-js": "^7.0.19",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.9"

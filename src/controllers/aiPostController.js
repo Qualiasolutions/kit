@@ -3,7 +3,7 @@ const aiService = require('../services/aiService');
 /**
  * Controller for AI-generated post content
  */
-class AIPostController {
+const aiPostController = {
   /**
    * Generate content for a social media post
    * 
@@ -74,132 +74,139 @@ class AIPostController {
         message: error.message || 'An unexpected error occurred'
       });
     }
-  }
+  },
   
   /**
-   * Generate a business profile bio
-   * 
-   * @param {Object} req - Express request object
-   * @param {Object} res - Express response object
+   * Generate hashtags for a social media post
    */
-  async generateBio(req, res) {
+  async generateHashtags(req, res) {
+    try {
+      const { content, count } = req.body;
+      
+      // Validate required fields
+      if (!content) {
+        return res.status(400).json({
+          success: false,
+          error: 'Missing required field: content is required'
+        });
+      }
+      
+      // Generate hashtags using AI service
+      const hashtags = await aiService.generateHashtags(content, count || 7);
+      
+      // Return generated hashtags
+      return res.status(200).json({
+        success: true,
+        data: hashtags
+      });
+    } catch (error) {
+      console.error('Error in generateHashtags controller:', error);
+      
+      // Return generic hashtags if AI generation fails
+      const fallbackHashtags = ['#socialmedia', '#marketing', '#digital', '#business', '#growth', '#success', '#trending'];
+      
+      return res.status(200).json({
+        success: true,
+        data: fallbackHashtags,
+        warning: 'Used fallback hashtags due to an error'
+      });
+    }
+  },
+
+  /**
+   * Generate a content calendar for social media
+   */
+  async generateContentCalendar(req, res) {
+    try {
+      const { month, year, postsPerWeek, platforms } = req.body;
+      
+      // Set defaults for missing values
+      const currentDate = new Date();
+      const calendarMonth = month || currentDate.toLocaleString('default', { month: 'long' });
+      const calendarYear = year || currentDate.getFullYear();
+      
+      // Validate required fields
+      if (!platforms || !Array.isArray(platforms) || platforms.length === 0) {
+        return res.status(400).json({
+          success: false,
+          error: 'Missing required field: platforms (array) is required'
+        });
+      }
+      
+      // Generate calendar using AI service
+      const calendar = await aiService.generateContentCalendar({
+        month: calendarMonth,
+        year: calendarYear,
+        postsPerWeek: postsPerWeek || 3,
+        platforms
+      });
+      
+      // Return generated calendar
+      return res.status(200).json({
+        success: true,
+        data: calendar
+      });
+    } catch (error) {
+      console.error('Error in generateContentCalendar controller:', error);
+      
+      // Return a basic calendar if AI generation fails
+      const fallbackCalendar = generateFallbackCalendar(req.body);
+      
+      return res.status(200).json({
+        success: true,
+        data: fallbackCalendar,
+        warning: 'Used fallback calendar due to an error'
+      });
+    }
+  },
+  
+  /**
+   * Generate a profile bio for a business
+   */
+  async generateProfileBio(req, res) {
     try {
       const { businessName, industry, products, tone } = req.body;
       
       // Validate required fields
       if (!businessName) {
-        return res.status(400).json({ error: 'Business name is required' });
+        return res.status(400).json({
+          success: false,
+          error: 'Missing required field: businessName is required'
+        });
       }
       
       if (!industry) {
-        return res.status(400).json({ error: 'Industry is required' });
+        return res.status(400).json({
+          success: false,
+          error: 'Missing required field: industry is required'
+        });
       }
       
-      // Generate bio
+      // Generate bio using AI service
       const bio = await aiService.generateProfileBio({
         businessName,
         industry,
         products,
-        tone
+        tone: tone || 'professional'
       });
       
-      // Return the generated bio
-      return res.status(200).json({ bio });
+      // Return generated bio
+      return res.status(200).json({
+        success: true,
+        data: bio
+      });
     } catch (error) {
-      console.error('Error in bio generation:', error);
+      console.error('Error in generateProfileBio controller:', error);
       
-      // Send a user-friendly error message
-      return res.status(500).json({ 
-        error: 'Failed to generate bio',
-        message: error.message || 'An unexpected error occurred'
+      // Return a simple fallback bio if AI generation fails
+      const fallbackBio = `${req.body.businessName} is a dedicated provider in the ${req.body.industry} industry, offering excellent products and services to meet your needs.`;
+      
+      return res.status(200).json({
+        success: true,
+        data: fallbackBio,
+        warning: 'Used fallback bio due to an error'
       });
     }
-  }
-}
-
-module.exports = new AIPostController();
-
-/**
- * Generate hashtags for a social media post
- */
-exports.generateHashtags = async (req, res) => {
-  try {
-    const { content, count } = req.body;
-    
-    // Validate required fields
-    if (!content) {
-      return res.status(400).json({
-        success: false,
-        error: 'Missing required field: content is required'
-      });
-    }
-    
-    // Generate hashtags using AI service
-    const hashtags = await aiService.generateHashtags(content, count || 7);
-    
-    // Return generated hashtags
-    return res.status(200).json({
-      success: true,
-      data: hashtags
-    });
-  } catch (error) {
-    console.error('Error in generateHashtags controller:', error);
-    
-    // Return generic hashtags if AI generation fails
-    const fallbackHashtags = ['#socialmedia', '#marketing', '#digital', '#business', '#growth', '#success', '#trending'];
-    
-    return res.status(200).json({
-      success: true,
-      data: fallbackHashtags,
-      warning: 'Used fallback hashtags due to an error'
-    });
-  }
-};
-
-/**
- * Generate a content calendar for social media
- */
-exports.generateContentCalendar = async (req, res) => {
-  try {
-    const { month, year, postsPerWeek, platforms } = req.body;
-    
-    // Set defaults for missing values
-    const currentDate = new Date();
-    const calendarMonth = month || currentDate.toLocaleString('default', { month: 'long' });
-    const calendarYear = year || currentDate.getFullYear();
-    
-    // Validate required fields
-    if (!platforms || !Array.isArray(platforms) || platforms.length === 0) {
-      return res.status(400).json({
-        success: false,
-        error: 'Missing required field: platforms (array) is required'
-      });
-    }
-    
-    // Generate calendar using AI service
-    const calendar = await aiService.generateContentCalendar({
-      month: calendarMonth,
-      year: calendarYear,
-      postsPerWeek: postsPerWeek || 3,
-      platforms
-    });
-    
-    // Return generated calendar
-    return res.status(200).json({
-      success: true,
-      data: calendar
-    });
-  } catch (error) {
-    console.error('Error in generateContentCalendar controller:', error);
-    
-    // Return a basic calendar if AI generation fails
-    const fallbackCalendar = generateFallbackCalendar(req.body);
-    
-    return res.status(200).json({
-      success: true,
-      data: fallbackCalendar,
-      warning: 'Used fallback calendar due to an error'
-    });
   }
 };
 
@@ -250,3 +257,5 @@ function generateFallbackCalendar(options) {
     posts
   };
 }
+
+module.exports = aiPostController;

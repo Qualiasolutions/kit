@@ -1,4 +1,4 @@
-const { auth, db, admin } = require('../config/firebase');
+const { auth } = require('../config/firebase');
 const ErrorResponse = require('../utils/errorResponse');
 const asyncHandler = require('../middleware/async');
 
@@ -26,43 +26,36 @@ exports.register = asyncHandler(async (req, res, next) => {
   }
 
   try {
-    // Create the user account with Firebase Admin
-    const userRecord = await auth.createUser({
+    // Create user with our local auth service
+    const user = await auth.createUser({
       email,
       password,
-      displayName: name
+      name
     });
     
-    // Store additional user data in Firestore
-    await db.collection('users').doc(userRecord.uid).set({
-      name,
-      email,
-      createdAt: admin.firestore.FieldValue.serverTimestamp()
-    });
+    console.log('User created successfully:', user.id);
     
-    console.log('User created successfully:', userRecord.uid);
-    
-    // Generate custom token
-    const token = await auth.createCustomToken(userRecord.uid);
+    // Generate JWT token
+    const token = await auth.createToken(user.id);
     
     res.status(201).json({
       success: true,
       token,
       user: {
-        id: userRecord.uid,
-        name: userRecord.displayName || name,
-        email: userRecord.email
+        id: user.id,
+        name: user.name,
+        email: user.email
       }
     });
-  } catch (firebaseError) {
-    console.error('Firebase error:', firebaseError);
+  } catch (error) {
+    console.error('Registration error:', error);
     
-    // Handle specific Firebase errors
-    if (firebaseError.code === 'auth/email-already-exists') {
+    // Handle specific errors
+    if (error.message === 'Email already in use') {
       return next(new ErrorResponse('User already exists', 400));
     }
     
-    return next(new ErrorResponse(firebaseError.message, 500));
+    return next(new ErrorResponse(error.message, 500));
   }
 });
 
@@ -78,63 +71,51 @@ exports.login = asyncHandler(async (req, res, next) => {
   }
 
   try {
-    // With Admin SDK, we can't directly sign in users with email/password
-    // Instead, we need to verify credentials separately
-    
-    // 1. Get the user by email
-    const userRecord = await auth.getUserByEmail(email);
-    
-    // 2. Create a custom token for this user
-    // Note: In a real implementation, you would verify the password 
-    // using a secure method. For Firebase, typically you'd use 
-    // Firebase Auth REST API for email/password auth.
-    // This is a simplified example.
-    const token = await auth.createCustomToken(userRecord.uid);
+    // Login with our local auth service
+    const { user, token } = await auth.login(email, password);
     
     res.status(200).json({
       success: true,
       token,
       user: {
-        id: userRecord.uid,
-        name: userRecord.displayName,
-        email: userRecord.email
+        id: user.id,
+        name: user.name,
+        email: user.email
       }
     });
-  } catch (firebaseError) {
-    console.error('Firebase login error:', firebaseError);
-    
-    // Handle specific Firebase errors
-    if (firebaseError.code === 'auth/user-not-found') {
-      return next(new ErrorResponse('Invalid credentials', 401));
-    }
-    
-    return next(new ErrorResponse(firebaseError.message, 500));
+  } catch (error) {
+    console.error('Login error:', error);
+    return next(new ErrorResponse('Invalid credentials', 401));
   }
 });
 
-// @desc    Verify a Firebase ID token
+// @desc    Verify a JWT token
 // @route   POST /api/auth/verify-token
 // @access  Public
 exports.verifyToken = asyncHandler(async (req, res, next) => {
-  const { idToken } = req.body;
+  const { token } = req.body;
   
-  if (!idToken) {
-    return next(new ErrorResponse('Please provide an ID token', 400));
+  if (!token) {
+    return next(new ErrorResponse('Please provide a token', 400));
   }
   
   try {
-    // Verify the ID token
-    const decodedToken = await auth.verifyIdToken(idToken);
+    // Verify the token
+    const decoded = await auth.verifyToken(token);
     
     // Get the user details
-    const userRecord = await auth.getUser(decodedToken.uid);
+    const user = await auth.getUser(decoded.id);
+    
+    if (!user) {
+      return next(new ErrorResponse('User not found', 404));
+    }
     
     res.status(200).json({
       success: true,
       user: {
-        id: userRecord.uid,
-        name: userRecord.displayName,
-        email: userRecord.email
+        id: user.id,
+        name: user.name,
+        email: user.email
       }
     });
   } catch (error) {
@@ -162,52 +143,36 @@ exports.getMe = asyncHandler(async (req, res, next) => {
 // @route   POST /api/auth/google
 // @access  Public
 exports.googleSignIn = asyncHandler(async (req, res, next) => {
-  const { idToken } = req.body;
+  const { idToken, user: googleUser } = req.body;
   
-  if (!idToken) {
-    return next(new ErrorResponse('Please provide an ID token', 400));
+  if (!idToken || !googleUser) {
+    return next(new ErrorResponse('Please provide both idToken and user data', 400));
   }
   
   try {
-    // Verify the ID token from the client
-    const decodedToken = await auth.verifyIdToken(idToken);
+    // Check if user exists by email
+    let user = await auth.getUserByEmail(googleUser.email);
     
-    // Get or create user
-    let userRecord;
-    try {
-      userRecord = await auth.getUser(decodedToken.uid);
-    } catch (error) {
-      if (error.code === 'auth/user-not-found') {
-        // User doesn't exist, create them
-        userRecord = await auth.createUser({
-          uid: decodedToken.uid,
-          email: decodedToken.email,
-          emailVerified: decodedToken.email_verified,
-          displayName: decodedToken.name,
-          photoURL: decodedToken.picture
-        });
-        
-        // Store additional data
-        await db.collection('users').doc(userRecord.uid).set({
-          name: decodedToken.name,
-          email: decodedToken.email,
-          createdAt: admin.firestore.FieldValue.serverTimestamp()
-        });
-      } else {
-        throw error;
-      }
+    if (!user) {
+      // Create a new user
+      user = await auth.createUser({
+        email: googleUser.email,
+        name: googleUser.displayName || googleUser.name,
+        // Generate a secure random password
+        password: Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2)
+      });
     }
     
-    // Create a custom token for the user
-    const customToken = await auth.createCustomToken(userRecord.uid);
+    // Create a token for the user
+    const token = await auth.createToken(user.id);
     
     res.status(200).json({
       success: true,
-      token: customToken,
+      token,
       user: {
-        id: userRecord.uid,
-        name: userRecord.displayName,
-        email: userRecord.email
+        id: user.id,
+        name: user.name,
+        email: user.email
       }
     });
   } catch (error) {

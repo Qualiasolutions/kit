@@ -7,7 +7,7 @@ const templateService = require('../services/templateService');
  * @route   GET /api/templates
  * @access  Public
  */
-exports.getTemplates = async (req, res) => {
+const getTemplates = async (req, res) => {
   try {
     // Read templates from JSON file
     const templatesPath = path.join(__dirname, '../data/templates.json');
@@ -47,7 +47,7 @@ exports.getTemplates = async (req, res) => {
  * @route   GET /api/templates/:id
  * @access  Public
  */
-exports.getTemplate = async (req, res) => {
+const getTemplate = async (req, res) => {
   try {
     // Read templates from JSON file
     const templatesPath = path.join(__dirname, '../data/templates.json');
@@ -149,6 +149,8 @@ const searchTemplates = async (req, res) => {
 };
 
 module.exports = {
+  getTemplates,
+  getTemplate,
   getTemplateCategories,
   getTemplatesByCategory,
   getTemplateById,

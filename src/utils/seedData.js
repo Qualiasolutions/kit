@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const Industry = require('../models/Industry');
-const { db } = require('../config/firebase');
+const localStorageService = require('../services/localStorageService');
 
 // Load env vars
 dotenv.config();
@@ -290,21 +290,22 @@ const seedTemplates = async () => {
       }
     ];
     
-    // Add templates to Firestore one by one
-    console.log(`Adding ${templates.length} templates...`);
+    // Check if templates already exist in local storage
+    const existingTemplates = await localStorageService.getAllData('templates');
     
-    for (const template of templates) {
-      try {
-        await db.collection('templates').doc(template.id).set(template);
-        console.log(`Template ${template.id} added successfully`);
-      } catch (error) {
-        console.error(`Error adding template ${template.id}:`, error);
-      }
+    if (existingTemplates.length > 0) {
+      console.log(`${existingTemplates.length} templates already exist in storage, skipping seed`);
+      return;
     }
     
-    console.log('Templates added successfully');
+    // Save templates to local storage
+    for (const template of templates) {
+      await localStorageService.saveData('templates', template.id, template);
+    }
+    
+    console.log(`✅ Seeded ${templates.length} templates`);
   } catch (error) {
-    console.error('Error in seedTemplates:', error);
+    console.error('Error seeding templates:', error);
     throw error;
   }
 };

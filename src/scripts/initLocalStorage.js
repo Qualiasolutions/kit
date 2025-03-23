@@ -1,33 +1,35 @@
 /**
- * Script to initialize Firestore with necessary collections and documents
+ * Script to initialize local storage with necessary collections and documents
  */
-const { db } = require('../config/firebase');
+const localStorageService = require('../services/localStorageService');
 const { industries } = require('../utils/fallbackData');
 const { templates } = require('../utils/fallbackData');
 
-async function initializeFirestore() {
+async function initializeLocalStorage() {
   try {
-    console.log('🔥 Initializing Firestore with default data...');
+    console.log('🔧 Initializing local storage with default data...');
     
     // Add industries
     console.log('Adding industries...');
     for (const industry of industries) {
-      await db.collection('industries').doc(industry.name.toLowerCase().replace(/\s+/g, '-')).set(industry);
+      const id = industry.name.toLowerCase().replace(/\s+/g, '-');
+      await localStorageService.saveData('industries', id, industry);
     }
     console.log('✅ Industries added successfully');
     
     // Add templates
     console.log('Adding templates...');
     for (const template of templates) {
-      await db.collection('templates').doc(template.id).set(template);
+      await localStorageService.saveData('templates', template.id, template);
     }
     console.log('✅ Templates added successfully');
     
     // Add sample users if needed
-    const usersCollection = await db.collection('users').get();
-    if (usersCollection.empty) {
+    const users = await localStorageService.getAllData('users');
+    if (!users || users.length === 0) {
       console.log('Adding sample users...');
-      await db.collection('users').doc('admin').set({
+      await localStorageService.saveData('users', 'admin', {
+        id: 'admin',
         email: 'admin@example.com',
         name: 'Admin User',
         role: 'admin',
@@ -38,15 +40,15 @@ async function initializeFirestore() {
       console.log('Users collection already has data, skipping sample users');
     }
     
-    console.log('🎉 Firestore initialization complete!');
+    console.log('🎉 Local storage initialization complete!');
   } catch (error) {
-    console.error('❌ Firestore initialization error:', error);
+    console.error('❌ Local storage initialization error:', error);
   }
 }
 
 // Run if this script is executed directly
 if (require.main === module) {
-  initializeFirestore()
+  initializeLocalStorage()
     .then(() => process.exit(0))
     .catch(err => {
       console.error('Initialization script failed:', err);
@@ -54,5 +56,5 @@ if (require.main === module) {
     });
 } else {
   // Export for use in other modules
-  module.exports = { initializeFirestore };
-}
+  module.exports = { initializeLocalStorage };
+} 

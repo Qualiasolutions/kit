@@ -8,7 +8,7 @@ const jwt = require('jsonwebtoken');
  * @param {Object} res - Express response object
  * @param {Function} next - Express next function
  */
-module.exports = (req, res, next) => {
+exports.protect = (req, res, next) => {
   try {
     // Get the token from the Authorization header
     const authHeader = req.headers.authorization;

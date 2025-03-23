@@ -195,7 +195,7 @@ exports.verifyToken = asyncHandler(async (req, res, next) => {
     console.error('Token verification error:', error);
     
     // Return specific error for expired tokens
-    if (error.code === 'auth/id-token-expired') {
+    if (error.name === 'TokenExpiredError') {
       return res.status(200).json({
         success: true,
         isValid: false,
@@ -223,7 +223,6 @@ exports.googleSignIn = asyncHandler(async (req, res, next) => {
 
   try {
     // For now, we'll create a simplified version without actual Google verification
-    // In a real implementation, you would verify the Google token
     
     // Check if user exists
     const existingUser = await auth.getUserByEmail(googleUser.email);
@@ -257,6 +256,6 @@ exports.googleSignIn = asyncHandler(async (req, res, next) => {
     });
   } catch (error) {
     console.error('Google sign-in error:', error);
-    return next(new ErrorResponse('Error during Google sign-in', 500));
+    return next(new ErrorResponse('Google authentication failed', 401));
   }
 }); 

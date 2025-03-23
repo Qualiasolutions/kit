@@ -6,11 +6,7 @@ const {
   updatePost,
   deletePost,
   getScheduledPosts,
-  updatePostStatus,
-  generatePost,
-  generateHashtags,
-  generateContentCalendar,
-  generateBio
+  updatePostStatus
 } = require('../controllers/postController');
 const aiPostController = require('../controllers/aiPostController');
 

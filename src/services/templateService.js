@@ -3,7 +3,6 @@ const fs = require('fs');
 const path = require('path');
 const ErrorResponse = require('../utils/errorResponse');
 const localStorageService = require('./localStorageService');
-const { db } = require('../config/firebase');
 const { createApi } = require('unsplash-js');
 const fetch = require('node-fetch');
 const config = require('../config/config');
@@ -290,138 +289,90 @@ const searchTemplates = async (keyword, page = 1, perPage = 10) => {
  */
 class TemplateService {
   constructor() {
-    this.templateLibrary = {
-      standard: {
-        name: 'Standard Post',
-        description: 'Clean, professional layout for general content',
-        platforms: ['instagram', 'facebook', 'twitter', 'linkedin']
-      },
-      promotional: {
-        name: 'Promotional',
-        description: 'Eye-catching design for sales and promotions',
-        platforms: ['instagram', 'facebook', 'twitter', 'linkedin']
-      },
-      news: {
-        name: 'News Update',
-        description: 'Formal layout for announcements and news',
-        platforms: ['instagram', 'facebook', 'twitter', 'linkedin']
-      },
-      event: {
-        name: 'Event Promotion',
-        description: 'Showcase upcoming events with style',
-        platforms: ['instagram', 'facebook', 'twitter', 'linkedin']
-      },
-      real_estate: {
-        name: 'Real Estate',
-        description: 'Property showcase with details',
-        platforms: ['instagram', 'facebook']
-      },
-      food: {
-        name: 'Food & Restaurant',
-        description: 'Highlight menu items and special offers',
-        platforms: ['instagram', 'facebook']
-      }
-    };
+    this.collectionName = 'templates';
+    this.templateCache = {};
     
-    this.platformSizes = {
-      instagram: { width: 1080, height: 1080 },
-      instagram_story: { width: 1080, height: 1920 },
-      facebook: { width: 1200, height: 630 },
-      twitter: { width: 1024, height: 512 },
-      linkedin: { width: 1200, height: 627 }
-    };
-    
-    // Attempt to load templates from Firestore on init
-    this.initTemplates();
+    // Initialize with some default templates
+    this.initTemplates().catch(err => {
+      console.error('Error initializing templates:', err);
+    });
   }
   
   /**
-   * Initialize templates from Firestore or local storage
+   * Initialize the templates in local storage
    */
   async initTemplates() {
     try {
-      // Try to load templates from Firebase
-      const templatesSnapshot = await db.collection('templates').get();
+      // Check if templates already exist in local storage
+      const existingTemplates = await localStorageService.getAllData(this.collectionName);
       
-      if (!templatesSnapshot.empty) {
-        const templates = {};
-        templatesSnapshot.forEach(doc => {
-          const data = doc.data();
-          templates[doc.id] = {
-            name: data.name,
-            description: data.description,
-            platforms: data.platforms || ['instagram', 'facebook'],
-            imageUrl: data.imageUrl
-          };
-        });
-        
-        // Update template library with data from Firestore
-        this.templateLibrary = { ...this.templateLibrary, ...templates };
-        console.log('Templates loaded from Firestore');
-        
-        // Also save to local storage as backup
-        Object.entries(templates).forEach(async ([id, template]) => {
-          await localStorageService.saveData('templates', id, template);
-        });
+      if (existingTemplates.length > 0) {
+        console.log(`${existingTemplates.length} templates already exist in storage`);
+        return;
       }
-    } catch (firestoreError) {
-      console.warn('Failed to load templates from Firestore:', firestoreError.message);
       
-      try {
-        // Try to load from local storage
-        const localTemplates = await localStorageService.getAllData('templates');
-        
-        if (localTemplates && localTemplates.length > 0) {
-          const templates = {};
-          localTemplates.forEach(template => {
-            templates[template.id] = {
-              name: template.name,
-              description: template.description,
-              platforms: template.platforms || ['instagram', 'facebook'],
-              imageUrl: template.imageUrl
-            };
-          });
-          
-          // Update template library with local data
-          this.templateLibrary = { ...this.templateLibrary, ...templates };
-          console.log('Templates loaded from local storage');
-        } else {
-          // No templates in local storage, use fallback data and save it
-          const fallbackTemplates = require('../utils/fallbackData').templates;
-          
-          fallbackTemplates.forEach(async template => {
-            await localStorageService.saveData('templates', template.id, template);
-          });
-          
-          console.log('Using default template library');
+      console.log('Initializing default templates in local storage');
+      
+      // Example templates to initialize
+      const defaultTemplates = [
+        {
+          id: 'default-product-1',
+          name: 'Product Template 1',
+          businessType: 'product',
+          imageUrl: '/img/templates/product-showcase.jpg',
+          thumbnailUrl: '/img/templates/product-showcase.jpg',
+          authorName: 'OmuMediaKit',
+          overlay: templateCategories['product-showcase'].overlay
+        },
+        {
+          id: 'default-service-1',
+          name: 'Service Template 1',
+          businessType: 'service',
+          imageUrl: '/img/templates/testimonial.jpg',
+          thumbnailUrl: '/img/templates/testimonial.jpg',
+          authorName: 'OmuMediaKit',
+          overlay: templateCategories['testimonial'].overlay
+        },
+        {
+          id: 'default-event-1',
+          name: 'Event Template 1',
+          businessType: 'event',
+          imageUrl: '/img/templates/event-announcement.jpg',
+          thumbnailUrl: '/img/templates/event-announcement.jpg',
+          authorName: 'OmuMediaKit',
+          overlay: templateCategories['event-announcement'].overlay
         }
-      } catch (localError) {
-        console.error('Failed to load templates from local storage:', localError.message);
-        console.log('Using default template library');
+      ];
+      
+      // Save default templates to local storage
+      for (const template of defaultTemplates) {
+        await localStorageService.saveData(this.collectionName, template.id, template);
       }
+      
+      console.log(`${defaultTemplates.length} default templates initialized in local storage`);
+    } catch (error) {
+      console.error('Error initializing templates:', error);
     }
   }
-
+  
   /**
-   * Get all available templates
-   * @returns {Array} List of templates
+   * Get all templates
+   * @returns {Promise<Array>} All templates
    */
   getAllTemplates() {
-    return Object.entries(this.templateLibrary).map(([id, template]) => ({
-      id,
-      ...template
-    }));
+    return localStorageService.getAllData(this.collectionName);
   }
-
+  
   /**
    * Get templates by business type
-   * @param {string} businessType - Type of business
-   * @returns {Array} Filtered templates
+   * @param {string} businessType - Business type to filter by
+   * @returns {Promise<Array>} Filtered templates
    */
   getTemplatesByBusinessType(businessType) {
-    // Logic to filter templates based on business type
-    // For now, return all templates
-    return this.getAllTemplates();
+    return localStorageService.findData(
+      this.collectionName,
+      template => template.businessType === businessType
+    );
   }
 
   /**
@@ -575,5 +526,5 @@ module.exports = {
   getTemplatesByCategory,
   getTemplateById,
   searchTemplates,
-  TemplateService
+  templateService: new TemplateService()
 }; 
