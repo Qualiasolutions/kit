@@ -17,8 +17,8 @@ router.post('/generate-hashtags', auth, aiPostController.generateHashtags);
 // Template routes
 router.get('/templates/categories', templateController.getTemplateCategories);
 router.get('/templates/category/:categoryId', templateController.getTemplatesByCategory);
-router.get('/templates/:templateId', templateController.getTemplateById);
 router.get('/templates/search', templateController.searchTemplates);
+router.get('/templates/:templateId', templateController.getTemplateById);
 
 // Health check endpoint
 router.get('/health', (req, res) => {
